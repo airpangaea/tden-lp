@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOMODACHI留学 LP - HTMLカスタマイズガイド</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rounded M Plus 1c', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            border-left: 5px solid #f97316;
+        }
+        
+        .section h2 {
+            color: #1e3a8a;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f97316;
+        }
+        
+        .section h3 {
+            color: #f97316;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+            padding-left: 15px;
+            border-left: 4px solid #1e3a8a;
+        }
+        
+        .section h4 {
+            color: #1e3a8a;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+        }
+        
+        .modification-card {
+            background: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .modification-card h3 {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: -25px -25px 20px -25px;
+            border: none;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .code-block code {
+            color: #e2e8f0;
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #92400e;
+        }
+        
+        .tip {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .tip::before {
+            content: "💡 ポイント：";
+            font-weight: bold;
+            color: #1e40af;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .warning {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .warning::before {
+            content: "⚠️ 注意：";
+            font-weight: bold;
+            color: #dc2626;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tr:hover {
+            background: #f3f4f6;
+        }
+        
+        .structure-diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px dashed #cbd5e1;
+        }
+        
+        .structure-item {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 12px 20px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0ea5e9;
+            font-family: monospace;
+        }
+        
+        .line-number {
+            color: #6366f1;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .before, .after {
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .before {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+        
+        .after {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+        }
+        
+        .before h4, .after h4 {
+            margin: 0 0 15px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .before h4 {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .after h4 {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .step-list li {
+            counter-increment: step-counter;
+            padding: 15px 20px 15px 60px;
+            margin: 15px 0;
+            background: white;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        footer {
+            background: #1e293b;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .before-after {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 TOMODACHI留学 LP</h1>
+            <h1>HTMLカスタマイズガイド</h1>
+            <p>初心者でも安心！自分で修正できる完全マニュアル</p>
+        </header>
+        
+        <div class="content">
+            <!-- セクション1：全体構造図 -->
+            <section class="section">
+                <h2>📐 セクション1：全体構造図</h2>
+                
+                <p>このランディングページは、以下のセクションで構成されています。各セクションの行番号を把握することで、修正したい箇所を素早く見つけることができます。</p>
+                
+                <div class="structure-diagram">
+                    <div class="structure-item">
+                        <span class="line-number">1-35行目</span>
+                        <strong>&lt;head&gt; セクション</strong> - メタ情報、フォント読み込み、スタイル定義
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">38-50行目</span>
+                        <strong>ヘッダー（Header）</strong> - ロゴ、ナビゲーションメニュー
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">71-136行目</span>
+                        <strong>ヒーローセクション（Hero）</strong> - メインビジュアル、キャッチコピー、96%/95%バッジ
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">138-240行目</span>
+                        <strong>証明セクション</strong> - TOMODACHI留学の価値を証明する要素
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">242-380行目</span>
+                        <strong>悩みセクション</strong> - ターゲット顧客の課題を提示
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">382-520行目</span>
+                        <strong>解決セクション</strong> - TOMODACHI留学が提供する解決策
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">522-890行目</span>
+                        <strong>講師紹介セクション</strong> - 海外の講師プロフィール
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">892-1150行目</span>
+                        <strong>料金セクション</strong> - プラン詳細、価格表
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">1152-1248行目</span>
+                        <strong>お問い合わせフォーム</strong> - 無料体験申し込み
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">1251-1320行目</span>
+                        <strong>代表メッセージセクション</strong> - 保護者向けメッセージ
+                    </div>
+                    
+                    <div class="structure-item">
+                        <span class="line-number">1322-1355行目</span>
+                        <strong>フッター（Footer）</strong> - 会社情報、リンク
+                    </div>
+                </div>
+                
+                <div class="tip">
+                    修正したい内容に応じて、適切なセクションの行番号にジャンプすると作業がスムーズです。VSCodeなどのエディタでは「Ctrl+G」（Mac: Cmd+G）で行番号指定ジャンプができます。
+                </div>
+            </section>
+            
+            <!-- セクション2：修正内容一覧 -->
+            <section class="section">
+                <h2>✏️ セクション2：修正内容一覧（7つの修正）</h2>
+                
+                <!-- 修正1 -->
+                <div class="modification-card">
+                    <h3>修正1：ヘッダーのロゴをテキストから画像に変更</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>40行目付近</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;div class="text-2xl font-bold text-[#1e3a8a]"&gt;
+    TOMODACHI留学
+&lt;/div&gt;</code>
+                            </div>
+                            <p>テキストで「TOMODACHI留学」を表示</p>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;img src="TOMODACHI留学ロコ__s.jpg" 
+     alt="TOMODACHI留学ロゴ" 
+     class="h-12"&gt;</code>
+                            </div>
+                            <p>画像ファイルでロゴを表示</p>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li><code>&lt;div&gt;</code> タグを <code>&lt;img&gt;</code> タグに置き換え</li>
+                        <li>画像ファイル名：<span class="highlight">TOMODACHI留学ロコ__s.jpg</span></li>
+                        <li>高さを <code>h-12</code> で固定（約48px）</li>
+                        <li>幅は自動調整（アスペクト比を維持）</li>
+                    </ul>
+                    
+                    <div class="tip">
+                        画像ファイルは必ずHTMLと同じフォルダに配置してください。相対パスで指定しているため、別のフォルダに置くと表示されません。
+                    </div>
+                    
+                    <div class="warning">
+                        ファイル名に注意！「TOMODACHI留学ロコ__s.jpg」（アンダースコアが2つ）です。タイポに気をつけてください。
+                    </div>
+                </div>
+                
+                <!-- 修正2 -->
+                <div class="modification-card">
+                    <h3>修正2：フォント変更（Noto Sans JP → Rounded M Plus 1c）</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>10行目、12-13行目</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;!-- Google Fonts --&gt;
+&lt;link href="https://fonts.googleapis.com/css2?
+family=Noto+Sans+JP:wght@400;500;700;900&amp;display=swap" 
+rel="stylesheet"&gt;
+
+&lt;!-- CSS --&gt;
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+}</code>
+                            </div>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;!-- Google Fonts --&gt;
+&lt;link href="https://fonts.googleapis.com/css2?
+family=Rounded+M+Plus+1c:wght@400;500;700;900&amp;display=swap" 
+rel="stylesheet"&gt;
+
+&lt;!-- CSS --&gt;
+body {
+    font-family: 'Rounded M Plus 1c', sans-serif;
+}</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li>Google Fonts のリンクを変更：<code>Noto+Sans+JP</code> → <code>Rounded+M+Plus+1c</code></li>
+                        <li>CSS の <code>font-family</code> を変更：<code>'Noto Sans JP'</code> → <code>'Rounded M Plus 1c'</code></li>
+                        <li>この変更により、サイト全体のフォントが自動的に変わります</li>
+                    </ul>
+                    
+                    <div class="tip">
+                        Google Fonts の URL では、フォント名の単語間を「+」で繋ぎます。CSS では通常のスペースで繋ぎます。この違いに注意してください。
+                    </div>
+                </div>
+                
+                <!-- 修正3 -->
+                <div class="modification-card">
+                    <h3>修正3：テキストサイズ調整（「毎週 海外の同世代と...」をデスクトップで小さく）</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>90-93行目付近</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;p class="text-xl sm:text-2xl md:text-4xl 
+         text-gray-700 leading-tight order-1"&gt;
+    &lt;span class="block whitespace-nowrap"&gt;
+        毎週 海外の同世代と1対1で話して
+    &lt;/span&gt;
+    &lt;span class="block"&gt;
+        友達になるオンライン留学
+    &lt;/span&gt;
+&lt;/p&gt;</code>
+                            </div>
+                            <p>デスクトップで <code>text-4xl</code>（とても大きい）</p>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;p class="text-xl sm:text-2xl md:text-3xl 
+         text-gray-700 leading-tight order-1"&gt;
+    &lt;span class="block whitespace-nowrap"&gt;
+        毎週 海外の同世代と1対1で話して
+    &lt;/span&gt;
+    &lt;span class="block"&gt;
+        友達になるオンライン留学
+    &lt;/span&gt;
+&lt;/p&gt;</code>
+                            </div>
+                            <p>デスクトップで <code>text-3xl</code>（やや大きい）</p>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li>変更箇所：<code>md:text-4xl</code> → <code>md:text-3xl</code></li>
+                        <li>モバイル（<code>text-xl</code>）とタブレット（<code>sm:text-2xl</code>）は変更なし</li>
+                        <li>デスクトップ版のみ、テキストサイズを1段階小さくしました</li>
+                    </ul>
+                    
+                    <div class="tip">
+                        Tailwind CSS の <code>md:</code> プレフィックスは「中サイズ以上の画面」を意味します。つまり、デスクトップやタブレット横向きの画面で適用されます。
+                    </div>
+                </div>
+                
+                <!-- 修正4 -->
+                <div class="modification-card">
+                    <h3>修正4：96% / 95% バッジを画像に置き換え＆レイアウト調整</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>112-129行目付近</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;!-- 円形のdivバッジ --&gt;
+&lt;div class="w-[clamp(...)] h-[clamp(...)] 
+     rounded-full bg-gradient-to-br ... 
+     border-2 border-[#f97316] ..."&gt;
+    &lt;div class="font-black text-[#f97316] ..."&gt;
+        96%
+    &lt;/div&gt;
+    &lt;div class="font-bold text-[#1e3a8a] ..."&gt;
+        顧客満足度
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- 95%も同様 --&gt;</code>
+                            </div>
+                            <p>CSS で円形バッジを作成</p>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;!-- 画像ファイルで表示 --&gt;
+&lt;div class="flex items-end gap-1"&gt;
+    &lt;img src="96_顧客満足度_s.jpg" 
+         alt="顧客満足度 96%" 
+         class="w-[clamp(120px,18vw,180px)] 
+                h-auto"&gt;
+    &lt;img src="95_学習意欲向上_s.jpg" 
+         alt="学習意欲向上 95%" 
+         class="w-[clamp(120px,18vw,180px)] 
+                h-auto"&gt;
+&lt;/div&gt;</code>
+                            </div>
+                            <p>画像ファイルで表示</p>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li>円形の <code>&lt;div&gt;</code> バッジを削除</li>
+                        <li>代わりに画像ファイルを挿入：<span class="highlight">96_顧客満足度_s.jpg</span>、<span class="highlight">95_学習意欲向上_s.jpg</span></li>
+                        <li>画像サイズ：幅 120px〜180px（レスポンシブ）、高さは自動調整</li>
+                        <li>2つの画像の間隔：<code>gap-1</code>（約4px）</li>
+                    </ul>
+                    
+                    <div class="tip">
+                        <code>clamp(120px, 18vw, 180px)</code> の意味：<br>
+                        • 最小値：120px<br>
+                        • 推奨値：画面幅の18%<br>
+                        • 最大値：180px<br>
+                        画面サイズに応じて自動的にサイズが変わります。
+                    </div>
+                </div>
+                
+                <!-- 修正5 -->
+                <div class="modification-card">
+                    <h3>修正5：ヒーロー画像の位置調整</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>83-85行目付近</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;div class="md:col-start-2 md:row-start-1 
+            md:row-span-2 self-start md:-mt-10"&gt;
+    &lt;img src="tden-hero.jpg" 
+         alt="..." 
+         class="w-full rounded-2xl"&gt;
+&lt;/div&gt;</code>
+                            </div>
+                            <p>デスクトップで <code>-mt-10</code>（上に40px移動）</p>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;div class="md:col-start-2 md:row-start-1 
+            md:row-span-2 self-start md:-mt-20"&gt;
+    &lt;img src="tden-hero.jpg" 
+         alt="..." 
+         class="w-full rounded-2xl"&gt;
+&lt;/div&gt;</code>
+                            </div>
+                            <p>デスクトップで <code>-mt-20</code>（上に80px移動）</p>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li>変更箇所：<code>md:-mt-10</code> → <code>md:-mt-20</code></li>
+                        <li>デスクトップ版で、画像をさらに上に移動（見出しとのバランス調整）</li>
+                        <li>モバイル版は変更なし</li>
+                    </ul>
+                    
+                    <div class="tip">
+                        <code>-mt-20</code> の意味：margin-top を -80px（負の値）に設定。つまり、要素を上に80px移動させます。Tailwind CSS では、1単位 = 4px です。
+                    </div>
+                </div>
+                
+                <!-- 修正6 -->
+                <div class="modification-card">
+                    <h3>修正6：インタビュー記事・表紙画像の左右入れ替え＆サイズ＆間隔調整</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>105-110行目付近</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;div class="flex flex-nowrap gap-1"&gt;
+    &lt;img src="newspaper.jpg" 
+         alt="月刊先端教育 記事" 
+         class="w-[clamp(90px,16vw,170px)] 
+                h-[clamp(72px,16vw,140px)] ..."&gt;
+    &lt;img src="book.jpg" 
+         alt="月刊先端教育 表紙" 
+         class="w-[clamp(90px,16vw,170px)] 
+                h-[clamp(72px,16vw,140px)] ..."&gt;
+&lt;/div&gt;</code>
+                            </div>
+                            <p>記事→表紙の順、サイズ小、間隔広い</p>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;div class="flex flex-nowrap gap-0.5"&gt;
+    &lt;img src="book.jpg" 
+         alt="月刊先端教育 表紙" 
+         class="w-[clamp(110px,18vw,200px)] 
+                h-[clamp(88px,18vw,160px)] ..."&gt;
+    &lt;img src="newspaper.jpg" 
+         alt="月刊先端教育 記事" 
+         class="w-[clamp(110px,18vw,200px)] 
+                h-[clamp(88px,18vw,160px)] ..."&gt;
+&lt;/div&gt;</code>
+                            </div>
+                            <p>表紙→記事の順、サイズ大、間隔狭い</p>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li><strong>順序入れ替え：</strong><code>newspaper.jpg</code>（記事）と <code>book.jpg</code>（表紙）を逆順に</li>
+                        <li><strong>サイズ拡大：</strong>幅 90px〜170px → 110px〜200px、高さも同様に拡大</li>
+                        <li><strong>間隔調整：</strong><code>gap-1</code>（4px）→ <code>gap-0.5</code>（2px）</li>
+                    </ul>
+                    
+                    <div class="warning">
+                        画像の順序を変更する際は、HTMLコードの順番を入れ替えるだけです。CSSで順序を変える必要はありません。
+                    </div>
+                </div>
+                
+                <!-- 修正7 -->
+                <div class="modification-card">
+                    <h3>修正7：代表メッセージ背景色変更（グレーからオレンジへ）</h3>
+                    
+                    <h4>📍 修正箇所</h4>
+                    <p><strong>行番号：</strong>1257行目付近</p>
+                    
+                    <div class="before-after">
+                        <div class="before">
+                            <h4>修正前</h4>
+                            <div class="code-block">
+<code>&lt;div class="max-w-4xl mx-auto 
+            bg-slate-50 
+            border border-slate-200 
+            rounded-2xl p-8 shadow-sm 
+            space-y-5"&gt;</code>
+                            </div>
+                            <p>背景：グレー（<code>bg-slate-50</code>）</p>
+                        </div>
+                        
+                        <div class="after">
+                            <h4>修正後</h4>
+                            <div class="code-block">
+<code>&lt;div class="max-w-4xl mx-auto 
+            bg-[#fed7aa] 
+            border border-orange-200 
+            rounded-2xl p-8 shadow-sm 
+            space-y-5"&gt;</code>
+                            </div>
+                            <p>背景：薄いオレンジ（<code>bg-[#fed7aa]</code>）</p>
+                        </div>
+                    </div>
+                    
+                    <h4>🔧 修正の詳細</h4>
+                    <ul>
+                        <li>背景色：<code>bg-slate-50</code> → <code>bg-[#fed7aa]</code>（カスタムカラー）</li>
+                        <li>ボーダー：<code>border-slate-200</code> → <code>border-orange-200</code></li>
+                    </ul>
+                    
+                    <div class="tip">
+                        Tailwind CSS では、<code>bg-[#カラーコード]</code> の形式でカスタムカラーを直接指定できます。ブランドカラーなど、独自の色を使いたい場合に便利です。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- セクション3：Tailwind CSS クイックリファレンス -->
+            <section class="section">
+                <h2>🎨 セクション3：Tailwind CSS クイックリファレンス</h2>
+                
+                <p>頻出のTailwind CSSクラスを理解しておくと、修正作業がスムーズになります。</p>
+                
+                <h3>📏 テキストサイズ（Font Size）</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>クラス</th>
+                            <th>サイズ</th>
+                            <th>用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>text-xs</code></td>
+                            <td>0.75rem (12px)</td>
+                            <td>注釈、キャプション</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-sm</code></td>
+                            <td>0.875rem (14px)</td>
+                            <td>小さい本文</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-base</code></td>
+                            <td>1rem (16px)</td>
+                            <td>標準の本文</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-lg</code></td>
+                            <td>1.125rem (18px)</td>
+                            <td>やや大きい本文</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-xl</code></td>
+                            <td>1.25rem (20px)</td>
+                            <td>大きい本文、小見出し</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-2xl</code></td>
+                            <td>1.5rem (24px)</td>
+                            <td>見出し</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-3xl</code></td>
+                            <td>1.875rem (30px)</td>
+                            <td>大きい見出し</td>
+                        </tr>
+                        <tr>
+                            <td><code>text-4xl</code></td>
+                            <td>2.25rem (36px)</td>
+                            <td>とても大きい見出し</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>🎨 背景色（Background Color）</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>クラス</th>
+                            <th>色</th>
+                            <th>用途例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>bg-white</code></td>
+                            <td>白</td>
+                            <td>背景</td>
+                        </tr>
+                        <tr>
+                            <td><code>bg-slate-50</code></td>
+                            <td>薄いグレー</td>
+                            <td>セクション背景</td>
+                        </tr>
+                        <tr>
+                            <td><code>bg-slate-200</code></td>
+                            <td>グレー</td>
+                            <td>ボーダー</td>
+                        </tr>
+                        <tr>
+                            <td><code>bg-orange-200</code></td>
+                            <td>薄いオレンジ</td>
+                            <td>アクセント</td>
+                        </tr>
+                        <tr>
+                            <td><code>bg-[#fed7aa]</code></td>
+                            <td>カスタムカラー</td>
+                            <td>独自の色指定</td>
+                        </tr>
+                        <tr>
+                            <td><code>bg-[#1e3a8a]</code></td>
+                            <td>ダークブルー</td>
+                            <td>ブランドカラー</td>
+                        </tr>
+                        <tr>
+                            <td><code>bg-[#f97316]</code></td>
+                            <td>オレンジ</td>
+                            <td>アクセントカラー</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>📐 マージン・パディング（Spacing）</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>クラス</th>
+                            <th>サイズ</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>mt-4</code></td>
+                            <td>1rem (16px)</td>
+                            <td>margin-top: 16px</td>
+                        </tr>
+                        <tr>
+                            <td><code>-mt-10</code></td>
+                            <td>-2.5rem (-40px)</td>
+                            <td>margin-top: -40px（負のマージン、上に移動）</td>
+                        </tr>
+                        <tr>
+                            <td><code>-mt-20</code></td>
+                            <td>-5rem (-80px)</td>
+                            <td>margin-top: -80px（大きく上に移動）</td>
+                        </tr>
+                        <tr>
+                            <td><code>p-8</code></td>
+                            <td>2rem (32px)</td>
+                            <td>padding: 32px（全方向）</td>
+                        </tr>
+                        <tr>
+                            <td><code>gap-1</code></td>
+                            <td>0.25rem (4px)</td>
+                            <td>flex要素間の間隔: 4px</td>
+                        </tr>
+                        <tr>
+                            <td><code>gap-0.5</code></td>
+                            <td>0.125rem (2px)</td>
+                            <td>flex要素間の間隔: 2px</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="tip">
+                    <strong>単位の基本：</strong> Tailwind CSS では、1単位 = 0.25rem = 4px です。<br>
+                    例：<code>mt-4</code> = 4 × 4px = 16px
+                </div>
+                
+                <h3>📱 レスポンシブデザイン（Responsive Prefixes）</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>プレフィックス</th>
+                            <th>画面幅</th>
+                            <th>用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>（なし）</td>
+                            <td>0px〜</td>
+                            <td>すべての画面サイズ（モバイル優先）</td>
+                        </tr>
+                        <tr>
+                            <td><code>sm:</code></td>
+                            <td>640px〜</td>
+                            <td>小さいタブレット、大きいスマホ</td>
+                        </tr>
+                        <tr>
+                            <td><code>md:</code></td>
+                            <td>768px〜</td>
+                            <td>タブレット、小さいデスクトップ</td>
+                        </tr>
+                        <tr>
+                            <td><code>lg:</code></td>
+                            <td>1024px〜</td>
+                            <td>デスクトップ</td>
+                        </tr>
+                        <tr>
+                            <td><code>xl:</code></td>
+                            <td>1280px〜</td>
+                            <td>大きいデスクトップ</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="tip">
+                    例：<code>text-xl md:text-3xl</code> の意味<br>
+                    • モバイル（0px〜）：<code>text-xl</code> を適用<br>
+                    • デスクトップ（768px〜）：<code>text-3xl</code> を適用
+                </div>
+                
+                <h3>🔄 clamp() 関数の使い方</h3>
+                <div class="code-block">
+<code>w-[clamp(最小値, 推奨値, 最大値)]
+
+例：w-[clamp(120px, 18vw, 180px)]
+→ 幅は、最小120px、画面幅の18%、最大180px の範囲で自動調整</code>
+                </div>
+                
+                <p><strong>clamp() のメリット：</strong></p>
+                <ul>
+                    <li>画面サイズに応じて滑らかにサイズが変化</li>
+                    <li>メディアクエリを書かなくてもレスポンシブに対応</li>
+                    <li>極端に小さくなったり大きくなったりするのを防ぐ</li>
+                </ul>
+            </section>
+            
+            <!-- セクション4：「自分で修正する」ハンズオン例 -->
+            <section class="section">
+                <h2>🛠️ セクション4：「自分で修正する」ハンズオン例</h2>
+                
+                <h3>例題：「毎週 海外の同世代と...」のテキストをさらに小さくしたい</h3>
+                
+                <p>現在、このテキストはデスクトップで <code>text-3xl</code>（30px）です。これを <code>text-2xl</code>（24px）にさらに小さくしてみましょう。</p>
+                
+                <ol class="step-list">
+                    <li>
+                        <strong>修正箇所を探す</strong><br>
+                        VSCodeなどのエディタで <code>index.html</code> を開き、「Ctrl+F」（Mac: Cmd+F）で検索窓を開きます。<br>
+                        検索ワード：<code>毎週 海外の同世代と</code><br>
+                        → 90行目付近にヒットします。
+                    </li>
+                    
+                    <li>
+                        <strong>該当のコードを確認</strong><br>
+                        <div class="code-block">
+<code>&lt;p class="text-xl sm:text-2xl md:text-3xl text-gray-700 leading-tight order-1"&gt;
+    &lt;span class="block whitespace-nowrap"&gt;毎週 海外の同世代と1対1で話して&lt;/span&gt;
+    &lt;span class="block"&gt;友達になるオンライン留学&lt;/span&gt;
+&lt;/p&gt;</code>
+                        </div>
+                        この中の <code>md:text-3xl</code> を変更します。
+                    </li>
+                    
+                    <li>
+                        <strong>クラスを変更</strong><br>
+                        <code>md:text-3xl</code> → <code>md:text-2xl</code> に書き換えます。<br>
+                        <div class="code-block">
+<code>&lt;p class="text-xl sm:text-2xl <span class="highlight">md:text-2xl</span> text-gray-700 leading-tight order-1"&gt;</code>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <strong>保存する</strong><br>
+                        「Ctrl+S」（Mac: Cmd+S）でファイルを保存します。
+                    </li>
+                    
+                    <li>
+                        <strong>ブラウザで確認</strong><br>
+                        ブラウザで <code>index.html</code> を開き、デスクトップ表示で確認します。<br>
+                        テキストが小さくなっていれば成功です！
+                    </li>
+                </ol>
+                
+                <div class="tip">
+                    <strong>確認のポイント：</strong><br>
+                    • モバイル表示（画面幅 < 768px）では変化なし（<code>text-xl</code> のまま）<br>
+                    • デスクトップ表示（画面幅 ≥ 768px）で小さくなる（<code>text-2xl</code> に変更）
+                </div>
+                
+                <h3>練習問題：背景色を別の色に変えてみよう</h3>
+                
+                <p>代表メッセージの背景色（現在：<code>bg-[#fed7aa]</code> = 薄いオレンジ）を別の色に変えてみましょう。</p>
+                
+                <ol class="step-list">
+                    <li>
+                        <strong>カラーコードを決める</strong><br>
+                        変更したい色のカラーコード（例：<code>#e0f2fe</code> = 薄い青）を用意します。<br>
+                        参考サイト：<a href="https://colorhunt.co/" target="_blank">Color Hunt</a>、<a href="https://coolors.co/" target="_blank">Coolors</a>
+                    </li>
+                    
+                    <li>
+                        <strong>修正箇所を探す</strong><br>
+                        検索ワード：<code>保護者の皆様へ</code> または <code>bg-[#fed7aa]</code><br>
+                        → 1257行目付近にヒットします。
+                    </li>
+                    
+                    <li>
+                        <strong>背景色を変更</strong><br>
+                        <code>bg-[#fed7aa]</code> → <code>bg-[#e0f2fe]</code> に書き換えます。<br>
+                        ボーダーも合わせて変更：<code>border-orange-200</code> → <code>border-blue-200</code>
+                    </li>
+                    
+                    <li>
+                        <strong>保存して確認</strong><br>
+                        ブラウザをリロード（F5）して、背景色が青系に変わっているか確認します。
+                    </li>
+                </ol>
+                
+                <div class="warning">
+                    <strong>注意：</strong> カラーコードは必ず <code>#</code> から始まる6桁の16進数で指定してください。例：<code>#fed7aa</code>
+                </div>
+            </section>
+            
+            <!-- セクション5：GitHub / Cloudflare Pages 更新手順 -->
+            <section class="section">
+                <h2>🚀 セクション5：GitHub / Cloudflare Pages 更新手順</h2>
+                
+                <p>ローカルで修正したHTMLファイルを、GitHubにアップロードし、Cloudflare Pagesで公開する手順を解説します。</p>
+                
+                <h3>前提条件</h3>
+                <ul>
+                    <li>Gitがインストールされていること</li>
+                    <li>GitHubアカウントを持っていること</li>
+                    <li>Cloudflare Pagesのプロジェクトが設定済みであること</li>
+                </ul>
+                
+                <h3>Step 1：ローカルでHTMLを修正</h3>
+                <ol class="step-list">
+                    <li>
+                        <strong>HTMLファイルを編集</strong><br>
+                        VSCodeなどで <code>index.html</code> を開き、必要な修正を行います。
+                    </li>
+                    
+                    <li>
+                        <strong>ブラウザで確認</strong><br>
+                        <code>index.html</code> をブラウザで開き、修正内容が正しく反映されているか確認します。
+                    </li>
+                </ol>
+                
+                <h3>Step 2：GitHubにプッシュ</h3>
+                <ol class="step-list">
+                    <li>
+                        <strong>ターミナル（コマンドプロンプト）を開く</strong><br>
+                        プロジェクトフォルダに移動します。<br>
+                        <div class="code-block">
+<code>cd /path/to/your/project</code>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <strong>変更をステージング</strong><br>
+                        <div class="code-block">
+<code>git add index.html</code>
+                        </div>
+                        複数のファイルを変更した場合：<br>
+                        <div class="code-block">
+<code>git add .</code>
+                        </div>
+                    </li>
+                    
+                    <li>
+                        <strong>コミットメッセージを追加</strong><br>
+                        <div class="code-block">
+<code>git commit -m "ヒーロー画像の位置調整とバッジを画像に変更"</code>
+                        </div>
+                        コミットメッセージには、変更内容を簡潔に記述します。
+                    </li>
+                    
+                    <li>
+                        <strong>GitHubにプッシュ</strong><br>
+                        <div class="code-block">
+<code>git push origin main</code>
+                        </div>
+                        （ブランチ名が <code>master</code> の場合は <code>git push origin master</code>）
+                    </li>
+                </ol>
+                
+                <div class="tip">
+                    <strong>Gitコマンドの意味：</strong><br>
+                    • <code>git add</code>：変更をステージング（次のコミットに含める）<br>
+                    • <code>git commit</code>：変更を記録する<br>
+                    • <code>git push</code>：ローカルの変更をリモート（GitHub）に送信
+                </div>
+                
+                <h3>Step 3：Cloudflare Pagesの更新確認</h3>
+                <ol class="step-list">
+                    <li>
+                        <strong>Cloudflare Pagesのダッシュボードにアクセス</strong><br>
+                        <a href="https://dash.cloudflare.com/" target="_blank">https://dash.cloudflare.com/</a> にログインします。
+                    </li>
+                    
+                    <li>
+                        <strong>プロジェクトを確認</strong><br>
+                        「Pages」セクションから、該当プロジェクトを選択します。
+                    </li>
+                    
+                    <li>
+                        <strong>デプロイ状況を確認</strong><br>
+                        GitHubへのプッシュが検出されると、自動的にデプロイが開始されます。<br>
+                        ステータスが「Success」になるまで待ちます（通常1〜3分）。
+                    </li>
+                    
+                    <li>
+                        <strong>公開サイトを確認</strong><br>
+                        デプロイが完了したら、公開URLにアクセスして変更が反映されているか確認します。
+                    </li>
+                </ol>
+                
+                <div class="warning">
+                    <strong>デプロイが失敗した場合：</strong><br>
+                    • エラーメッセージを確認<br>
+                    • HTMLの構文エラーがないかチェック<br>
+                    • 画像ファイルが正しくアップロードされているか確認<br>
+                    • GitHubリポジトリの設定を確認
+                </div>
+                
+                <h3>トラブルシューティング</h3>
+                
+                <h4>画像が表示されない</h4>
+                <ul>
+                    <li>画像ファイルがHTMLと同じディレクトリに配置されているか確認</li>
+                    <li>ファイル名のスペルミス（特に日本語ファイル名）に注意</li>
+                    <li>GitHubに画像ファイルがプッシュされているか確認（<code>git add 画像ファイル名</code>）</li>
+                </ul>
+                
+                <h4>フォントが変わらない</h4>
+                <ul>
+                    <li>ブラウザのキャッシュをクリア（Ctrl+Shift+R / Cmd+Shift+R）</li>
+                    <li>Google Fonts のリンクが正しいか確認</li>
+                    <li>CSS の <code>font-family</code> も変更したか確認</li>
+                </ul>
+                
+                <h4>レイアウトが崩れる</h4>
+                <ul>
+                    <li>Tailwind CSSのクラス名のスペルミスがないか確認</li>
+                    <li>閉じタグが抜けていないか確認（<code>&lt;/div&gt;</code>、<code>&lt;/p&gt;</code> など）</li>
+                    <li>修正前のバックアップファイルと比較して、誤って削除した箇所がないか確認</li>
+                </ul>
+            </section>
+            
+            <!-- 付録 -->
+            <section class="section">
+                <h2>📌 付録：便利なツール・リソース</h2>
+                
+                <h3>🛠️ 開発ツール</h3>
+                <ul>
+                    <li><strong>Visual Studio Code：</strong> <a href="https://code.visualstudio.com/" target="_blank">https://code.visualstudio.com/</a> - 高機能なコードエディタ</li>
+                    <li><strong>Git：</strong> <a href="https://git-scm.com/" target="_blank">https://git-scm.com/</a> - バージョン管理ツール</li>
+                    <li><strong>GitHub Desktop：</strong> <a href="https://desktop.github.com/" target="_blank">https://desktop.github.com/</a> - Gitの操作をGUIで行える</li>
+                </ul>
+                
+                <h3>🎨 デザイン・カラー</h3>
+                <ul>
+                    <li><strong>Color Hunt：</strong> <a href="https://colorhunt.co/" target="_blank">https://colorhunt.co/</a> - カラーパレット集</li>
+                    <li><strong>Coolors：</strong> <a href="https://coolors.co/" target="_blank">https://coolors.co/</a> - カラー生成ツール</li>
+                    <li><strong>Tailwind CSS 公式ドキュメント：</strong> <a href="https://tailwindcss.com/docs" target="_blank">https://tailwindcss.com/docs</a></li>
+                </ul>
+                
+                <h3>📚 学習リソース</h3>
+                <ul>
+                    <li><strong>MDN Web Docs：</strong> <a href="https://developer.mozilla.org/" target="_blank">https://developer.mozilla.org/</a> - HTML/CSS/JavaScriptの公式リファレンス</li>
+                    <li><strong>Tailwind Play：</strong> <a href="https://play.tailwindcss.com/" target="_blank">https://play.tailwindcss.com/</a> - Tailwind CSSをブラウザで試せる</li>
+                </ul>
+                
+                <h3>🔍 便利な検索キーワード</h3>
+                <ul>
+                    <li>「Tailwind CSS 〇〇（やりたいこと）」で検索すると、適切なクラス名が見つかります</li>
+                    <li>「HTML 〇〇 レスポンシブ」で検索すると、モバイル対応のヒントが見つかります</li>
+                </ul>
+            </section>
+            
+            <!-- まとめ -->
+            <section class="section">
+                <h2>✅ まとめ</h2>
+                
+                <p>このガイドでは、TOMODACHI留学のランディングページに対して実施した7つの修正内容を詳しく解説しました。</p>
+                
+                <h3>7つの修正のおさらい</h3>
+                <ol class="step-list">
+                    <li><strong>ヘッダーのロゴを画像に変更</strong> - ブランディングの強化</li>
+                    <li><strong>フォントをRounded M Plus 1cに変更</strong> - 柔らかい印象に</li>
+                    <li><strong>テキストサイズを調整</strong> - デスクトップでの見やすさ向上</li>
+                    <li><strong>96%/95%バッジを画像に置き換え</strong> - より目立つデザインに</li>
+                    <li><strong>ヒーロー画像の位置を調整</strong> - レイアウトのバランス改善</li>
+                    <li><strong>インタビュー画像の順序・サイズ変更</strong> - 視認性の向上</li>
+                    <li><strong>代表メッセージの背景色変更</strong> - ブランドカラーとの統一</li>
+                </ol>
+                
+                <p><strong>これらの修正により、ランディングページがより魅力的で、ユーザーフレンドリーなデザインになりました。</strong></p>
+                
+                <div class="tip">
+                    このガイドを参考に、さらなるカスタマイズに挑戦してみてください！<br>
+                    わからないことがあれば、Tailwind CSSの公式ドキュメントや、MDN Web Docsを活用しましょう。
+                </div>
+                
+                <p style="text-align: center; margin-top: 40px; font-size: 1.2em; color: #1e3a8a;">
+                    <strong>Happy Coding! 🚀</strong>
+                </p>
+            </section>
+        </div>
+        
+        <footer>
+            <p>&copy; 2026 TOMODACHI留学 - HTMLカスタマイズガイド</p>
+            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">このドキュメントは、初心者でも安心してHTMLを修正できるように設計されています。</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOMODACHI留学 - 中学生から始める海外同世代との国際交流</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rounded+M+Plus+1c:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rounded M Plus 1c', sans-serif;
+        }
+        /* モバイルでの全体スケール調整（90%縮小） */
+        @media (max-width: 767px) {
+            html {
+                font-size: 90%;
+            }
+        }
+        /* 横スクロールのスタイル */
+        .scroll-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+        }
+        .scroll-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+        }
+        .scroll-item {
+            scroll-snap-align: center;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <img src="TOMODACHI留学ロコ__s.jpg" alt="TOMODACHI留学ロゴ" class="h-12">
+            <div class="hidden md:flex items-center gap-4 lg:gap-8 text-sm lg:text-base">
+                <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">講師紹介</a>
+                <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">料金</a>
+                <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">保護者の皆様へ</a>
+                <a href="#contact" class="bg-[#f97316] text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg lg:text-xl">無料体験に申し込む</a>
+            </div>
+            <div class="md:hidden flex items-center gap-3">
+                <a href="#contact" class="bg-[#f97316] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg">
+                    無料体験
+                </a>
+                <button id="mobile-menu-btn" class="text-[#1e3a8a]" aria-label="Menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- アクセントライン -->
+        <div class="h-1 w-full bg-gradient-to-r from-[#1e3a8a] via-sky-400 to-[#f97316]"></div>
+        
+        <!-- モバイルメニュー -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 py-4 px-4 flex flex-col gap-4">
+            <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">講師紹介</a>
+            <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">料金</a>
+            <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">保護者の皆様へ</a>
+            <a href="#contact" class="bg-[#f97316] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-center text-lg">無料体験に申し込む</a>
+        </div>
+    </header>
+
+    <section class="relative bg-white py-8 md:py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 items-start gap-8 md:gap-x-12 md:gap-y-4">
+                <!-- 見出し（常に2行） -->
+                <div class="text-left">
+                    <h1 class="font-black mb-6 leading-tight text-[#1e3a8a] text-[clamp(1.75rem,7vw,3.75rem)] leading-[1.12] break-keep">
+                        <span class="block whitespace-nowrap">先生じゃなく<span class="text-[#f97316]">友達</span>。</span>
+                        <span class="block">だから話せる</span>
+                    </h1>
+                </div>
+
+                <!-- 画像（モバイルでは見出し直下、PCでは右固定） -->
+                <div class="md:col-start-2 md:row-start-1 md:row-span-2 self-start md:-mt-20">
+                    <img src="tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" class="w-full rounded-2xl">
+                </div>
+
+                <!-- 本文（モバイル: 説明→CTA→掲載/数字、PC: 説明→掲載/数字→CTA） -->
+                <div class="text-left">
+                    <div class="flex flex-col gap-6">
+                        <p class="text-xl sm:text-2xl md:text-3xl text-gray-700 leading-tight order-1">
+                            <span class="block whitespace-nowrap">毎週 海外の同世代と1対1で話して</span>
+                            <span class="block">友達になるオンライン留学</span>
+                        </p>
+
+                        <a href="#contact" class="inline-flex w-fit self-start bg-[#f97316] text-white px-8 py-4 md:px-10 md:py-5 rounded-lg text-2xl md:text-3xl font-bold hover:bg-[#ea580c] transition shadow-xl transform hover:scale-105 order-2 md:order-3">
+                            今すぐ無料体験を予約
+                        </a>
+
+                        <!-- 掲載 + 数値（常に1行・4つ横並び） -->
+                        <div class="order-3 md:order-2">
+                            <p class="text-sm font-bold text-gray-700 mb-2 leading-snug text-left w-full">
+                                「月刊先端教育」 2026年3月号に掲載
+                            </p>
+
+                            <div class="flex items-end flex-wrap gap-1 sm:gap-2">
+                                <!-- 記事/表紙（順序入れ替え：表紙→記事、サイズ拡大） -->
+                                <div class="flex flex-nowrap gap-0.5">
+                                    <img src="book.jpg" alt="月刊先端教育 表紙" class="w-[clamp(110px,18vw,200px)] h-[clamp(88px,18vw,160px)] md:h-[clamp(70px,12vw,150px)] object-contain">
+                                    <img src="newspaper.jpg" alt="月刊先端教育 記事" class="w-[clamp(110px,18vw,200px)] h-[clamp(88px,18vw,160px)] md:h-[clamp(70px,12vw,150px)] object-contain">
+                                </div>
+
+                                <!-- 96% + 95%（画像で表示） -->
+                                <div class="flex flex-col items-center sm:items-start">
+                                    <div class="flex items-end gap-1">
+                                        <img src="96_顧客満足度_s.jpg" alt="顧客満足度 96%" class="w-[clamp(120px,18vw,180px)] h-auto">
+                                        <img src="95_学習意欲向上_s.jpg" alt="学習意欲向上 95%" class="w-[clamp(120px,18vw,180px)] h-auto">
+                                    </div>
+
+                                    <p class="text-[10px] text-gray-400 mt-1 text-center sm:text-left tracking-tight">
+                                        *自社アンケート 2024-2025年
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-6 md:py-10 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">
+                <span class="text-4xl">📢</span> お子様の英語学習、こんなお悩みありませんか？
+            </h2>
+            <div class="mx-auto mb-8 md:mb-12 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            
+            <div class="max-w-5xl mx-auto mb-10">
+                <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+                    <div class="bg-white p-4 rounded-2xl shadow-lg">
+                        <img src="悩み1.jpg" alt="お子様の英語学習の悩み① 講師との会話は盛り上がらない / 英語を学ぶ意味が見えない" class="w-full rounded-lg">
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-lg">
+                        <img src="悩み2.jpg" alt="お子様の英語学習の悩み② 海外留学のハードルは金銭的にも時間的に高い" class="w-full rounded-lg">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mb-10 md:mb-12">
+                <div class="inline-block animate-bounce">
+                    <svg class="w-16 h-16 text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    <p class="text-2xl font-bold text-[#f97316] mt-2">TOMODACHI留学で解決！</p>
+                </div>
+            </div>
+
+            <div class="max-w-5xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-gradient-to-br from-[#1e3a8a] to-[#1e40af] p-4 rounded-2xl shadow-xl border-4 border-white">
+                         <img src="解決1.jpg" alt="TOMODACHI留学で解決①" class="w-full rounded-lg">
+                    </div>
+                    <div class="bg-gradient-to-br from-[#f97316] to-[#ea580c] p-4 rounded-2xl shadow-xl border-4 border-white">
+                         <img src="解決2.jpg" alt="TOMODACHI留学で解決②" class="w-full rounded-lg">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="student-profiles" class="py-6 md:py-10 bg-gradient-to-b from-sky-50 to-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">参加生徒のプロフィール</h2>
+            <div class="mx-auto mb-8 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+
+            <div class="grid md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto mb-8">
+                <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#1e3a8a]">
+                    <div class="text-2xl font-bold text-[#1e3a8a] mb-2">英検</div>
+                    <div class="text-gray-800 font-bold">準2級 35% / 2級 50% / 準1級 15%</div>
+                    <div class="text-xs text-gray-500 mt-1">（スタンダードコース）</div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#f97316]">
+                    <div class="text-2xl font-bold text-[#1e3a8a] mb-2">性別</div>
+                    <div class="text-gray-800 font-bold">男 30% / 女 70%</div>
+                </div>
+            </div>
+
+            <div class="max-w-5xl mx-auto bg-white rounded-2xl p-5 md:p-6 shadow-lg border border-gray-200 border-t-4 border-t-[#1e3a8a]/30">
+                <div class="flex items-center justify-between gap-4 mb-4">
+                    <div class="text-[#1e3a8a] text-2xl leading-tight">
+                        <span class="font-bold">出身校</span><span class="font-normal">（一部）</span>
+                        <div class="text-sm font-normal text-gray-600 mt-1">以下に一部の学校を掲載</div>
+                    </div>
+                    <div class="text-xs text-gray-500 whitespace-nowrap">タップで開く</div>
+                </div>
+
+                <div class="space-y-3">
+                    <details class="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                        <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-[#1e3a8a] text-2xl">
+                            <span>関東以北</span>
+                            <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                        </summary>
+                        <div class="px-5 pb-5 pt-0">
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                北海道（大空）/ 青森（弘前南）, 宮城（仙台育英/仙台三桜）, 山形（庄内総合）, 福島（福島成蹊）, 茨城（江戸川学園取手/水城/茗溪学園）, 栃木（宇都宮短大附）, 埼玉（開智未来/開智中/浦和ルーテル学院中/原山中）, 東京（女子学院/駒場東邦/立教女学院/東洋英和女学院/都立小平/日本大学第一/法政第二/川村/和光中/香蘭女学校/東京電機大学高校/足立学園中/実践学園/京華/和光/聖パウロ学園/田園調布雙葉中/東京都市大学附属中/目黒西中/町田第三中/八王子市立打越中/町田市立大倉小）, 神奈川（聖光学院/慶應義塾湘南藤沢/フェリス女学院/湘南白百合学園/洗足学園/中央大学附属横浜/法政大学第二/海老名/県立有馬/横市立東/横浜隼人/県立白山/川崎市立井田中）
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                        <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-[#1e3a8a] text-2xl">
+                            <span>中部以西</span>
+                            <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                        </summary>
+                        <div class="px-5 pb-5 pt-0">
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                新潟（新潟東）, 石川（金沢大学附属/金沢市立長町中）, 福井（鯖江中）, 山梨（日本航空）, 静岡（桐陽/浜松市立中部中/静岡北/静岡英和女学院）, 愛知（名古屋/春日井/名古屋大学教育学部附属/名古屋経済大学附属市邨/阿久比中/知多中）, 大阪（高槻/清風南海/関西インターナショナル）, 兵庫（須磨東/松蔭/葺合）, 奈良（県立国際学校中等部/奈良学園中）, 島根（県立隠岐島前）, 岡山（県立倉敷天城）, 広島（近畿大学付属広島東広島校/広島大学附属中/ノートルダム清心）, 山口（野田学園）, 高知（高知国際）, 熊本（尚絅/熊本高専）, 宮崎（富島高）, 沖縄（沖縄/琉大附属中/N高等学校/KBC高等学院）
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                        <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-[#1e3a8a] text-2xl">
+                            <span>海外</span>
+                            <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                        </summary>
+                        <div class="px-5 pb-5 pt-0 space-y-3">
+                            <div class="text-sm text-gray-700 leading-relaxed">
+                                <div class="font-bold text-gray-900">日本生</div>
+                                <p class="mt-1">カナダ（Abbotsford Senior Secondary School）, オーストラリア（Hills International College）, 香港（香港日本人学校）</p>
+                            </div>
+                            <div class="text-sm text-gray-700 leading-relaxed">
+                                <div class="font-bold text-gray-900">海外生</div>
+                                <p class="mt-1">
+                                    インドネシア：ジャカルタ首都圏（SMA・SMP Labschool Cirendeu / SMA・SMP Labschool Jakarta / SMP Kharisma Bangsa / SMA Kartini 1 / MA Pembangunan Jakarta / SMA Dwiwarna / SMA Al-Hasra / SMAN 62 Jakarta / Madania School / SMA Korpri Bekasi / Dinamika Umat in Bogor / SMAN 5 Tumbun Selatan / SMA Islam Sinar Cendekia / SMA Budi Cendekia Islamic School / SMPN 8 Jakarta）, 他エリア（SMAN 2 Yogyakarta / SMA Trimrti / MTsN 1 Pandeglang）<br>
+                                    フィリピン：マニラ近郊（Batangas State University - ARASOF Nasugbu Campus）
+                                </p>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="py-6 md:py-10 bg-[#1e3a8a] text-white overflow-hidden">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4">参加者の声</h2>
+            <div class="mx-auto mb-6 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#f97316]"></div>
+            <p class="text-center text-blue-200 mb-6 md:mb-10">日本生徒の声のあとに、海外生徒の声が続きます</p>
+            
+            <div class="scroll-container flex gap-4 md:gap-6 pb-6 md:pb-8 px-3 sm:px-4">
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1女子（奈良県立国際）</div>
+                            <div class="text-xs text-gray-500">英検準2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        他国の同世代の友達が出来たことで自分に自信がつき､勉強のモチベーションにもなりました。日本とインドネシアの文化の違いも感じられて毎回楽しく参加できています。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👦</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">中2男子（開智未来）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        日本人も海外生もみんな年が近いのでお互いの学校生活について話すことができたり、みんな優しいので、聞き取れなかったり、うまく言えなくても、一生懸命フォローしてくれるので、とても英語を話しやすい環境だと思います。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👦</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">中1男子（開智未来）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        インドネシアの学生の方はとても英語力が高いので、どのようにしたらわかりやすく伝えられるかを考えて話してくれるのがとても嬉しかったです。また、とても頭の回転が早いと思いました。僕は質問をされた時にすぐに応えられるように努力していきたいです。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">中3女子（香蘭女学校）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        インドネシアの子たちはすごい英語話すのが上手いし、聞こうとしてくれてすごくありがたい。同世代でも、取り組んでること、興味のあること、楽しいことが全然違うけど、似ているところがあるのが面白いです。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👦</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1男子（江戸川学園取手）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        インドネシアの学生たちは、異文化や日本に対して理解を示す姿勢がしっかりしていると感じました。基礎の英語力はもちろんですが、そういった面でもとても勉強になります。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">中3女子（和光中）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        うまく話せないことがあっても相手の子がいっぱい教えてくれてとても楽しくレッスンを受けることが出来た。外国の同世代の子たちがどんな生活を送ってるのか知ることができてとてもよかった。もっとたくさんのことを知っていきたい。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1女子（都立小平）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        同世代だから話が通じやすく色々な話題で盛り上がることができて楽しかったです。また、言いたいことを英語にできなかったときに講師の方が途中で教えてくれたり、海外生が言いたいことを読み取ってくれて会話が途切れることがなかったです。そのため、言えないから話したくないという思考が生じずに積極的に話すことができました。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1女子（宇都宮短大附）</div>
+                            <div class="text-xs text-gray-500">英検準2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        今までの人生でインドネシアの方と関わることがなかったけど、プログラムを通して友達ができて嬉しかった。また、最初は聞き取ることも話すことも困難だったけど、しばらく経つと相手が話していることを理解できて、自分の思いも伝えれるようになり、成長が感じられてとても良かった。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1女子（湘南白百合学園）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        同年代で、更に英語が母国語ではないのにペラペラ話されていてとても刺激になった。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1女子（名古屋大学教育学部附属）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        同世代の子たちだからこそ、学校の様子や定期テスト、語学学習、大学の進路などの共通話題についても話すことができ、国を超えた将来の考えを知ることができて楽しかった。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👦</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">中3男子（足立学園中）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        毎回新たな発見がたくさんあり、とても楽しいです。また、インドネシアの友達の中には、日本の大学に行きたいと話している子もいて、自分の進路の話など、英語や異文化交流以外の面でもすごく刺激を受けているなと感じています。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高2女子（高槻）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        海外の学生の会話は初めてで不安でしたが、インドネシアの学生達はとてもフレンドリーで、趣味も共通しておりとても楽しかったです。同じ第二言語なのに英語が流暢で、私ももっと頑張って英語をスラスラ話せるようになりたい！と強く思いました。また、完璧な文にこだわらず伝えることを意識すると、相手が言いたいことを汲み取ってくれたので、完璧でなくても、伝えようとする気持ちが大切だと気付きました。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1女子（静岡英和）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        グローバルな交流は、自分のコミュニケーション能力を向上させることに役立つし、国境を超えた異文化も知ることができました。自分自身の語学能力を伸ばすだけでなく、沢山の新しい事を学ぶことができる英語レッスンで、英語を勉強したい人達にとって素晴らしい内容だと思います。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高2女子（高知国際）</div>
+                            <div class="text-xs text-gray-500">英検準1級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        インドネシアのことを色々知ることができて視野が広がったし、いつか行ってみたいと思うくらいインドネシアに興味を持ちました！アクセントが普段聞いている英語と違い聞き取れないこともあるので、もっと会話がはずむようにリスニング力を鍛えたいです。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高2女子（実践学園）</div>
+                            <div class="text-xs text-gray-500">英検準2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        インドネシアの子は沢山お話してくれますが、分かりやすいように簡単な単語で教えてくれたり、ゆっくり言ってくれたり優しい子が多いと感じます。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高2女子（日大第一）</div>
+                            <div class="text-xs text-gray-500">英検2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        英語で会話が続くかどうかが心配だったけれど、みんなとても親切で会話を繋げようとしてくれたのでとても楽しい時間を過ごせています。海外の同世代に友達ができることがこんなに嬉しいことだとは思いませんでした。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👩</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高3女子（近大附広島）</div>
+                            <div class="text-xs text-gray-500">英検準1級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        国籍の異なる方と話すことの楽しさ、相互的な文化理解の重要性を再確認することができ、受験勉強やこれからの学びに対するモチベーションが向上したこともとても良かったと思っています。この経験が日本と世界をつなぎたいという私の夢の第一歩となったように感じます。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">👦</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">高1男子（法政第二）</div>
+                            <div class="text-xs text-gray-500">英検準2級</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        海外の同世代と英語で話すのは初めてだったのでとても良い経験になったと思う。インドネシアの人達は日本のアニメについて日本人である自分よりもより深く、詳しく知っていた事に非常に驚いた。またJ-pop、K-popを好きな子が多く日本人の同世代と同じように会話が弾んだのでよかった。
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
+                    <div class="text-center">
+                        <div class="text-2xl font-black mb-2">海外生徒の声</div>
+                        <div class="text-sm text-blue-100">Overseas student voices</div>
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas JHS 1 (SMP Kharisma Bangsa School)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        it's quite fun! and very interesting, i love talking with friend from another country. is make my English better, and i have another country friends.
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas JHS 2 (SMA Kharisma Bangsa School)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        So far its been going pretty well. I enjoy speaking with people from abroad because it allows me to learn more about their country's culture over there. I also absolutely love how we are given one-on-one sessions, improving our listening as well as speaking skills. This one-on-one session that Ive had with overseas peers helped me with real life situations of speaking, as well. Not just online.
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 1 (SMA Kartini 1 Jakarta)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        Since English is my second language, sometimes it is very difficult to communicate fluently, but because I am used to talking to my overseas peers, I am used to speaking more fluently and spontaneously because we study together and i think studying together is the best way to learn English. Everyone is also so cool and nice so i love my time that I spent for getting to know all of them and their country.
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas JHS 1 (SMA Kharisma Bangsa School)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        I think English lessons with my Japanese friends and teachers are really fun and interesting. Sometimes it’s a bit hard to understand the situation because of the language barrier, but I’m learning a lot. I also get to know more about their culture and stuff, which makes the lessons even more exciting. It’s a good way to practice English and make new friends at the same time
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 1 (SMA Dwiwarna)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        They were very fun and thoughtful. Thanks to this conference we get to become closer and know each other even though we are separated by the sea. I'm really happy to have lessons together.
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 2 (SMA Al Hasra Depok)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        So it was quite a fun one especially when learning a new language with other who also not good at it. We learn how to communicate proper way and can use it on daily lives
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 1 (SMA Labschool Cirendeu)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        It feels so much fun to learn about different cultures of my friends which broadens my knowledge. It's amazing how one language, English, can unite us and make us understand each other or feel related to each other, i feel so grateful to be able to be present with them in the same class, such a valuable experience!
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas JHS 2 (SMP Labschool Jakarta)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        It's really fun and i get to meet new friends that has different cultures, hobbies and intrests! They are also very respectfull and fun to talk with especially when we get to know eachother more! Miss nerissa is also very sweer and nice and i really do enjoy the class.
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas JHS 3 (MA Pembangunan Jakarta)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        Its really fun to learn English with oversea peers because we are challenged to use our English skill in real time and also it helped me got some foreign friends, Although sometimes kinda hard to understand some accent, but Im really happy to have lessons together.
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 2 (SMAN 62 Jakarta)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        It might be hard at first since we had a different accent, time goes by, we understand each other more, sharing about our country knowledge, tradition and many more, and also it increases my English speaking skill, confident and also make a new friends!
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 2 (SMA Dwiwarna)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        I am very pleased with how everything turned out. It really was an interesting experience and have changed my perspective of Japanese students for the better. I look forward to another experience such as this
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas JHS 3 (MA Pembangunan Jakarta)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        It's really improved my English so much. I don't get the same chance like I talk with the people in my country, so it's a big chance that I really enjoy. And the other thing is I could make friends from other country, I'm really happy!
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 3 (MA Pembangunan Jakarta)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        English lessons with peers from other countries is really fun and helpful. I get to practice speaking, learn new words, and understand different ways people use English. It improve my language skills and make new friends from around the world!
+                    </div>
+                </div>
+
+                <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌍</div>
+                        <div>
+                            <div class="font-bold text-[#1e3a8a]">Overseas HS 2 (SMA Labschool Cirendeu)</div>
+                            <div class="text-xs text-gray-500">Student voice</div>
+                        </div>
+                    </div>
+                    <div class="relative bg-blue-50 p-4 rounded-xl text-sm leading-relaxed h-40 overflow-y-auto">
+                        <span class="absolute -top-3 left-4 text-3xl text-blue-200">"</span>
+                        I am loving every seconds of the lessons!, maybe it is a bit hard in the beginning because of the lack of skills we have to understand each other, but it improves as the times goes by. I think the part when we got lost in translation is the best part! sounds confusing, but I love the part when we both tried our best to make each of us gets the same point we want to share. We try to make gestures with our hands, noises, or anything and surely that is the funniest part of the class I won't forget.
+                    </div>
+                </div>
+            </div>
+             <p class="text-center text-blue-300 text-sm mt-4">← スクロールして詳しく見る →</p>
+        </div>
+    </section>
+
+    <section id="instructors" class="py-6 md:py-10 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">講師紹介</h2>
+            <div class="mx-auto mb-6 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            <p class="text-center text-gray-600 mb-8 md:mb-10 text-lg">信頼できるプロフェッショナル</p>
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-t-[#1e3a8a]">
+                    <img src="Marina.jpg" alt="Marina" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-[#1e3a8a]">Marina</h3>
+                        <p class="text-sm text-[#f97316] font-semibold mb-3">フィリピン出身</p>
+                        <p class="text-gray-700 leading-relaxed">
+                            オンライン異文化交流のメインスピーカー。英会話講師として豊富な経験を持ち、生徒にとってわかりやすく楽しい環境を作ります。
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-t-[#f97316]">
+                    <img src="Nerissa 3-s.jpg" alt="Nerissa" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-[#1e3a8a]">Nerissa</h3>
+                        <p class="text-sm text-[#f97316] font-semibold mb-3">IBDP現役講師</p>
+                        <p class="text-gray-700 leading-relaxed">
+                            IBDP（国際バカロレア）現役講師。多様なバックグラウンドを活かし、フレンドリーな雰囲気の中で指導します。
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-t-[#1e3a8a]">
+                    <img src="Jomer_s.jpg" alt="Jomer" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2 text-[#1e3a8a]">Jomer</h3>
+                        <p class="text-sm text-[#f97316] font-semibold mb-3">元サイエンス教師</p>
+                        <p class="text-gray-700 leading-relaxed">
+                            元サイエンス教師。日本の教育委員会やインターナショナルスクールでの採用実績もある実力派講師です。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="py-6 md:py-10 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">料金プラン</h2>
+            <div class="mx-auto mb-6 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            <p class="text-center text-gray-600 mb-8 md:mb-10 text-lg">お子様のレベルに合わせて選べる2つのコース</p>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-10">
+                <div class="bg-white border-2 border-[#1e3a8a] border-t-4 border-t-[#1e3a8a] rounded-xl p-8 shadow-xl">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-[#1e3a8a] mb-2">スタンダードコース</h3>
+                        <div class="text-gray-600 mb-4">英検準2級〜準1級目安</div>
+                        <div class="text-4xl font-black text-[#1e3a8a] mb-2">¥8,800<span class="text-lg font-normal text-gray-600">/月</span></div>
+                        <div class="text-sm text-gray-600">(税込 ¥9,680)</div>
+                    </div>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span class="text-gray-700">英語のみのイマージョン環境</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span class="text-gray-700">週1回60分のレッスン</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span class="text-gray-700">プログレス認定証発行</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-gradient-to-br from-[#1e3a8a] to-[#1e40af] rounded-xl p-8 shadow-xl text-white relative overflow-hidden">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">アシストコース</h3>
+                        <div class="text-blue-100 mb-4">英検3級目安</div>
+                        <div class="text-4xl font-black mb-2">¥13,800<span class="text-lg font-normal text-blue-100">/月</span></div>
+                        <div class="text-sm text-blue-100">(税込 ¥15,180)</div>
+                    </div>
+                    <ul class="space-y-3 mb-6">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>日本語サポート付き</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>週1回60分のレッスン</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>プログレス認定証発行</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="inline-block bg-[#f97316]/10 border-2 border-[#f97316] rounded-xl px-8 py-4">
+                    <p class="text-lg font-bold text-[#f97316] mb-1">🎉 友達割引キャンペーン</p>
+                    <p class="text-gray-700">お友達と申し込むと初月25%OFF！（入会後の友達紹介でも双方が25%OFF）</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-6 md:py-10 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">よくあるご質問</h2>
+            <div class="mx-auto mb-8 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            
+            <div class="max-w-4xl mx-auto space-y-4">
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            海外から参加する生徒について教えてください
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>海外校に在籍確認が取れた生徒のみ参加を認めているため、安心して交流いただけます。</li>
+                                    <li>過去のプログラムで明るく積極的に交流し、日本生とのコミュニケーションを大切にしてくれた生徒、または、その基準で海外校から推薦を得た生徒のみを厳選してご案内しています。</li>
+                                    <li>これまでのクラスでも、こうした海外生のおかげで自然と信頼関係が築かれ、毎回楽しく学べる環境が生まれています。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            マンツーマン交流について教えてください
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>レッスン時間の30分程度、マンツーマン交流を行います。</li>
+                                    <li>ブレイクアウトルームに分かれて入室し、講師が案内するテーマ・方法に沿って、海外生徒と1対1で会話します。（場合によっては、1対2や2対1になることもあります）</li>
+                                    <li>講師やアシスタントがルームを巡回して、指導・支援を行います。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            グループ掲示板について教えてください
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>入会が決定したら、毎週一緒に学ぶ日本生徒と海外生徒はオンライン掲示板に招待されます。</li>
+                                    <li>掲示板は、講師の案内に従い、自己紹介や日々の出来事を綴って頂きます。また、自由に交流することもできます。</li>
+                                    <li>ファーストネームと苗字のイニシャル（例：Taro Y.）のみがメンバーに共有され、それ以外の情報はわからないようになっています。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            スタンダードコースとアシストコースの違いは何ですか。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>スタンダードコースでは、レッスンは基本的に英語で行われ、選抜された海外生との英語イマージョン環境で学びます。</li>
+                                    <li>アシストコースでは、日本語サポート付き英会話環境で学ぶため、より丁寧な指導が受けられます。レッスンコンテンツは英検3級相当の生徒が学ぶ内容となっております。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            参加にはどの程度の英語力が必要ですか。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>スタンダードコースは英検準2級以上の英語力を推奨しています。レッスンでは海外生徒と会話する場面も多いため、ゆっくりでも自分で文章を組み立てられる生徒、もしくは単語だけでも積極的に会話できる生徒であれば楽しくご参加いただけます。</li>
+                                    <li>アシストコースは英検3級相当の英語力の生徒を想定していますが、日本語サポートがあるため、基本的な単語や簡単な表現を知っていれば楽しくご参加いただけます。</li>
+                                    <li>迷われている場合は、体験お申し込みの際にご要望欄にご記入いただければ、最適なコースをご提案いたします。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            英語を英語で学んでも理解できますか?
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>スタンダードコースでは授業は基本的に英語で行われますが、わかりやすい英語を使い、テキストを画面共有しながら進めるため、英検準2級程度の英語力があれば理解できます。わからないことがあれば、必要に応じて日本語で補足説明することも可能です。</li>
+                                    <li>アシストコースでは、日本語による説明が約30%含まれるため、英検3級レベルの生徒でも安心して学ぶことができます。</li>
+                                    <li>テキストはレッスン前に確認することも可能なため、不安な場合はレッスンで用いる語彙やフレーズなどを予習することが可能です。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            講師は選べますか。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>時間割によって担当講師とアシスタントが決まっています。もしご希望があれば教えてください。</li>
+                                    <li>講師の体調不良などの理由で代替講師やアシスタントがクラスを担当する場合があります。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            塾や習い事の予定が流動的で、日時を決めかねています。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <p class="text-gray-700 leading-relaxed flex-1">
+                                途中でのクラス変更も柔軟に承っていますので、まずは見えている予定でクラスを開始ください。あらかじめ変更の可能性がある旨をお伝えいただければ、予定が見えてきた段階でご都合がつく時間帯のクラスを提案させていただきます。
+                            </p>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            レッスンの課題はありますか。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>月に1回程度、日記などの課題をグループ掲示板に投稿していただくことがあります。その他、グループ掲示板に自己紹介などを投稿してもらうことがあります。</li>
+                                    <li>テキストはレッスン前に確認することが可能なため、用いる語彙やフレーズなどを予習することも可能です。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            振り替えやキャンセルはできますか。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>メンバー固定のグループレッスンのため基本的には振り替えはできません。</li>
+                                    <li>キャンセルは24時間前までに事務局にご連絡いただければ3ヶ月に1回のみキャンセルが可能です。キャンセルした分の授業料は翌月以降の授業料から引かれます。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-6 md:py-10 bg-gradient-to-b from-sky-50 to-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">無料体験までの流れ</h2>
+            <div class="mx-auto mt-3 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            <div class="max-w-4xl mx-auto grid md:grid-cols-3 gap-4 lg:gap-8 text-center mt-8">
+                <div class="relative">
+                    <div class="bg-white p-4 lg:p-5 rounded-xl shadow-lg border-b-4 border-[#f97316] h-full">
+                        <div class="inline-block bg-[#f97316] text-white px-3 py-1 rounded text-sm font-bold mb-3">STEP 01</div>
+                        <div class="text-3xl lg:text-4xl mb-3">📝</div>
+                        <h3 class="font-bold text-lg mb-1">フォーム送信</h3>
+                        <p class="text-sm text-gray-600">Webフォームから簡単にお申し込みいただけます。</p>
+                    </div>
+                    <div class="hidden md:block absolute top-1/2 -right-4 lg:-right-6 transform -translate-y-1/2 text-gray-300 text-2xl">▶</div>
+                </div>
+                <div class="relative">
+                    <div class="bg-white p-4 lg:p-5 rounded-xl shadow-lg border-b-4 border-[#f97316] h-full">
+                        <div class="inline-block bg-[#f97316] text-white px-3 py-1 rounded text-sm font-bold mb-3">STEP 02</div>
+                        <div class="text-3xl lg:text-4xl mb-3">📩</div>
+                        <h3 class="font-bold text-lg mb-1">日程調整メール</h3>
+                        <p class="text-sm text-gray-600">2営業日以内に体験可能日をメールでご連絡します。</p>
+                    </div>
+                    <div class="hidden md:block absolute top-1/2 -right-4 lg:-right-6 transform -translate-y-1/2 text-gray-300 text-2xl">▶</div>
+                </div>
+                <div>
+                    <div class="bg-blue-50 p-4 lg:p-5 rounded-xl shadow-lg border-b-4 border-[#1e3a8a] h-full">
+                        <div class="inline-block bg-[#1e3a8a] text-white px-3 py-1 rounded text-sm font-bold mb-3">STEP 03</div>
+                        <div class="text-3xl lg:text-4xl mb-3">🎉</div>
+                        <h3 class="font-bold text-lg mb-1">無料体験スタート</h3>
+                        <p class="text-sm text-gray-600">希望日から2週連続、計2回のレッスンで海外生と楽しく交流！</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 追加情報：レッスン概要（無料体験で体験できる内容） -->
+            <div class="max-w-5xl mx-auto mt-10 md:mt-12">
+                <div class="bg-white rounded-2xl p-5 md:p-8 shadow-lg border border-sky-100">
+                    <h3 class="text-2xl md:text-3xl font-bold text-center text-[#1e3a8a] mb-2">レッスン概要と流れ</h3>
+                    <p class="text-center text-gray-600 mb-8">「国際交流」×「英会話」を60分に凝縮</p>
+
+                    <div class="grid md:grid-cols-2 gap-4 md:gap-6">
+                        <div class="bg-sky-50 rounded-2xl p-5 border border-sky-100">
+                            <div class="font-bold text-[#1e3a8a] mb-3">特徴</div>
+                            <ul class="space-y-3 text-sm text-gray-700 leading-relaxed">
+                                <li>
+                                    <span class="font-bold text-gray-900">国際交流</span>：異国の同世代同士が、相互理解を深め、親交と国際視点を養います
+                                </li>
+                                <li>
+                                    <span class="font-bold text-gray-900">マンツーマン実践</span>：学んだフレーズを1対1交流で実践し、自然な会話力を身につけます
+                                </li>
+                                <li>
+                                    <span class="font-bold text-gray-900">認定証発行</span>：大学や高校の入試で活用できる国際系の活動実績を得られます
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-sky-50 rounded-2xl p-5 border border-sky-100">
+                            <div class="font-bold text-[#1e3a8a] mb-3">対象</div>
+                            <ul class="space-y-2 text-sm text-gray-700 leading-relaxed list-disc pl-5">
+                                <li><span class="font-bold text-gray-900">中学1年生〜高校3年生</span>（高2/高3は通常受講のご案内）</li>
+                                <li><span class="font-bold text-gray-900">スタンダードコース</span>：英検準2級〜準1級相当</li>
+                                <li><span class="font-bold text-gray-900">アシストコース</span>：英検3級相当（日本語サポート付き）</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-sky-50 rounded-2xl p-5 border border-sky-100">
+                            <div class="font-bold text-[#1e3a8a] mb-3">グループ構成の目安</div>
+                            <ul class="space-y-2 text-sm text-gray-700 leading-relaxed list-disc pl-5">
+                                <li><span class="font-bold text-gray-900">日本 🇯🇵 4名</span></li>
+                                <li><span class="font-bold text-gray-900">海外 🇮🇩🇵🇭 4名</span>（インドネシアまたはフィリピン）</li>
+                                <li><span class="font-bold text-gray-900">講師とアシスタント</span>が指導・サポート</li>
+                                <li><span class="font-bold text-[#f97316]">海外生は選抜制</span>：明るく積極的に交流し、日本生とのコミュニケーションを大切にしてくれる生徒を厳選</li>
+                                <li>海外生は3ヶ月に一度、一部が入れ替わることで新しい友達との出会いの機会を創出</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-sky-50 rounded-2xl p-5 border border-sky-100">
+                            <div class="font-bold text-[#1e3a8a] mb-3">レッスン時間</div>
+                            <ul class="space-y-2 text-sm text-gray-700 leading-relaxed list-disc pl-5">
+                                <li><span class="font-bold text-gray-900">60分（毎月4回）</span></li>
+                                <li><span class="font-bold text-gray-900">月曜〜金曜から選択</span></li>
+                                <li>20:30〜21:30 または 22:00〜23:00</li>
+                                <li><span class="font-bold text-[#f97316]">無料体験：2回までお試し受講！</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                        <div class="font-bold text-[#1e3a8a] mb-3">レッスン形式と目安時間（60分）</div>
+                        <ol class="space-y-3">
+                            <li class="flex items-start gap-3">
+                                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-[#1e3a8a] text-white flex items-center justify-center font-bold">1</div>
+                                <div class="text-sm text-gray-700">
+                                    <div class="font-bold text-gray-900">講義とグループレッスン（20分）</div>
+                                    <div>テーマや学習ポイントに沿ったフレーズを学びます</div>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-[#f97316] text-white flex items-center justify-center font-bold">2</div>
+                                <div class="text-sm text-gray-700">
+                                    <div class="font-bold text-gray-900">マンツーマン交流・実践（30分）</div>
+                                    <div>複数の海外生との1対1交流で、学んだ表現を実践します</div>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gray-700 text-white flex items-center justify-center font-bold">3</div>
+                                <div class="text-sm text-gray-700">
+                                    <div class="font-bold text-gray-900">振り返りとまとめ（10分）</div>
+                                    <div>定着確認と次回へのポイント整理を行います</div>
+                                </div>
+                            </li>
+                        </ol>
+                        <p class="text-xs text-gray-500 mt-4 italic leading-relaxed">
+                            ※グループ構成や当日の出欠状況により、一時的に1対2 / 2対1の交流になる場合があります。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-6 md:py-10 bg-gradient-to-b from-gray-50 to-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">無料体験お申し込み</h2>
+            <div class="mx-auto mb-6 md:mb-8 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            <p class="text-center text-gray-600 mb-6 md:mb-8 text-lg">まずは2回の無料体験から始めましょう</p>
+            
+            <form class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-gray-700 leading-relaxed">
+                            TOMODACHI留学の無料体験をご希望の方は、以下フォームからお申し込みください。＊以下の情報は、相応しい無料体験クラスをご提案するのに用います。
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">英文氏名（例：Taro Yamada） <span class="text-red-500">*</span></label>
+                        <input name="firstName" type="text" required maxlength="100" autocomplete="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">学校名</label>
+                        <input name="school" type="text" autocomplete="organization" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">性別 <span class="text-red-500">*</span></label>
+                        <select name="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                            <option value="" disabled selected>オプションを選択</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                            <option value="回答しない">回答しない</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">学年 <span class="text-red-500">*</span></label>
+                        <select name="grade" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                            <option value="" disabled selected>オプションを選択</option>
+                            <option value="中学1年生">中学1年生</option>
+                            <option value="中学2年生">中学2年生</option>
+                            <option value="中学3年生">中学3年生</option>
+                            <option value="高校1年生">高校1年生</option>
+                            <option value="高校2年生">高校2年生</option>
+                            <option value="高校3年生">高校3年生</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">メールアドレス <span class="text-red-500">*</span></label>
+                        <input name="email" type="email" required autocomplete="email" maxlength="250" pattern="^.+@.+\\.[a-zA-Z]{2,63}$" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">電話番号</label>
+                        <input name="phone" type="tel" maxlength="20" autocomplete="tel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                        <p class="text-xs text-gray-500 mt-2 italic">メールアドレスの登録間違いなどで連絡が取れない場合のみ、本電話番号にSMSなどでご連絡します。</p>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">英語レベル <span class="text-red-500">*</span></label>
+                        <select name="englishLevel" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                            <option value="" disabled selected>オプションを選択</option>
+                            <option value="英検3級相当">英検3級相当</option>
+                            <option value="英検準2級相当">英検準2級相当</option>
+                            <option value="英検2級相当">英検2級相当</option>
+                            <option value="英検準1級相当">英検準1級相当</option>
+                            <option value="未受験/その他">未受験/その他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">希望コース <span class="text-red-500">*</span></label>
+                        <select name="preferredCourse" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                            <option value="" disabled selected>オプションを選択</option>
+                            <option value="スタンダードコース">スタンダードコース</option>
+                            <option value="アシストコース">アシストコース</option>
+                            <option value="迷っている（相談したい）">迷っている（相談したい）</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-1">ご要望欄</label>
+                        <textarea name="message" rows="4" placeholder="塾と部活があり、木曜と金曜のみ都合がつきます" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]"></textarea>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        当社の
+                        <a href="https://ja.airpangaea.com/privacy-policy" target="_self" class="underline text-[#1e3a8a] hover:text-[#f97316] transition">プライバシーポリシー</a>
+                        及び
+                        <a href="https://ja.airpangaea.com/terms-and-conditions" target="_self" class="underline text-[#1e3a8a] hover:text-[#f97316] transition">利用規約</a>
+                        にご同意頂いた上でお申し込みください。
+                    </p>
+                    <button type="submit" class="w-full bg-[#f97316] text-white px-8 py-3 rounded-lg text-2xl font-bold hover:bg-[#ea580c] transition shadow-lg">
+                        無料体験に申し込む
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="parents" class="py-6 md:py-10 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">保護者の皆様へ</h2>
+            <div class="mx-auto mb-8 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
+            <p class="text-center text-gray-600 mb-8 md:mb-10 text-lg">代表メッセージ</p>
+
+            <div class="max-w-4xl mx-auto bg-[#fed7aa] border border-orange-200 rounded-2xl p-8 shadow-sm space-y-5">
+                <p class="text-gray-800 leading-relaxed">
+                    皆さま、エアパンゲア代表の明石です。このたびは、当社の <span class="font-bold">TOMODACHI 留学</span>をご検討いただき、誠にありがとうございます。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    当社は5年にわたり、世界の中高生をつなぐ活動を展開してまいりました。当社の<strong>オンライン異文化交流 TOMODACHIプログラム</strong>や<strong>オンラインSDGs協働学習 MOTTAINAIプログラム</strong>は、成蹊中学・高等学校、武蔵高等学校中学校、西大和学園中学校・高等学校、明星中学校・高等学校など、多くの教育機関にも国際教育の一環としてご活用いただいております。これまでに<strong>累計3,000名を超える中高生の皆様に異国の同世代との交流・協働の機会を提供し、約95%の参加者から「とても満足」「満足」との評価</strong>をいただいております。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    TOMODACHI留学は、これまでのプログラム参加者の声と、私自身の留学経験をもとに、2024年11月に開発・開始した新しい取り組み「TOMODACHI英会話」を発展させたプログラムです。<strong>異文化交流の魅力はそのままに、英語力向上のための要素を組み込みました。</strong>
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    私は過去にニュージーランドで語学留学を経験し、多国籍のクラスで学ぶ楽しさを実感しました。韓国、ドイツ、タヒチ、ニューカレドニア、チェコ、ブラジルなど、様々な国から集まった同世代の人たちと英語を学びながら交流を深めた日々は、毎日が新鮮で貴重な体験でした。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    この素晴らしい体験を、より多くの若い世代に提供したいという思いから、TOMODACHI留学 (旧TOMODACHI英会話) を開発しました。海外への渡航なしで、<strong>自宅にいながら国際交流と英語学習の機会を得られる</strong>このプログラムは、グローバル時代を生きる若者たちにとって、大きな価値があると確信しています。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    当社は東南アジアの学校との強いネットワークを有していますが、共同創業者がインドネシア人であることから、特にインドネシアとの繋がりが深いのが特徴です。ジャカルタ首都圏・日本語教師協会との提携により、日本語を学ぶ多くのインドネシアの中高生が当社の様々なプログラムに参加しています。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    TOMODACHI留学には、このようなネットワークを活かし、多様な背景を持つ生徒たちの参加が見込まれています（現在はインドネシアからの生徒が多いですが、徐々に拡大予定）。彼らの多くは日本文化に深い興味を持っており、また、日本語を学んでいる生徒も多く、お互いの言語や文化について学び合える貴重な機会となります。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    参加する海外の生徒たちは、アニメや音楽などの日本文化に魅了されている方が多く、中には将来の日本留学を視野に入れている生徒もいます。このような日本に興味を持つ海外の同世代と交流することで、お子様は自国の文化を客観的に見つめ直す機会を得られるでしょう。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    過去の当社のプログラムへの参加者からは以下のような感想を多く頂いております。
+                </p>
+
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="font-bold text-[#1e3a8a] mb-3">過去の当社プログラム参加者の声（一例）</div>
+                    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+                        <li>海外の同い年の子と話して親しみを感じた。彼らの国を訪れてみたい！</li>
+                        <li>自分がこれまでいかに小さな世界で生きていたかを実感した！</li>
+                        <li>文法をあまり気にしなくても伝わった。英語を勉強している本当の意味がわかった！</li>
+                        <li>日本の文化について説明する中で、自分の国のことをより深く知ることができた！</li>
+                    </ul>
+                </div>
+
+                <p class="text-gray-800 leading-relaxed">
+                    このような体験を通じて、多くの生徒さんが日本の外の世界に興味を持ち、英語学習への意欲を高めています。TOMODACHI留学 (旧 TOMODACHI英会話) をしばらく経験した高校生が、<strong>実際に海外に行くことを希望して半年から一年程度、海外留学に旅立たれる生徒さんも出てきました。</strong>また、一部の生徒さんは、国際教養や途上国に関心を持ち、それを大学で深く学びたいと<strong>総合型選抜入試を通じて歩みを進めていらっしゃいます（</strong><a href="https://ja.airpangaea.com/blog/categories/uni-admission" target="_blank" rel="noreferrer noopener" class="underline text-[#1e3a8a] hover:text-[#f97316] transition font-bold">合格体験記集はこちら</a><strong>）。</strong>
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    TOMODACHI留学は、こうした国際交流の魅力と英語学習の実践的機会を組み合わせた、まさに「一石二鳥」のプログラムです。お子様の視野を広げ、英語力を向上させる絶好の機会となりますので、是非お子様とご相談の上、ご参加をご検討いただければ幸いです。チーム一丸となって丁寧にサポートさせていただくことをお約束いたします。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    ご質問や不明点がございましたら、当社ウェブサイトの問い合わせフォーム、または <a data-auto-recognition="true" href="/cdn-cgi/l/email-protection#8ee7e0e8e1ceefe7fcfeefe0e9efebefa0ede1e3" class="underline text-[#1e3a8a] hover:text-[#f97316] transition"><span class="__cf_email__" data-cfemail="71181f171e3110180301101f161014105f121e1c">[email&#160;protected]</span></a> までお気軽にご連絡ください。
+                </p>
+                <p class="text-gray-800 leading-relaxed">
+                    最後までお読みいただき、誠にありがとうございます。皆様のご参加を心よりお待ちしております。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="text-center space-y-2">
+                <p class="text-xs text-gray-300">©2021-2026 AirPangaea, Inc.</p>
+
+                <div class="flex justify-center flex-wrap gap-x-4 gap-y-2 text-xs text-gray-300">
+                    <a href="https://ja.airpangaea.com/privacy-policy" target="_self" class="underline hover:text-white transition">プライバシーポリシー</a>
+                    <a href="https://ja.airpangaea.com/terms-and-conditions" target="_self" class="underline hover:text-white transition">利用規約</a>
+                    <a href="https://ja.airpangaea.com/tokushoho" target="_self" class="underline hover:text-white transition">特定商取引法に基づく表記</a>
+                </div>
+
+                <ul class="flex justify-center gap-4 pt-1" aria-label="SNS バー">
+                    <li>
+                        <a href="https://www.instagram.com/airpangaeajapan/" target="_blank" rel="noreferrer noopener" aria-label="Instagram">
+                            <img src="11062b_9b5a3b3607694630a7253c5fc4ff6476~mv2.png" alt="Instagram" class="w-5 h-5 object-contain">
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.twitter.com/airpangaeajapan" target="_blank" rel="noreferrer noopener" aria-label="Twitter">
+                            <img src="9c4b521dd2404cd5a05ed6115f3a0dc8.png" alt="Twitter" class="w-5 h-5 object-contain">
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.facebook.com/airpangaeajapan" target="_blank" rel="noreferrer noopener" aria-label="Facebook">
+                            <img src="e316f544f9094143b9eac01f1f19e697.png" alt="Facebook" class="w-5 h-5 object-contain">
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // モバイルメニューの開閉制御
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // メニュー内のリンクをクリックしたら閉じる
+      

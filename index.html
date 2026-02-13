@@ -37,7 +37,7 @@
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
-            <img src="images/TOMODACHI留学ロコ__s.jpg" alt="TOMODACHI留学ロゴ" class="h-12">
+            <img src="images/TOMODACHI留学ロゴ_s.jpg" alt="TOMODACHI留学ロゴ" class="h-12 md:h-16">
             <div class="hidden md:flex items-center gap-4 lg:gap-8 text-sm lg:text-base">
                 <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">講師紹介</a>
                 <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">料金</a>
@@ -72,7 +72,7 @@
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-2 items-start gap-8 md:gap-x-12 md:gap-y-4">
                 <!-- 見出し（常に2行） -->
-                <div class="text-left">
+                <div class="text-left relative z-10">
                     <h1 class="font-black mb-6 leading-tight text-[#1e3a8a] text-[clamp(1.75rem,7vw,3.75rem)] leading-[1.12] break-keep">
                         <span class="block whitespace-nowrap">先生じゃなく<span class="text-[#f97316]">友達</span>。</span>
                         <span class="block">だから話せる</span>
@@ -80,14 +80,14 @@
                 </div>
 
                 <!-- 画像（モバイルでは見出し直下、PCでは右固定） -->
-                <div class="md:col-start-2 md:row-start-1 md:row-span-2 self-start md:-mt-20">
+                <div class="md:col-start-2 md:row-start-1 md:row-span-2 self-start -mt-7 md:mt-20">
                     <img src="images/tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" class="w-full rounded-2xl">
                 </div>
 
                 <!-- 本文（モバイル: 説明→CTA→掲載/数字、PC: 説明→掲載/数字→CTA） -->
                 <div class="text-left">
                     <div class="flex flex-col gap-6">
-                        <p class="text-xl sm:text-2xl md:text-3xl text-gray-700 leading-tight order-1">
+                        <p class="text-xl sm:text-2xl md:text-2xl text-gray-700 leading-tight order-1">
                             <span class="block whitespace-nowrap">毎週 海外の同世代と1対1で話して</span>
                             <span class="block">友達になるオンライン留学</span>
                         </p>
@@ -102,18 +102,18 @@
                                 「月刊先端教育」 2026年3月号に掲載
                             </p>
 
-                            <div class="flex items-end flex-wrap gap-1 sm:gap-2">
+                            <div class="flex items-end flex-nowrap gap-4 sm:gap-4">
                                 <!-- 記事/表紙（順序入れ替え：表紙→記事、サイズ拡大） -->
-                                <div class="flex flex-nowrap gap-0.5">
-                                    <img src="images/book.jpg" alt="月刊先端教育 表紙" class="w-[clamp(110px,18vw,200px)] h-[clamp(88px,18vw,160px)] md:h-[clamp(70px,12vw,150px)] object-contain">
-                                    <img src="images/newspaper.jpg" alt="月刊先端教育 記事" class="w-[clamp(110px,18vw,200px)] h-[clamp(88px,18vw,160px)] md:h-[clamp(70px,12vw,150px)] object-contain">
+                                <div class="flex flex-nowrap gap-2">
+                                    <img src="images/book.jpg" alt="月刊先端教育 表紙" class="h-[clamp(88px,18vw,160px)] md:h-[clamp(70px,12vw,150px)] w-auto max-w-[clamp(110px,18vw,200px)] object-contain">
+                                    <img src="images/newspaper.jpg" alt="月刊先端教育 記事" class="h-[clamp(88px,18vw,160px)] md:h-[clamp(70px,12vw,150px)] w-auto max-w-[clamp(110px,18vw,200px)] object-contain">
                                 </div>
 
                                 <!-- 96% + 95%（画像で表示） -->
                                 <div class="flex flex-col items-center sm:items-start">
                                     <div class="flex items-end gap-1">
-                                        <img src="images/96_顧客満足度_s.jpg" alt="顧客満足度 96%" class="w-[clamp(120px,18vw,180px)] h-auto">
-                                        <img src="images/95_学習意欲向上_s.jpg" alt="学習意欲向上 95%" class="w-[clamp(120px,18vw,180px)] h-auto">
+                                        <img src="images/96_顧客満足度_s.jpg" alt="顧客満足度 96%" class="w-[clamp(80px,12vw,120px)] h-auto">
+                                        <img src="images/95_学習意欲向上_s.jpg" alt="学習意欲向上 95%" class="w-[clamp(80px,12vw,120px)] h-auto">
                                     </div>
 
                                     <p class="text-[10px] text-gray-400 mt-1 text-center sm:text-left tracking-tight">
@@ -186,7 +186,7 @@
             <div class="max-w-5xl mx-auto bg-white rounded-2xl p-5 md:p-6 shadow-lg border border-gray-200 border-t-4 border-t-[#1e3a8a]/30">
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <div class="text-[#1e3a8a] text-2xl leading-tight">
-                        <span class="font-bold">出身校</span><span class="font-normal">（一部）</span>
+                        <span class="font-bold">出身校</span><span class="font-normal"></span>
                         <div class="text-sm font-normal text-gray-600 mt-1">以下に一部の学校を掲載</div>
                     </div>
                     <div class="text-xs text-gray-500 whitespace-nowrap">タップで開く</div>
@@ -195,7 +195,7 @@
                 <div class="space-y-3">
                     <details class="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
                         <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-[#1e3a8a] text-2xl">
-                            <span>関東以北</span>
+                            <span class="text-lg">関東以北</span>
                             <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
                         </summary>
                         <div class="px-5 pb-5 pt-0">
@@ -207,7 +207,7 @@
 
                     <details class="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
                         <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-[#1e3a8a] text-2xl">
-                            <span>中部以西</span>
+                            <span class="text-lg">中部以西</span>
                             <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
                         </summary>
                         <div class="px-5 pb-5 pt-0">
@@ -219,7 +219,7 @@
 
                     <details class="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
                         <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-[#1e3a8a] text-2xl">
-                            <span>海外</span>
+                            <span class="text-lg">海外</span>
                             <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
                         </summary>
                         <div class="px-5 pb-5 pt-0 space-y-3">
@@ -244,7 +244,7 @@
 
     <section class="py-6 md:py-10 bg-[#1e3a8a] text-white overflow-hidden">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-4">参加者の声</h2>
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#ffffff]">参加者の声</h2>
             <div class="mx-auto mb-6 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#f97316]"></div>
             <p class="text-center text-blue-200 mb-6 md:mb-10">日本生徒の声のあとに、海外生徒の声が続きます</p>
             
@@ -1189,8 +1189,8 @@
                             <option value="中学2年生">中学2年生</option>
                             <option value="中学3年生">中学3年生</option>
                             <option value="高校1年生">高校1年生</option>
-                            <option value="高校2年生">高校2年生</option>
-                            <option value="高校3年生">高校3年生</option>
+                            <option value="高校2年生">高校2年生（通常受講）</option>
+                            <option value="高校3年生">高校3年生（通常受講）</option>
                         </select>
                     </div>
                     <div>

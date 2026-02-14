@@ -1214,7 +1214,7 @@
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-1">メールアドレス <span class="text-red-500">*</span></label>
-                        <input name="email" type="email" required autocomplete="email" maxlength="250" pattern="^.+@.+\\.[a-zA-Z]{2,63}$" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                        <input name="email" type="email" required autocomplete="email" maxlength="250" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-1">電話番号</label>
@@ -1257,6 +1257,18 @@
                     </button>
                 </div>
             </form>
+
+            <!-- 送信成功メッセージ（初期は非表示） -->
+            <div id="form-success-message" class="hidden max-w-2xl mx-auto bg-green-50 border-2 border-green-500 rounded-2xl p-8 text-center">
+                <div class="mb-4">
+                    <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-green-800 mb-3">お申し込みありがとうございます！</h3>
+                <p class="text-green-700 mb-2">無料体験のお申し込みを受け付けました。</p>
+                <p class="text-green-700">担当者より<strong>2営業日以内</strong>にご連絡いたします。</p>
+            </div>
         </div>
     </section>
 
@@ -1377,6 +1389,46 @@
                     !mobileMenu.contains(e.target) && 
                     e.target !== menuBtn) {
                     mobileMenu.classList.add('hidden');
+                }
+            });
+        }
+
+        // フォーム送信処理
+        const form = document.querySelector('[data-static-form-name="tden-application"]');
+        const successMessage = document.getElementById('form-success-message');
+        
+        if (form && successMessage) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // 送信ボタンを無効化
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = '送信中...';
+                
+                try {
+                    // Cloudflare Formsにデータを送信
+                    const formData = new FormData(form);
+                    const response = await fetch('/', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        // フォームを非表示にして成功メッセージを表示
+                        form.classList.add('hidden');
+                        successMessage.classList.remove('hidden');
+                        
+                        // ページトップまでスクロール
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        throw new Error('送信に失敗しました');
+                    }
+                } catch (error) {
+                    alert('送信に失敗しました。もう一度お試しください。');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
                 }
             });
         }

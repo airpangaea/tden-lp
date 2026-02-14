@@ -17,7 +17,7 @@ TOMODACHI留学 LP - 修正内容リスト
 <div class="text-2xl font-bold text-[#1e3a8a]">TOMODACHI留学</div>
 
 【修正後】
-<img src="TOMODACHI留学ロコ__s.jpg" alt="TOMODACHI留学ロゴ" class="h-12">
+<img src="images/images/TOMODACHI留学ロコ__s.jpg" alt="TOMODACHI留学ロゴ" class="h-12">
 
 【変更内容】
 - テキストの「TOMODACHI留学」を削除
@@ -108,9 +108,9 @@ body {
 【修正後】
 <!-- 画像ファイルで 96%、95% を表示 -->
 <div class="flex items-end gap-1">
-    <img src="96_顧客満足度_s.jpg" alt="顧客満足度 96%" 
+    <img src="images/images/96_顧客満足度_s.jpg" alt="顧客満足度 96%" 
          class="w-[clamp(120px,18vw,180px)] h-auto">
-    <img src="95_学習意欲向上_s.jpg" alt="学習意欲向上 95%" 
+    <img src="images/images/95_学習意欲向上_s.jpg" alt="学習意欲向上 95%" 
          class="w-[clamp(120px,18vw,180px)] h-auto">
 </div>
 
@@ -134,13 +134,13 @@ body {
 
 【修正前】
 <div class="md:col-start-2 md:row-start-1 md:row-span-2 self-start md:-mt-10">
-    <img src="tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" 
+    <img src="images/images/tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" 
          class="w-full rounded-2xl">
 </div>
 
 【修正後】
 <div class="md:col-start-2 md:row-start-1 md:row-span-2 self-start md:-mt-20">
-    <img src="tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" 
+    <img src="images/images/tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" 
          class="w-full rounded-2xl">
 </div>
 
@@ -162,20 +162,20 @@ body {
 
 【修正前】
 <div class="flex flex-nowrap gap-1">
-    <img src="newspaper.jpg" alt="月刊先端教育 記事" 
+    <img src="images/images/newspaper.jpg" alt="月刊先端教育 記事" 
          class="w-[clamp(90px,16vw,170px)] h-[clamp(72px,16vw,140px)] 
                 md:h-[clamp(58px,10.4vw,125px)] object-contain">
-    <img src="book.jpg" alt="月刊先端教育 表紙" 
+    <img src="images/images/book.jpg" alt="月刊先端教育 表紙" 
          class="w-[clamp(90px,16vw,170px)] h-[clamp(72px,16vw,140px)] 
                 md:h-[clamp(58px,10.4vw,125px)] object-contain">
 </div>
 
 【修正後】
 <div class="flex flex-nowrap gap-0.5">
-    <img src="book.jpg" alt="月刊先端教育 表紙" 
+    <img src="images/images/book.jpg" alt="月刊先端教育 表紙" 
          class="w-[clamp(110px,18vw,200px)] h-[clamp(88px,18vw,160px)] 
                 md:h-[clamp(70px,12vw,150px)] object-contain">
-    <img src="newspaper.jpg" alt="月刊先端教育 記事" 
+    <img src="images/images/newspaper.jpg" alt="月刊先端教育 記事" 
          class="w-[clamp(110px,18vw,200px)] h-[clamp(88px,18vw,160px)] 
                 md:h-[clamp(70px,12vw,150px)] object-contain">
 </div>

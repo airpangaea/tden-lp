@@ -77,9 +77,9 @@ export async function onRequestPost(context) {
 
   if (!airtableRes.ok) {
     const errText = await airtableRes.text();
+    const tokenPreview = env.AIRTABLE_TOKEN ? env.AIRTABLE_TOKEN.substring(0, 10) + '...' : 'UNDEFINED';
     console.error('Airtable error:', errText);
-    // デバッグ用：一時的にエラー詳細を返す（確認後に削除）
-    return new Response(`[DEBUG] Airtable error (${airtableRes.status}): ${errText}`, { status: 500 });
+    return new Response(`[DEBUG] Airtable error (${airtableRes.status}): ${errText}\nToken starts with: ${tokenPreview}`, { status: 500 });
   }
 
   // 成功 → /thanks.html にリダイレクト

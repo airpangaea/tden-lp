@@ -1,0 +1,86 @@
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  const formData = await request.formData();
+
+  const firstName       = formData.get('firstName') || '';
+  const school          = formData.get('school') || '';
+  const gender          = formData.get('gender') || '';
+  const grade           = formData.get('grade') || '';
+  const email           = formData.get('email') || '';
+  const phone           = formData.get('phone') || '';
+  const englishLevel    = formData.get('englishLevel') || '';
+  const preferredCourse = formData.get('preferredCourse') || '';
+  const message         = formData.get('message') || '';
+
+  // --- 値のマッピング ---
+
+  const genderMap = {
+    '男': '男性',
+    '女': '女性',
+    '回答しない': 'Prefer not to say',
+  };
+
+  const gradeMap = {
+    '中学1年生': '中学１年生',
+    '中学2年生': '中学２年生',
+    '中学3年生': '中学３年生',
+    '高校1年生': '高校１年生',
+    '高校2年生': '高校２年生',
+    '高校3年生': '高校３年生',
+  };
+
+  const englishLevelMap = {
+    '英検3級相当':   '英検備３級（または同じレベルの英語力）を保有',
+    '英検準2級相当': '英検備２級（または同じレベルの英語力）を保有',
+    '英検2級相当':   '英検２級（または同じレベルの英語力）を保有',
+    '英検準1級相当': '英検備１級以上（または同じレベルの英語力）を保有',
+    '未受験/その他': 'Not sure',
+  };
+
+  // 今日の日付（YYYY-MM-DD）
+  const today = new Date().toISOString().split('T')[0];
+
+  // --- Airtable レコード作成 ---
+
+  const fields = {
+    'Name':               firstName,
+    'School Name':        school,
+    'Gender':             genderMap[gender] || gender,
+    'School Year':        gradeMap[grade] || grade,
+    'Email':              email,
+    'Phone':              phone,
+    'English Level':      englishLevelMap[englishLevel] || englishLevel,
+    '希望コース・プラン': preferredCourse,
+    'Comments':           message,
+    'Status':             'Applied',
+    'Source':             'Form',
+    'Application Date':   today,
+  };
+
+  // 空の任意フィールドは除外
+  if (!school)          delete fields['School Name'];
+  if (!phone)           delete fields['Phone'];
+  if (!message)         delete fields['Comments'];
+  if (!preferredCourse) delete fields['希望コース・プラン'];
+
+  const airtableRes = await fetch(
+    `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ records: [{ fields }] }),
+    }
+  );
+
+  if (!airtableRes.ok) {
+    const errText = await airtableRes.text();
+    console.error('Airtable error:', errText);
+    return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
+  }
+
+  // 成功 → /thanks.html にリダイレクト
+  return Response.redirect(new URL('/thanks.html', request.url).toString(), 303);
+}

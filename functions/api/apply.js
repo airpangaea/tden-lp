@@ -78,7 +78,8 @@ export async function onRequestPost(context) {
   if (!airtableRes.ok) {
     const errText = await airtableRes.text();
     console.error('Airtable error:', errText);
-    return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
+    // デバッグ用：一時的にエラー詳細を返す（確認後に削除）
+    return new Response(`[DEBUG] Airtable error (${airtableRes.status}): ${errText}`, { status: 500 });
   }
 
   // 成功 → /thanks.html にリダイレクト

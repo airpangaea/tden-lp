@@ -77,9 +77,12 @@ export async function onRequestPost(context) {
 
   if (!airtableRes.ok) {
     const errText = await airtableRes.text();
-    const tokenPreview = env.AIRTABLE_TOKEN ? env.AIRTABLE_TOKEN.substring(0, 10) + '...' : 'UNDEFINED';
-    console.error('Airtable error:', errText);
-    return new Response(`[DEBUG] Airtable error (${airtableRes.status}): ${errText}\nToken starts with: ${tokenPreview}`, { status: 500 });
+    // whoami でトークンのスコープを確認
+    const whoami = await fetch('https://api.airtable.com/v0/meta/whoami', {
+      headers: { 'Authorization': `Bearer ${env.AIRTABLE_TOKEN}` }
+    });
+    const whoamiText = await whoami.text();
+    return new Response(`[DEBUG] Airtable error (${airtableRes.status}): ${errText}\nWhoami (${whoami.status}): ${whoamiText}`, { status: 500 });
   }
 
   // 成功 → /thanks.html にリダイレクト

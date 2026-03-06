@@ -76,13 +76,21 @@ export async function onRequestPost(context) {
   );
 
   if (!airtableRes.ok) {
-    const errText = await airtableRes.text();
-    // whoami でトークンのスコープを確認
-    const whoami = await fetch('https://api.airtable.com/v0/meta/whoami', {
+    const postErr = await airtableRes.text();
+    const tableUrl = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`;
+
+    // GET で読み取り権限を確認（書き込みスコープとベースアクセスを区別）
+    const getRes = await fetch(`${tableUrl}?maxRecords=1`, {
       headers: { 'Authorization': `Bearer ${env.AIRTABLE_TOKEN}` }
     });
-    const whoamiText = await whoami.text();
-    return new Response(`[DEBUG] Airtable error (${airtableRes.status}): ${errText}\nWhoami (${whoami.status}): ${whoamiText}`, { status: 500 });
+    const getText = await getRes.text();
+
+    return new Response(
+      `POST (write) → ${airtableRes.status}: ${postErr}\n` +
+      `GET  (read)  → ${getRes.status}: ${getText}\n` +
+      `URL: ${tableUrl}`,
+      { status: 500 }
+    );
   }
 
   // 成功 → /thanks.html にリダイレクト

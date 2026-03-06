@@ -85,10 +85,11 @@ export async function onRequestPost(context) {
     });
     const getText = await getRes.text();
 
+    const tok = env.AIRTABLE_TOKEN || '';
     return new Response(
       `POST (write) → ${airtableRes.status}: ${postErr}\n` +
-      `GET  (read)  → ${getRes.status}: ${getText}\n` +
-      `URL: ${tableUrl}`,
+      `GET  (read)  → ${getRes.status}: ${getText.substring(0, 80)}...\n` +
+      `Token: ${tok.substring(0, 15)}... (length: ${tok.length})`,
       { status: 500 }
     );
   }

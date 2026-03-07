@@ -2,7 +2,6 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const formData = await request.formData();
 
-  // フォームの全データを取得（デバッグ用にも使う）
   const rawForm = {};
   for (const [key, value] of formData.entries()) {
     rawForm[key] = value;
@@ -33,6 +32,14 @@ export async function onRequestPost(context) {
     '未受験/その他': 'Not sure',
   };
 
+  // --- Commentsフィールドの組み立て ---
+  // 希望コース・プランはフィールドレベルの編集制限があるため、Commentsに含める
+  const commentParts = [];
+  if (preferredCourse) commentParts.push(`【希望コース】${preferredCourse}`);
+  if (message)         commentParts.push(message);
+  const combinedComments = commentParts.join('\n');
+
+  // --- Airtable フィールド ---
   const fields = {
     'fldiatR2syOAnGeC1': firstName,                                     // Name
     'fldkgBWAY5URfwVlO': genderMap[gender] || gender,                   // Gender
@@ -44,12 +51,9 @@ export async function onRequestPost(context) {
   };
 
   // 任意フィールド（空でなければ追加）
-  if (school)          fields['fldHofD6n1pignZRl'] = school;            // School Name
-  if (phone)           fields['fldvaJlyLqANY3IYw'] = phone;             // Phone
-  if (message)         fields['flddosiHxBy3F59nM'] = message;           // Comments
-  if (preferredCourse) fields['fldrgi5NUhq2JdXne'] = preferredCourse;   // 希望コース・プラン
-
-  const reqBody = JSON.stringify({ records: [{ fields }], typecast: true });
+  if (school)           fields['fldHofD6n1pignZRl'] = school;           // School Name
+  if (phone)            fields['fldvaJlyLqANY3IYw'] = phone;            // Phone
+  if (combinedComments) fields['flddosiHxBy3F59nM'] = combinedComments; // Comments
 
   const airtableRes = await fetch(
     `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`,
@@ -59,23 +63,14 @@ export async function onRequestPost(context) {
         'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: reqBody,
+      body: JSON.stringify({ records: [{ fields }], typecast: true }),
     }
   );
 
   if (!airtableRes.ok) {
     const errText = await airtableRes.text();
-    // 全情報を一画面で表示
-    return new Response(JSON.stringify({
-      error: `${airtableRes.status}`,
-      airtableResponse: errText,
-      formDataReceived: rawForm,
-      fieldsSent: fields,
-      requestBody: reqBody,
-    }, null, 2), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    console.error('Airtable error:', errText);
+    return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
   }
 
   return Response.redirect(new URL('/thanks.html', request.url).toString(), 303);

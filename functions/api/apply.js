@@ -177,14 +177,14 @@ export async function onRequestPost(context) {
         'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ records: [{ fields }] }),
+      body: JSON.stringify({ records: [{ fields }], typecast: true }),
     }
   );
 
   if (!airtableRes.ok) {
     const errText = await airtableRes.text();
     console.error('Airtable error:', errText);
-    return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
+    return new Response(`[DEBUG] ${airtableRes.status}: ${errText}`, { status: 500 });
   }
 
   // 成功 → /thanks.html にリダイレクト

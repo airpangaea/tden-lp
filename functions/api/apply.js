@@ -146,28 +146,28 @@ export async function onRequestPost(context) {
   // 今日の日付（YYYY-MM-DD）
   const today = new Date().toISOString().split('T')[0];
 
-  // --- Airtable レコード作成 ---
+  // --- Airtable レコード作成（フィールドIDを使用）---
 
   const fields = {
-    'Name':               firstName,
-    'School Name':        school,
-    'Gender':             genderMap[gender] || gender,
-    'School Year':        gradeMap[grade] || grade,
-    'Email':              email,
-    'Phone':              phone,
-    'English Level':      englishLevelMap[englishLevel] || englishLevel,
-    '希望コース・プラン': preferredCourse,
-    'Comments':           message,
-    'Status':             'Applied',
-    'Source':             'Form',
-    'Application Date':   today,
+    'fldiatR2syOAnGeC1': firstName,                               // Name
+    'fldHofD6n1pignZRl': school,                                  // School Name
+    'fldkgBWAY5URfwVlO': genderMap[gender] || gender,             // Gender
+    'fldxVi5K2gNiVyWf6': gradeMap[grade] || grade,                // School Year
+    'fldwEBlgkxM3TMQeo': email,                                   // Email
+    'fldvaJlyLqANY3IYw': phone,                                   // Phone
+    'fldteul63pEfP2j9i': englishLevelMap[englishLevel] || englishLevel, // English Level
+    'fldrgi5NUhq2JdXne': preferredCourse,                         // 希望コース・プラン
+    'flddosiHxBy3F59nM': message,                                 // Comments
+    'fld7kF0rL8NBwqVL9': 'Applied',                               // Status
+    'fldq5F1H26trbiiea': 'Form',                                  // Source
+    'fld7taraUhhzZTNbL': today,                                   // Application Date
   };
 
   // 空の任意フィールドは除外
-  if (!school)          delete fields['School Name'];
-  if (!phone)           delete fields['Phone'];
-  if (!message)         delete fields['Comments'];
-  if (!preferredCourse) delete fields['希望コース・プラン'];
+  if (!school)          delete fields['fldHofD6n1pignZRl'];
+  if (!phone)           delete fields['fldvaJlyLqANY3IYw'];
+  if (!message)         delete fields['flddosiHxBy3F59nM'];
+  if (!preferredCourse) delete fields['fldrgi5NUhq2JdXne'];
 
   const airtableRes = await fetch(
     `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`,
@@ -182,22 +182,9 @@ export async function onRequestPost(context) {
   );
 
   if (!airtableRes.ok) {
-    const postErr = await airtableRes.text();
-    const tableUrl = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`;
-
-    // GET で読み取り権限を確認（書き込みスコープとベースアクセスを区別）
-    const getRes = await fetch(`${tableUrl}?maxRecords=1`, {
-      headers: { 'Authorization': `Bearer ${env.AIRTABLE_TOKEN}` }
-    });
-    const getText = await getRes.text();
-
-    const tok = env.AIRTABLE_TOKEN || '';
-    return new Response(
-      `POST (write) → ${airtableRes.status}: ${postErr}\n` +
-      `GET  (read)  → ${getRes.status}: ${getText.substring(0, 80)}...\n` +
-      `Token: ${tok.substring(0, 15)}... (length: ${tok.length})`,
-      { status: 500 }
-    );
+    const errText = await airtableRes.text();
+    console.error('Airtable error:', errText);
+    return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
   }
 
   // 成功 → /thanks.html にリダイレクト

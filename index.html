@@ -1175,7 +1175,7 @@
             <div class="mx-auto mb-6 md:mb-8 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
             <p class="text-center text-gray-600 mb-6 md:mb-8 text-lg">まずは2回の無料体験から始めましょう</p>
             
-            <form data-static-form-name="tden-application" method="POST" data-redirect="/thanks.html" class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
+            <form action="/api/apply" method="POST" class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
                 <div class="space-y-4">
                     <div>
                         <p class="text-gray-700 leading-relaxed">
@@ -1208,8 +1208,8 @@
                             <option value="中学2年生">中学2年生</option>
                             <option value="中学3年生">中学3年生</option>
                             <option value="高校1年生">高校1年生</option>
-                            <option value="高校2年生">高校2年生（通常受講）</option>
-                            <option value="高校3年生">高校3年生（通常受講）</option>
+                            <option value="高校2年生">高校2年生（通常受講のご案内）</option>
+                            <option value="高校3年生">高校3年生（通常受講のご案内）</option>
                         </select>
                     </div>
                     <div>
@@ -1236,8 +1236,8 @@
                         <label class="block text-gray-700 font-bold mb-1">希望コース <span class="text-red-500">*</span></label>
                         <select name="preferredCourse" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
                             <option value="" disabled selected>オプションを選択</option>
-                            <option value="スタンダードコース">スタンダードコース</option>
-                            <option value="アシストコース">アシストコース</option>
+                            <option value="スタンダード - 入会後月額料金 8,800円／税込9,680円">スタンダード - 入会後月額料金 8,800円／税込9,680円</option>
+                            <option value="アシスト - 入会後月額料金 13,800円／税込15,180円">アシスト - 入会後月額料金 13,800円／税込15,180円</option>
                             <option value="迷っている（相談したい）">迷っている（相談したい）</option>
                         </select>
                     </div>

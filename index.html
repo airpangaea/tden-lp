@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOMODACHI留学 - 中学生から始める海外同世代との国際交流</title>
+    <meta name="description" content="TOMODACHI留学は中高生向けオンライン英語留学。毎週海外の同世代と1対1で話して友達になる。英検準2級〜対応。月額8,800円から。無料体験受付中。">
+    <link rel="canonical" href="https://tomodachi-english.airpangaea.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="TOMODACHI留学 - 中学生から始める海外同世代との国際交流">
+    <meta property="og:description" content="毎週海外の同世代と1対1で話して友達になるオンライン留学。無料体験受付中。">
+    <meta property="og:image" content="https://tomodachi-english.airpangaea.com/images/tden-hero.jpg">
+    <meta property="og:url" content="https://tomodachi-english.airpangaea.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TOMODACHI留学">
+    <meta property="og:locale" content="ja_JP">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TOMODACHI留学 - 中学生から始める海外同世代との国際交流">
+    <meta name="twitter:description" content="毎週海外の同世代と1対1で話して友達になるオンライン留学。無料体験受付中。">
+    <meta name="twitter:image" content="https://tomodachi-english.airpangaea.com/images/tden-hero.jpg">
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4MCJE21MS4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-4MCJE21MS4');
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1378,11 +1405,34 @@
             
             // メニュー外をクリックしたら閉じる
             document.addEventListener('click', (e) => {
-                if (!mobileMenu.classList.contains('hidden') && 
-                    !mobileMenu.contains(e.target) && 
+                if (!mobileMenu.classList.contains('hidden') &&
+                    !mobileMenu.contains(e.target) &&
                     e.target !== menuBtn) {
                     mobileMenu.classList.add('hidden');
                 }
+            });
+        }
+
+        // GA4: スクロール深度トラッキング（25%, 50%, 75%）
+        const scrollThresholds = [25, 50, 75];
+        const scrollFired = new Set();
+        window.addEventListener('scroll', () => {
+            const scrolled = document.documentElement.scrollHeight - window.innerHeight;
+            if (scrolled <= 0) return;
+            const scrollPercent = Math.round((window.scrollY / scrolled) * 100);
+            scrollThresholds.forEach(threshold => {
+                if (scrollPercent >= threshold && !scrollFired.has(threshold)) {
+                    scrollFired.add(threshold);
+                    gtag('event', 'scroll_depth', { percent_scrolled: threshold });
+                }
+            });
+        }, { passive: true });
+
+        // GA4: フォーム送信イベント
+        const applyForm = document.querySelector('form[action="/api/apply"]');
+        if (applyForm) {
+            applyForm.addEventListener('submit', () => {
+                gtag('event', 'generate_lead', { form_name: 'free_trial_application' });
             });
         }
     </script>

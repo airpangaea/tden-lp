@@ -30,6 +30,7 @@ export async function onRequestPost(context) {
     '英検2級相当':   '英検２級（または同じレベルの英語力）を保有',
     '英検準1級相当': '英検備１級以上（または同じレベルの英語力）を保有',
     '未受験/その他': 'Not sure',
+    'わからないので相談したい': 'Not sure',
   };
 
   // --- Commentsフィールドの組み立て ---
@@ -48,6 +49,7 @@ export async function onRequestPost(context) {
     'fldteul63pEfP2j9i': englishLevelMap[englishLevel] || englishLevel,  // English Level
     'fld7kF0rL8NBwqVL9': 'Applied',                                     // Status
     'fldq5F1H26trbiiea': 'Form',                                        // Source
+    'fld0o4qUSxBA4hkJa': 'Japan',                                       // Country
   };
 
   // 任意フィールド（空でなければ追加）

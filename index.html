@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
     <title>TOMODACHI留学 - 中学生から始める海外同世代との国際交流</title>
     <meta name="description" content="TOMODACHI留学は中高生向けオンライン英語留学。毎週海外の同世代と1対1で話して友達になる。英検準2級〜対応。月額8,800円から。無料体験受付中。">
     <link rel="canonical" href="https://tomodachi-english.airpangaea.com/">
@@ -26,8 +27,8 @@
     <link rel="preload" as="image" href="/images/tden-hero.jpg" fetchpriority="high">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/jpeg" href="/images/AP_GSG_icon.jpg">
-    <link rel="apple-touch-icon" href="/images/AP_GSG_icon.jpg">
+    <link rel="icon" type="image/png" href="/images/AP_GSG_icon.png">
+    <link rel="apple-touch-icon" href="/images/AP_GSG_icon.png">
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4MCJE21MS4"></script>
@@ -43,6 +44,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rounded+M+Plus+1c:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        @layer base {
+            img {
+                height: auto;
+            }
+        }
         body {
             font-family: 'Rounded M Plus 1c', sans-serif;
         }
@@ -82,7 +88,7 @@
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><img src="images/TOMODACHI留学ロゴ_s.jpg" alt="TOMODACHI留学ロゴ" class="h-12 md:h-16 cursor-pointer" width="640" height="211"></a>
+            <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><img src="images/TOMODACHI留学ロゴ_s.jpg" alt="TOMODACHI留学ロゴ" class="h-12 md:h-16 w-auto cursor-pointer" width="640" height="211"></a>
             <div class="hidden md:flex items-center gap-4 lg:gap-8 text-sm lg:text-base">
                 <a href="#voices" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">参加者の声</a>
                 <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">講師紹介</a>
@@ -122,7 +128,7 @@
                 <!-- 見出し（常に2行） -->
                 <div class="text-left relative z-10">
                     <h1 class="font-black mb-6 leading-tight text-[#1e3a8a] text-[clamp(2rem,7vw,3.75rem)] leading-[1.12] break-keep">
-                        <span class="block whitespace-nowrap">先生じゃなく<span class="text-[#f97316]">友達</span>。</span>
+                        <span class="block whitespace-nowrap">先生じゃなく<span class="text-[#ea580c]">友達</span>。</span>
                         <span class="block">だから話せる</span>
                     </h1>
                 </div>
@@ -137,7 +143,7 @@
                     <div class="flex flex-col gap-6">
                         <p class="text-xl sm:text-2xl md:text-2xl text-gray-700 leading-tight order-1  text-center md:text-left">
                             <span class="block whitespace-nowrap">毎週 海外の同世代と1対1で話して</span>
-                            <span class="block">友達になる<span class="text-[#f97316]">オンライン留学</span></span>
+                            <span class="block">友達になる<span class="text-[#ea580c]">オンライン留学</span></span>
                         </p>
 
                         <a href="#flow" class="inline-flex w-fit self-center md:self-start bg-[#f97316] text-white px-6 py-3 md:px-8 md:py-4 rounded-lg text-xl md:text-2xl font-bold hover:bg-[#ea580c] transition shadow-xl transform hover:scale-105 order-2">
@@ -199,7 +205,7 @@
             <div class="text-center mb-10 md:mb-12">
                 <div class="inline-block animate-bounce">
                     <svg class="w-16 h-16 text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-                    <p class="text-2xl font-bold text-[#f97316] mt-2">TOMODACHI留学で解決！</p>
+                    <p class="text-2xl font-bold text-[#ea580c] mt-2">TOMODACHI留学で解決！</p>
                 </div>
             </div>
 
@@ -311,7 +317,7 @@
             <div class="scroll-container flex gap-4 md:gap-6 pb-6 md:pb-8 px-3 sm:px-4">
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1女子（奈良県立国際）</div>
                             <div class="text-sm text-gray-500">英検準2級</div>
@@ -325,7 +331,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">中2男子（開智未来）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -339,7 +345,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">中1男子（開智未来）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -353,7 +359,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">中3女子（香蘭女学校）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -367,7 +373,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1男子（江戸川学園取手）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -381,7 +387,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">中3女子（和光中）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -395,7 +401,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1女子（都立小平）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -409,7 +415,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1女子（宇都宮短大附）</div>
                             <div class="text-sm text-gray-500">英検準2級</div>
@@ -423,7 +429,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1女子（湘南白百合学園）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -437,7 +443,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1女子（名古屋大学教育学部附属）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -451,7 +457,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">中3男子（足立学園中）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -465,7 +471,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高2女子（高槻）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -479,7 +485,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1女子（静岡英和）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -493,7 +499,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高2女子（高知国際）</div>
                             <div class="text-sm text-gray-500">英検準1級</div>
@@ -507,7 +513,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高2女子（実践学園）</div>
                             <div class="text-sm text-gray-500">英検準2級</div>
@@ -521,7 +527,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高2女子（日大第一）</div>
                             <div class="text-sm text-gray-500">英検2級</div>
@@ -535,7 +541,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/girl_icon.jpg" alt="女子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高3女子（近大附広島）</div>
                             <div class="text-sm text-gray-500">英検準1級</div>
@@ -549,7 +555,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white text-gray-800 rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
-                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="640" height="640" loading="lazy">
+                        <img src="images/boy_icon.jpg" alt="男子" class="w-12 h-12 rounded-full object-cover" width="360" height="360" loading="lazy">
                         <div>
                             <div class="font-bold text-[#1e3a8a]">高1男子（法政第二）</div>
                             <div class="text-sm text-gray-500">英検準2級</div>
@@ -794,7 +800,7 @@
                 <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#FFD293]">
                     <div class="text-2xl font-bold text-[#1e3a8a] mb-2">対象</div>
                         <ul class="space-y-2 text-base text-gray-700 leading-relaxed list-disc pl-5">
-                            <li><span class="font-bold text-[#f97316]">中学1年生〜高校3年生</span><br class="md:hidden"><span class="text-sm text-gray-600">（高2/高3は通常受講のご案内）</span></li>
+                            <li><span class="font-bold text-[#ea580c]">中学1年生〜高校3年生</span><br class="md:hidden"><span class="text-sm text-gray-600">（高2/高3は通常受講のご案内）</span></li>
                             <li><span class="font-bold text-gray-900">スタンダードコース</span>：英検準2級〜準1級相当</li>
                             <li><span class="font-bold text-gray-900">アシストコース</span>：英検3級相当<br class="md:hidden"><span class="text-sm text-gray-600">（日本語サポート付き）</span></li>
                         </ul>                    
@@ -805,7 +811,7 @@
                             <li><span class="font-bold text-gray-900">日本 🇯🇵 4名</span></li>
                             <li><span class="font-bold text-gray-900">海外 🇮🇩🇵🇭🇲🇾 4名</span><br class="md:hidden"><span class="text-sm text-gray-600">（インドネシア/フィリピン/マレーシア）</span></li>
                             <li><span class="font-bold text-gray-900">講師とアシスタント</span>が指導・サポート</li>
-                            <li><span class="font-bold text-[#f97316]">海外生は提携校推薦</span>：現地校の先生から「学習意欲が高く、コミュニケーションを大切にする」と太鼓判を押された生徒が参加</li>
+                            <li><span class="font-bold text-[#ea580c]">海外生は提携校推薦</span>：現地校の先生から「学習意欲が高く、コミュニケーションを大切にする」と太鼓判を押された生徒が参加</li>
                             <li>海外生は3ヶ月に一度、一部が入れ替わることで新しい友達との出会いの機会を創出</li>
                         </ul>
                 </div>
@@ -815,7 +821,7 @@
                             <li><span class="font-bold text-gray-900">60分（毎月4回）</span></li>
                             <li><span class="font-bold text-gray-900">月曜〜金曜から選択</span></li>
                             <li>20:30〜21:30 または 22:00〜23:00</li>
-                            <li><span class="font-bold text-[#f97316]">無料体験：2回までお試し受講！</span></li>
+                            <li><span class="font-bold text-[#ea580c]">無料体験：2回までお試し受講！</span></li>
                         </ul>
                 </div>
                 <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#1e3a8a]/30 md:col-span-2">
@@ -861,7 +867,7 @@
                     <img src="images/Marina.jpg" alt="Marina" class="w-full h-64 object-cover" width="720" height="503" loading="lazy">
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-2 text-[#1e3a8a]">Marina</h3>
-                        <p class="text-sm text-[#f97316] font-semibold mb-3">国際交流プロフェッショナル</p>
+                        <p class="text-sm text-[#ea580c] font-semibold mb-3">国際交流プロフェッショナル</p>
                         <p class="text-gray-700 leading-relaxed">
                             フィリピン出身・日本在住。交流プログラムの進行を担う人気スタッフです。講師経験も豊富で、日本生への深い理解に基づいた「わかりやすく楽しい」場作りと、情熱あふれるリードが持ち味です。
                         </p>
@@ -871,7 +877,7 @@
                     <img src="images/Nerissa 3-s.jpg" alt="Nerissa" class="w-full h-64 object-cover" width="719" height="488" loading="lazy">
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-2 text-[#1e3a8a]">Nerissa</h3>
-                        <p class="text-sm text-[#f97316] font-semibold mb-3">IBDP現役講師</p>
+                        <p class="text-sm text-[#ea580c] font-semibold mb-3">IBDP現役講師</p>
                         <p class="text-gray-700 leading-relaxed">
                             フィリピン出身・日本在住。IBDP（国際バカロレア）現役講師。3カ国での多彩な指導実績を活かし、温かくフレンドリーに学びの幅を広げます。
                         </p>
@@ -881,7 +887,7 @@
                     <img src="images/Jomer_s.jpg" alt="Jomer" class="w-full h-64 object-cover" width="1024" height="719" loading="lazy">
                     <div class="p-6">
                         <h3 class="text-2xl font-bold mb-2 text-[#1e3a8a]">Jomer</h3>
-                        <p class="text-sm text-[#f97316] font-semibold mb-3">教育委員会採用の現役講師</p>
+                        <p class="text-sm text-[#ea580c] font-semibold mb-3">教育委員会採用の現役講師</p>
                         <p class="text-gray-700 leading-relaxed">
                             フィリピン出身・日本在住。教育委員会に直接採用されている実力派の現役講師。理科教師やインター校での豊富な経験を活かした、明るく活気あふれるレッスンが人気です。
                         </p>
@@ -944,7 +950,7 @@
             </div>
             <div class="text-center">
                 <div class="inline-block bg-[#f97316]/10 border-2 border-[#f97316] rounded-xl px-8 py-4">
-                    <p class="text-lg font-bold text-[#f97316] mb-1">🎉 友達割引キャンペーン</p>
+                    <p class="text-lg font-bold text-[#ea580c] mb-1">🎉 友達割引キャンペーン</p>
                     <p class="text-gray-700">お友達と申し込むと初月25%OFF！（入会後の友達紹介でも双方が25%OFF）</p>
                 </div>
             </div>

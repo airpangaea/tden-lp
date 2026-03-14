@@ -11,7 +11,7 @@
     <!-- Open Graph -->
     <meta property="og:title" content="TOMODACHI留学 - 中学生から始める海外同世代との国際交流">
     <meta property="og:description" content="毎週海外の同世代と1対1で話して友達になるオンライン留学。無料体験受付中。">
-    <meta property="og:image" content="https://tomodachi-english.airpangaea.com/images/tden-hero.jpg">
+    <meta property="og:image" content="https://tomodachi-english.airpangaea.com/images/tden-og.jpg">
     <meta property="og:url" content="https://tomodachi-english.airpangaea.com/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="TOMODACHI留学">
@@ -21,7 +21,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="TOMODACHI留学 - 中学生から始める海外同世代との国際交流">
     <meta name="twitter:description" content="毎週海外の同世代と1対1で話して友達になるオンライン留学。無料体験受付中。">
-    <meta name="twitter:image" content="https://tomodachi-english.airpangaea.com/images/tden-hero.jpg">
+    <meta name="twitter:image" content="https://tomodachi-english.airpangaea.com/images/tden-og.jpg">
 
     <!-- Hero image preload for LCP -->
     <link rel="preload" as="image" href="/images/tden-hero.jpg" fetchpriority="high">
@@ -1457,11 +1457,12 @@
             });
         }, { passive: true });
 
-        // GA4: フォーム送信イベント
+        // GA4 + Meta Pixel: フォーム送信イベント
         const applyForm = document.querySelector('form[action="/api/apply"]');
         if (applyForm) {
             applyForm.addEventListener('submit', () => {
                 gtag('event', 'generate_lead', { form_name: 'free_trial_application' });
+                fbq('track', 'Lead', { value: 8800, currency: 'JPY', content_name: 'TOMODACHI留学 無料体験申込' });
             });
         }
     </script>

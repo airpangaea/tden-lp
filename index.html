@@ -1457,14 +1457,8 @@
             });
         }, { passive: true });
 
-        // GA4 + Meta Pixel: フォーム送信イベント
-        const applyForm = document.querySelector('form[action="/api/apply"]');
-        if (applyForm) {
-            applyForm.addEventListener('submit', () => {
-                gtag('event', 'generate_lead', { form_name: 'free_trial_application' });
-                fbq('track', 'Lead');
-            });
-        }
+        // GA4 generate_lead + Meta Lead はthanks.htmlで発火（二重計測防止）
+        // index.htmlではスクロール計測のみ
     </script>
 </body>
 </html>

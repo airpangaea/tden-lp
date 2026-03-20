@@ -59,7 +59,9 @@
     <link rel="stylesheet" href="/css/tailwind.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rounded+M+Plus+1c:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Rounded+M+Plus+1c:wght@400;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Rounded+M+Plus+1c:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Rounded+M+Plus+1c:wght@400;700&display=swap" rel="stylesheet"></noscript>
     <style>
         @layer base {
             img {
@@ -130,11 +132,11 @@
         
         <!-- モバイルメニュー -->
         <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 py-4 px-4 flex flex-col gap-4">
-            <a href="#voices" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">参加者の声</a>
-            <a href="#lesson-overview" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">レッスン概要と流れ</a>
-            <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">講師紹介</a>
-            <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">料金</a>
-            <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] font-medium py-2 border-b border-[#1e3a8a]/10">保護者の皆様へ</a>
+            <a href="#voices" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">参加者の声</a>
+            <a href="#lesson-overview" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">レッスン概要と流れ</a>
+            <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">講師紹介</a>
+            <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">料金</a>
+            <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">保護者の皆様へ</a>
             <a href="#flow" class="bg-[#f97316] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-center text-lg">無料体験に申し込む</a>
         </div>
     </header>
@@ -144,7 +146,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 items-start gap-8 md:gap-x-12 md:gap-y-4">
                 <!-- 見出し（常に2行） -->
                 <div class="text-left relative z-10">
-                    <h1 class="font-black mb-6 leading-tight text-[#1e3a8a] text-[clamp(2rem,7vw,3.75rem)] leading-[1.12] break-keep">
+                    <h1 class="font-bold mb-6 leading-tight text-[#1e3a8a] text-[clamp(2rem,7vw,3.75rem)] leading-[1.12] break-keep">
                         <span class="block whitespace-nowrap">先生じゃなく<span class="text-[#ea580c]">友達</span>。</span>
                         <span class="block">だから話せる</span>
                     </h1>
@@ -590,7 +592,7 @@
 
                 <div class="scroll-item flex-none w-80 bg-white/10 border border-white/20 rounded-2xl p-6 shadow-xl">
                     <div class="text-center">
-                        <div class="text-2xl font-black mb-2">海外生徒の声</div>
+                        <div class="text-2xl font-bold mb-2">海外生徒の声</div>
                         <div class="text-sm text-blue-100">Overseas student voices</div>
                     </div>
                 </div>
@@ -928,7 +930,7 @@
                     <div class="text-center mb-6">
                         <h3 class="text-2xl font-bold text-[#1e3a8a] mb-2">スタンダードコース</h3>
                         <div class="text-gray-600 mb-4">英検準2級〜準1級目安</div>
-                        <div class="text-4xl font-black text-[#1e3a8a] mb-2">¥8,800<span class="text-lg font-normal text-gray-600">/月</span></div>
+                        <div class="text-4xl font-bold text-[#1e3a8a] mb-2">¥8,800<span class="text-lg font-normal text-gray-600">/月</span></div>
                         <div class="text-sm text-gray-600">(税込 ¥9,680)</div>
                     </div>
                     <ul class="space-y-3 mb-6">
@@ -950,7 +952,7 @@
                     <div class="text-center mb-6">
                         <h3 class="text-2xl font-bold mb-2">アシストコース</h3>
                         <div class="text-blue-100 mb-4">英検3級目安</div>
-                        <div class="text-4xl font-black mb-2">¥13,800<span class="text-lg font-normal text-blue-100">/月</span></div>
+                        <div class="text-4xl font-bold mb-2">¥13,800<span class="text-lg font-normal text-blue-100">/月</span></div>
                         <div class="text-sm text-blue-100">(税込 ¥15,180)</div>
                     </div>
                     <ul class="space-y-3 mb-6">

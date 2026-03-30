@@ -1270,15 +1270,10 @@
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-1">学年 <span class="text-red-500">*</span></label>
-                        <select name="grade" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
+                        <select name="grade" id="grade-select" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a8a]">
                             <option value="" disabled selected>オプションを選択</option>
-                            <option value="中学1年生">中学1年生</option>
-                            <option value="中学2年生">中学2年生</option>
-                            <option value="中学3年生">中学3年生</option>
-                            <option value="高校1年生">高校1年生</option>
-                            <option value="高校2年生">高校2年生（通常受講のご案内）</option>
-                            <option value="高校3年生">高校3年生（通常受講のご案内）</option>
                         </select>
+                        <p id="grade-note" class="text-xs text-gray-500 mt-1"></p>
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-1">メールアドレス <span class="text-red-500">*</span></label>
@@ -1320,7 +1315,7 @@
                         <a href="https://ja.airpangaea.com/terms-and-conditions" target="_self" class="underline text-[#1e3a8a] hover:text-[#f97316] transition">利用規約</a>
                         にご同意頂いた上でお申し込みください。
                     </p>
-                    <button type="submit" class="w-full bg-[#f97316] text-white px-8 py-3 rounded-lg text-2xl font-bold hover:bg-[#ea580c] transition shadow-lg">
+                    <button type="submit" id="submitBtn" class="w-full bg-[#f97316] text-white px-8 py-3 rounded-lg text-2xl font-bold hover:bg-[#ea580c] transition shadow-lg">
                         無料体験に申し込む
                     </button>
                 </div>
@@ -1466,6 +1461,63 @@
 
         // GA4 generate_lead + Meta Lead はthanks.htmlで発火（二重計測防止）
         // index.htmlではスクロール計測のみ
+
+        // ① 二重送信防止: submit時にボタンを即座に無効化
+        const applyForm = document.querySelector('form[action="/api/apply"]');
+        if (applyForm) {
+            applyForm.addEventListener('submit', function() {
+                const btn = document.getElementById('submitBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = '送信中...';
+                    btn.classList.add('opacity-60', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        // ③ 学年選択: 日付に応じて選択肢と注釈を切り替え
+        (function() {
+            const gradeSelect = document.getElementById('grade-select');
+            const gradeNote = document.getElementById('grade-note');
+            if (!gradeSelect || !gradeNote) return;
+
+            const now = new Date();
+            const isNewSchoolYear = now.getMonth() >= 3; // 4月以降 (0-indexed: 3=April)
+
+            if (isNewSchoolYear) {
+                gradeNote.textContent = '4月以降のお申し込みのため、新学年をお選びください。無料体験の対象は新中学1年生〜新高校1年生です。';
+                const options = [
+                    { value: '新中学1年生', text: '新中学1年生' },
+                    { value: '新中学2年生', text: '新中学2年生' },
+                    { value: '新中学3年生', text: '新中学3年生' },
+                    { value: '新高校1年生', text: '新高校1年生' },
+                    { value: '新高校2年生', text: '新高校2年生（通常受講のご案内）' },
+                    { value: '新高校3年生', text: '新高校3年生（通常受講のご案内）' },
+                ];
+                options.forEach(function(opt) {
+                    const el = document.createElement('option');
+                    el.value = opt.value;
+                    el.textContent = opt.text;
+                    gradeSelect.appendChild(el);
+                });
+            } else {
+                gradeNote.textContent = '3月31日までにお申し込みの場合は、現在（3月時点）の学年をお選びください。無料体験の対象は中学1年生〜高校1年生です。3月時点で高校1年生の方は、3月31日までのお申し込みで無料体験が可能です。';
+                const options = [
+                    { value: '中学1年生', text: '中学1年生' },
+                    { value: '中学2年生', text: '中学2年生' },
+                    { value: '中学3年生', text: '中学3年生' },
+                    { value: '高校1年生', text: '高校1年生' },
+                    { value: '高校2年生', text: '高校2年生（通常受講のご案内）' },
+                    { value: '高校3年生', text: '高校3年生（通常受講のご案内）' },
+                ];
+                options.forEach(function(opt) {
+                    const el = document.createElement('option');
+                    el.value = opt.value;
+                    el.textContent = opt.text;
+                    gradeSelect.appendChild(el);
+                });
+            }
+        })();
     </script>
 </body>
 </html>

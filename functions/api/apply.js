@@ -7,6 +7,20 @@ export async function onRequestPost(context) {
     rawForm[key] = value;
   }
 
+  // --- スパム対策 ---
+  const thanksUrl = new URL('/thanks.html', request.url).toString();
+
+  // a. ハニーポット: botが非表示フィールドに入力した場合
+  if (rawForm.website) {
+    return Response.redirect(thanksUrl, 303);
+  }
+
+  // b. 時間ベースチェック: 3秒未満の送信はbot
+  const ts = parseInt(rawForm._ts || '0', 10);
+  if (ts && (Date.now() - ts) < 3000) {
+    return Response.redirect(thanksUrl, 303);
+  }
+
   const firstName       = rawForm.firstName || '';
   const school          = rawForm.school || '';
   const gender          = rawForm.gender || '';
@@ -16,6 +30,23 @@ export async function onRequestPost(context) {
   const englishLevel    = rawForm.englishLevel || '';
   const preferredCourse = rawForm.preferredCourse || '';
   const message         = rawForm.message || '';
+
+  // c. バリデーション: 名前の長さチェック
+  if (!firstName || firstName.length > 100) {
+    return new Response('お名前を正しく入力してください。', { status: 400 });
+  }
+
+  // d. バリデーション: メール形式チェック
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    return new Response('有効なメールアドレスを入力してください。', { status: 400 });
+  }
+
+  // e. URL含有チェック（名前・学校名にURLが含まれる場合はスパム）
+  const urlPattern = /https?:\/\/|telegra\.ph|\.me\//i;
+  if (urlPattern.test(firstName) || urlPattern.test(school)) {
+    return Response.redirect(thanksUrl, 303);
+  }
 
   const genderMap = {
     '男': '男性', '女': '女性', '回答しない': 'Prefer not to say',
@@ -77,5 +108,5 @@ export async function onRequestPost(context) {
     return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
   }
 
-  return Response.redirect(new URL('/thanks.html', request.url).toString(), 303);
+  return Response.redirect(thanksUrl, 303);
 }

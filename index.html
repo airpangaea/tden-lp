@@ -974,7 +974,7 @@
             <div class="text-center">
                 <div class="inline-block bg-[#f97316]/10 border-2 border-[#f97316] rounded-xl px-8 py-4">
                     <p class="text-lg font-bold text-[#ea580c] mb-1">🎉 友達割引キャンペーン</p>
-                    <p class="text-gray-700">お友達と申し込むと初月25%OFF！（入会後の友達紹介でも双方が25%OFF）</p>
+                    <p class="text-gray-700">お友達と申し込むと初月<span class="font-bold text-[#ea580c]">50%OFF</span>！（入会後の友達紹介でも双方が<span class="font-bold text-[#ea580c]">50%OFF</span>）</p>
                 </div>
             </div>
         </div>
@@ -1244,6 +1244,12 @@
             <p class="text-center text-gray-600 mb-6 md:mb-8 text-lg">まずは2回の無料体験から始めましょう</p>
             
             <form action="/api/apply" method="POST" class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
+                <!-- ハニーポット（botが入力する非表示フィールド） -->
+                <div style="position:absolute;left:-9999px;" aria-hidden="true">
+                    <input type="text" name="website" tabindex="-1" autocomplete="off">
+                </div>
+                <!-- 時間ベースbot検出 -->
+                <input type="hidden" name="_ts" value="">
                 <div class="space-y-4">
                     <div>
                         <p class="text-gray-700 leading-relaxed">
@@ -1461,6 +1467,10 @@
 
         // GA4 generate_lead + Meta Lead はthanks.htmlで発火（二重計測防止）
         // index.htmlではスクロール計測のみ
+
+        // タイムスタンプ設定（スパムbot検出用）
+        const tsField = document.querySelector('input[name="_ts"]');
+        if (tsField) tsField.value = Date.now();
 
         // ① 二重送信防止: submit時にボタンを即座に無効化
         const applyForm = document.querySelector('form[action="/api/apply"]');

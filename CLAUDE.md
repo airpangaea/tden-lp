@@ -136,3 +136,7 @@
 - **フィールド編集制限**: Airtableのフィールドレベル編集制限が設定されたフィールドは、PAT/MCP問わずAPI経由で書き込み不可（403 INVALID_PERMISSIONS）。エラーメッセージがテーブルレベルと同一のため判別困難。新フィールド追加時は必ず確認。
 - **Field ID必須**: PAT経由のAPI呼び出しはフィールド名ではなくField IDを使用すること
 - **テストレコード**: Airtable上に `__TEST_*__`, `__DIAG_*__`, `__FINAL_TEST__` 名のテストレコードが残っている場合は削除すること
+
+## Chrome MCP 使用時の注意
+- Chrome MCPツールを使う前に必ず `tabs_context_mcp` を最初に呼んでタブIDを取得すること
+- tabIdは必ず数値（number）として渡すこと（文字列で渡すとエラーになる）

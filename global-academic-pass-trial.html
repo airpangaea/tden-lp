@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Global Academic Pass トライアル | AirPangaea</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --navy: #003366;
+            --navy-light: #0a4a8a;
+            --navy-dark: #001f3f;
+            --yellow: #f9a825;
+            --yellow-light: #ffd54f;
+            --white: #ffffff;
+            --off-white: #fafaf7;
+            --gray-light: #f0f2f5;
+            --gray: #888;
+            --text: #1a1a2e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--off-white);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            background: var(--navy-dark);
+            position: relative;
+            overflow: hidden;
+            padding: 80px 24px 90px;
+            text-align: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -120px; right: -120px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(249,168,37,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -80px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(10,74,138,0.4) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(249,168,37,0.15);
+            border: 1px solid rgba(249,168,37,0.5);
+            color: var(--yellow);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 6px 18px;
+            border-radius: 20px;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(36px, 8vw, 68px);
+            font-weight: 900;
+            color: var(--white);
+            line-height: 1.1;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 8px;
+        }
+
+        .hero-logo span {
+            color: var(--yellow);
+        }
+
+        .hero-sub {
+            font-size: clamp(14px, 3vw, 18px);
+            color: rgba(255,255,255,0.65);
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 36px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-free {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--yellow);
+            color: var(--navy-dark);
+            font-size: 15px;
+            font-weight: 700;
+            padding: 10px 28px;
+            border-radius: 40px;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 1px;
+        }
+
+        .hero-divider {
+            width: 60px;
+            height: 3px;
+            background: var(--yellow);
+            margin: 40px auto 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── SECTION ── */
+        .section {
+            padding: 72px 24px;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--yellow);
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(24px, 5vw, 36px);
+            font-weight: 700;
+            color: var(--navy-dark);
+            line-height: 1.3;
+            margin-bottom: 24px;
+        }
+
+        .section-body {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.9;
+        }
+
+        hr.divider {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 0;
+        }
+
+        /* ── HIGHLIGHT CARDS ── */
+        .highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 36px;
+        }
+
+        .highlight-card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 28px 24px;
+            box-shadow: 0 2px 16px rgba(0,33,64,0.07);
+            border-top: 4px solid var(--yellow);
+        }
+
+        .highlight-card .icon {
+            font-size: 28px;
+            color: var(--navy);
+            margin-bottom: 14px;
+        }
+
+        .highlight-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin-bottom: 8px;
+        }
+
+        .highlight-card p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* ── SCHEDULE ── */
+        .schedule-bg {
+            background: var(--navy-dark);
+            padding: 72px 24px;
+        }
+
+        .schedule-inner {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .schedule-bg .section-title { color: var(--white); }
+        .schedule-bg .section-label { color: var(--yellow); }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 36px;
+        }
+
+        .schedule-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .schedule-card:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .schedule-card .session-num {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--yellow);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .schedule-card .session-date {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 6px;
+        }
+
+        .schedule-card .session-time {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 14px;
+        }
+
+        .session-tag {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .tag-speaking {
+            background: rgba(249,168,37,0.2);
+            color: var(--yellow);
+            border: 1px solid rgba(249,168,37,0.4);
+        }
+
+        .tag-writing {
+            background: rgba(100,180,255,0.15);
+            color: #90caf9;
+            border: 1px solid rgba(100,180,255,0.3);
+        }
+
+        /* ── CLASS MEMBERS ── */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 36px;
+        }
+
+        .member-card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 28px 24px;
+            box-shadow: 0 2px 16px rgba(0,33,64,0.07);
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .member-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .avatar-student { background: #e8eef6; color: var(--navy); }
+        .avatar-instructor { background: #fff3cd; color: #b8860b; }
+        .avatar-assistant { background: #e8f5e9; color: #2e7d32; }
+
+        .member-info h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin-bottom: 4px;
+        }
+
+        .member-info p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* ── LESSON PREVIEW ── */
+        .preview-bg {
+            background: var(--gray-light);
+            padding: 72px 24px;
+        }
+
+        .preview-inner {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .preview-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(249,168,37,0.15);
+            border: 1px solid rgba(249,168,37,0.4);
+            color: #b8860b;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 6px;
+            margin-bottom: 32px;
+        }
+
+        /* O-R-E-S Template */
+        .ores-container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0,33,64,0.08);
+            margin-bottom: 28px;
+        }
+
+        .ores-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--navy);
+            margin-bottom: 20px;
+        }
+
+        .ores-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ores-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+        .ores-letter {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .o-letter { background: #fff8e1; color: #f9a825; }
+        .r-letter { background: #e8eef6; color: var(--navy); }
+        .e-letter { background: #e8f5e9; color: #2e7d32; }
+        .s-letter { background: #f3e5f5; color: #6a1b9a; }
+
+        .ores-content h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin-bottom: 3px;
+        }
+
+        .ores-content p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Model Response */
+        .model-response {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0,33,64,0.08);
+            margin-bottom: 28px;
+        }
+
+        .model-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--navy);
+            margin-bottom: 20px;
+        }
+
+        .model-block {
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .model-block:last-child { margin-bottom: 0; }
+
+        .model-o { background: #fff8e1; border-left: 4px solid #f9a825; }
+        .model-r { background: #e8eef6; border-left: 4px solid var(--navy); }
+        .model-e { background: #e8f5e9; border-left: 4px solid #2e7d32; }
+        .model-s { background: #f3e5f5; border-left: 4px solid #6a1b9a; }
+
+        .model-label {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-right: 8px;
+            color: white;
+            vertical-align: middle;
+        }
+
+        .label-o { background: #f9a825; color: #333; }
+        .label-r { background: var(--navy); }
+        .label-e { background: #2e7d32; }
+        .label-s { background: #6a1b9a; }
+
+        /* Vocabulary */
+        .vocab-container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0,33,64,0.08);
+        }
+
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 500px) {
+            .vocab-grid { grid-template-columns: 1fr; }
+        }
+
+        .vocab-item {
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .vocab-item.good { background: #e8f5e9; }
+        .vocab-item.bad { background: #fce4ec; }
+
+        .vocab-item .vocab-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .vocab-item.good .vocab-label { color: #2e7d32; }
+        .vocab-item.bad .vocab-label { color: #c62828; }
+
+        .vocab-word {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            margin-bottom: 3px;
+        }
+
+        .vocab-example {
+            font-size: 12px;
+            color: #555;
+            font-style: italic;
+        }
+
+        .vocab-footer {
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: #eef2ff;
+            border-left: 4px solid var(--navy);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* ── CONTACT ── */
+        .contact-bg {
+            background: var(--navy);
+            padding: 72px 24px;
+            text-align: center;
+        }
+
+        .contact-inner {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-bg .section-label { color: var(--yellow); }
+        .contact-bg .section-title { color: var(--white); }
+
+        .contact-body {
+            font-size: 15px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.9;
+            margin-bottom: 32px;
+        }
+
+        .contact-email {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--yellow);
+            color: var(--navy-dark);
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px 32px;
+            border-radius: 40px;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .contact-email:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(249,168,37,0.35);
+        }
+
+        .contact-note {
+            margin-top: 24px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--navy-dark);
+            padding: 28px 24px;
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 600px) {
+            .hero { padding: 60px 20px 70px; }
+            .section { padding: 52px 20px; }
+            .schedule-bg, .preview-bg, .contact-bg { padding: 52px 20px; }
+            .ores-container, .model-response, .vocab-container { padding: 24px 18px; }
+            .member-card { flex-direction: column; gap: 12px; }
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-badge, .hero-logo, .hero-sub, .hero-free {
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .hero-sub { animation-delay: 0.1s; }
+        .hero-free { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+    <div class="hero-badge"><i class="fa-solid fa-star"></i>&nbsp; 招待制・無料トライアル</div>
+    <h1 class="hero-logo">Global<br><span>Academic Pass</span></h1>
+    <p class="hero-sub">論理的英語表現で、世界と対話する</p>
+    <div class="hero-free"><i class="fa-solid fa-gift"></i> 参加費：完全無料</div>
+    <div class="hero-divider"></div>
+</section>
+
+<!-- ── OVERVIEW ── -->
+<section class="section">
+    <p class="section-label">About This Course</p>
+    <h2 class="section-title">このコースについて</h2>
+    <p class="section-body">
+        TOMODACHI英語の「楽しく話す」から一歩進んで、<strong>論理的・学術的な英語表現</strong>を身につけるための特別コースです。
+        IELTSのフレームワークを活用しながら、自分の意見を構造的に組み立て、異文化のパートナーと深いディスカッションができるスキルを磨きます。<br><br>
+        「英語が話せる」から<strong>「英語で考えを伝えられる」</strong>へ。大学受験・留学・海外大学での学びを見据えた生徒のための4回限定トライアルです。
+    </p>
+
+    <div class="highlight-grid">
+        <div class="highlight-card">
+            <div class="icon"><i class="fa-solid fa-brain"></i></div>
+            <h3>論理構成スキル</h3>
+            <p>O-R-E-Sテンプレートで、意見・理由・例・まとめを一貫した流れで話す力を養います。</p>
+        </div>
+        <div class="highlight-card">
+            <div class="icon"><i class="fa-solid fa-book-open"></i></div>
+            <h3>アカデミック語彙</h3>
+            <p>日常英語からIELTSレベルの表現へ。語彙の選択でスピーキングの印象が大きく変わります。</p>
+        </div>
+        <div class="highlight-card">
+            <div class="icon"><i class="fa-solid fa-globe"></i></div>
+            <h3>異文化ディスカッション</h3>
+            <p>海外の生徒と社会的なテーマについて議論し、世界標準の対話力を実践的に身につけます。</p>
+        </div>
+        <div class="highlight-card">
+            <div class="icon"><i class="fa-solid fa-pen-nib"></i></div>
+            <h3>ライティングも強化</h3>
+            <p>スピーキングで培った論理構成をライティングにも応用。IELTS Task 2形式で実力を高めます。</p>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── SCHEDULE ── -->
+<div class="schedule-bg">
+    <div class="schedule-inner">
+        <p class="section-label">Schedule</p>
+        <h2 class="section-title">開催スケジュール</h2>
+        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">毎回火曜日 22:00〜23:00（Zoom開催・全4回）</p>
+
+        <div class="schedule-grid">
+            <div class="schedule-card">
+                <div class="session-num">Session 1</div>
+                <div class="session-date">4月21日（火）</div>
+                <div class="session-time">22:00 – 23:00</div>
+                <span class="session-tag tag-speaking">Speaking</span>
+            </div>
+            <div class="schedule-card">
+                <div class="session-num">Session 2</div>
+                <div class="session-date">4月28日（火）</div>
+                <div class="session-time">22:00 – 23:00</div>
+                <span class="session-tag tag-writing">Writing</span>
+            </div>
+            <div class="schedule-card">
+                <div class="session-num">Session 3</div>
+                <div class="session-date">5月12日（火）</div>
+                <div class="session-time">22:00 – 23:00</div>
+                <span class="session-tag tag-speaking">Speaking</span>
+            </div>
+            <div class="schedule-card">
+                <div class="session-num">Session 4</div>
+                <div class="session-date">5月19日（火）</div>
+                <div class="session-time">22:00 – 23:00</div>
+                <span class="session-tag tag-writing">Writing</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CLASS ── -->
+<section class="section">
+    <p class="section-label">Class</p>
+    <h2 class="section-title">クラス構成</h2>
+    <p class="section-body">少人数制・招待制。日本と海外の生徒が2名ずつ参加するグローバルなクラスです。</p>
+
+    <div class="members-grid">
+        <div class="member-card">
+            <div class="member-avatar avatar-student"><i class="fa-solid fa-user-graduate"></i></div>
+            <div class="member-info">
+                <h3>日本人生徒 × 2名</h3>
+                <p>TOMODACHI英語参加者から招待。英検2級以上を目安とした英語力を持つ生徒が対象です。</p>
+            </div>
+        </div>
+        <div class="member-card">
+            <div class="member-avatar avatar-student"><i class="fa-solid fa-earth-asia"></i></div>
+            <div class="member-info">
+                <h3>海外生徒 × 2名</h3>
+                <p>インドネシアなど海外のTOMODACHI参加者。社会テーマについてともに考え議論するパートナーです。</p>
+            </div>
+        </div>
+        <div class="member-card">
+            <div class="member-avatar avatar-instructor"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <div class="member-info">
+                <h3>講師：Jomer</h3>
+                <p>授業進行・フィードバック・論理構成の指導を担当。生徒の発言を引き出しながら授業をリードします。</p>
+            </div>
+        </div>
+        <div class="member-card">
+            <div class="member-avatar avatar-assistant"><i class="fa-solid fa-star"></i></div>
+            <div class="member-info">
+                <h3>アシスタント：Tiffany</h3>
+                <p>IELTSを用いてマレーシアのトップ大学に進学した現役大学生。日本語も流暢で、リアルな海外大学受験の経験談を共有してくれます。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── LESSON PREVIEW ── -->
+<div class="preview-bg">
+    <div class="preview-inner">
+        <p class="section-label">Lesson Preview</p>
+        <h2 class="section-title" style="color: var(--navy-dark);">Session 1 のスピーキングを<br>少し覗いてみよう</h2>
+        <div class="preview-note">
+            <i class="fa-solid fa-eye"></i>
+            Session 1（4/21）の授業内容より抜粋
+        </div>
+
+        <!-- O-R-E-S -->
+        <div class="ores-container">
+            <div class="ores-title"><i class="fa-solid fa-sitemap"></i>&nbsp; 論理テンプレート：O-R-E-S</div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">IELTSスピーキングPart 3で求められる「意見を展開する力」。この4ステップで、どんな質問にも構造的に答えられます。</p>
+
+            <div class="ores-row">
+                <div class="ores-letter o-letter">O</div>
+                <div class="ores-content">
+                    <h4>Opinion（意見）</h4>
+                    <p>I believe that... / In my view...</p>
+                </div>
+            </div>
+            <div class="ores-row">
+                <div class="ores-letter r-letter">R</div>
+                <div class="ores-content">
+                    <h4>Reason（理由）</h4>
+                    <p>This is because... / The main reason is...</p>
+                </div>
+            </div>
+            <div class="ores-row">
+                <div class="ores-letter e-letter">E</div>
+                <div class="ores-content">
+                    <h4>Example（具体例）</h4>
+                    <p>For instance... / In my country, for example...</p>
+                </div>
+            </div>
+            <div class="ores-row">
+                <div class="ores-letter s-letter">S</div>
+                <div class="ores-content">
+                    <h4>Summary（まとめ）</h4>
+                    <p>Therefore... / That is why I think...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Response -->
+        <div class="model-response">
+            <div class="model-title"><i class="fa-solid fa-circle-check" style="color: #2e7d32;"></i>&nbsp; O-R-E-S を使った模範回答例</div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 16px;">質問：<em>"Do you think online learning is better than classroom learning?"</em></p>
+
+            <div class="model-block model-o">
+                <span class="model-label label-o">O</span>
+                In my view, online learning has real advantages for motivated students.
+            </div>
+            <div class="model-block model-r">
+                <span class="model-label label-r">R</span>
+                The main reason is that it allows learners to study at their own pace and revisit difficult content.
+            </div>
+            <div class="model-block model-e">
+                <span class="model-label label-e">E</span>
+                For instance, when I struggled with a grammar point, I was able to rewatch the explanation three times — something impossible in a regular classroom.
+            </div>
+            <div class="model-block model-s">
+                <span class="model-label label-s">S</span>
+                That is why I believe online learning can be highly effective, provided the student is self-disciplined.
+            </div>
+        </div>
+
+        <!-- Academic Vocabulary -->
+        <div class="vocab-container">
+            <div class="ores-title"><i class="fa-solid fa-font"></i>&nbsp; アカデミック語彙：言葉を「格上げ」する</div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 8px;">日常的な単語をより正確で学術的な表現に置き換えるだけで、スピーキングの印象は大きく変わります。</p>
+
+            <div class="vocab-grid">
+                <div class="vocab-item good">
+                    <div class="vocab-label">"good" の代わりに</div>
+                    <div class="vocab-word">Beneficial</div>
+                    <div class="vocab-example">"It is beneficial because..."</div>
+                </div>
+                <div class="vocab-item bad">
+                    <div class="vocab-label">"bad" の代わりに</div>
+                    <div class="vocab-word">Harmful</div>
+                    <div class="vocab-example">"This could be harmful to..."</div>
+                </div>
+                <div class="vocab-item good">
+                    <div class="vocab-label">"good" の代わりに</div>
+                    <div class="vocab-word">Essential</div>
+                    <div class="vocab-example">"It is essential for students to..."</div>
+                </div>
+                <div class="vocab-item bad">
+                    <div class="vocab-label">"bad" の代わりに</div>
+                    <div class="vocab-word">Challenging</div>
+                    <div class="vocab-example">"One challenging aspect is..."</div>
+                </div>
+            </div>
+            <div class="vocab-footer">
+                <strong>"I think" の代わりに：</strong>&nbsp;&nbsp;
+                "I am of the opinion that..." &nbsp;/&nbsp; "I would argue that..."
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── CONTACT ── -->
+<div class="contact-bg">
+    <div class="contact-inner">
+        <p class="section-label">Contact</p>
+        <h2 class="section-title">参加について</h2>
+        <p class="contact-body">
+            本コースはTOMODACHI英語の参加者から一部招待制で行います。<br>
+            ご不明点や参加についてのご連絡は、事務局までメールでお送りください。
+        </p>
+        <a href="mailto:support@airpangaea.com" class="contact-email">
+            <i class="fa-solid fa-envelope"></i>
+            support@airpangaea.com
+        </a>
+        <p class="contact-note">AirPangaea 事務局</p>
+    </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+    <p>© 2025 AirPangaea / TOMODACHI English &nbsp;|&nbsp; Global Academic Pass Trial</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O-R-E-S リファレンスシート | Global Academic Pass Course</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #222;
+            --light-bg: #FFF9E5;
+            --ores-o: #f9a825;
+            --ores-r: #003366;
+            --ores-e: #2e7d32;
+            --ores-s: #6a1b9a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans JP', 'Roboto', sans-serif;
+            background: #e2e8f0;
+            color: var(--text-main);
+            padding: 30px 0;
+            line-height: 1.6;
+        }
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 0 auto;
+            padding: 18mm 16mm;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .header {
+            border-bottom: 3px solid var(--navy-blue);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: var(--navy-blue);
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .header .brand {
+            text-align: right;
+            font-size: 11px;
+            color: #555;
+            line-height: 1.5;
+            font-family: 'Roboto', sans-serif;
+        }
+        .header .brand strong {
+            color: var(--navy-blue);
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .intro {
+            background: var(--light-bg);
+            border-left: 5px solid var(--accent-yellow);
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            line-height: 1.75;
+        }
+        .intro strong { color: var(--navy-blue); }
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .step {
+            border-radius: 6px;
+            padding: 11px 14px;
+            border-left: 5px solid;
+        }
+        .step.o { background: #fff8e1; border-color: var(--ores-o); }
+        .step.r { background: #e8eef6; border-color: var(--ores-r); }
+        .step.e { background: #e8f5e9; border-color: var(--ores-e); }
+        .step.s { background: #f3e5f5; border-color: var(--ores-s); }
+        .step-head {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .step-letter {
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1;
+            font-family: 'Roboto', sans-serif;
+        }
+        .step.o .step-letter { color: var(--ores-o); }
+        .step.r .step-letter { color: var(--ores-r); }
+        .step.e .step-letter { color: var(--ores-e); }
+        .step.s .step-letter { color: var(--ores-s); }
+        .step-name-en {
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+            font-family: 'Roboto', sans-serif;
+        }
+        .step-name-jp {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            margin-left: 4px;
+        }
+        .step-desc {
+            font-size: 12px;
+            color: #444;
+            margin-bottom: 7px;
+            line-height: 1.6;
+        }
+        .step-phrases {
+            font-size: 12.5px;
+            color: #333;
+            line-height: 1.7;
+            font-family: 'Roboto', sans-serif;
+        }
+        .step-phrases em {
+            font-style: normal;
+            background: white;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        .model {
+            border: 2px solid var(--navy-blue);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+        .model-q {
+            background: var(--navy-blue);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-family: 'Roboto', sans-serif;
+        }
+        .model-q .label {
+            color: var(--accent-yellow);
+            font-size: 11px;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 2px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 700;
+        }
+        .model-block {
+            padding: 7px 11px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 4px solid;
+            font-size: 12.5px;
+            line-height: 1.5;
+            font-family: 'Roboto', sans-serif;
+        }
+        .model-block.o { background: #fff8e1; border-color: var(--ores-o); }
+        .model-block.r { background: #e8eef6; border-color: var(--ores-r); }
+        .model-block.e { background: #e8f5e9; border-color: var(--ores-e); }
+        .model-block.s { background: #f3e5f5; border-color: var(--ores-s); }
+        .tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 10px;
+            color: white;
+            margin-right: 6px;
+            vertical-align: middle;
+            font-family: 'Roboto', sans-serif;
+        }
+        .tag.o { background: var(--ores-o); color: #333; }
+        .tag.r { background: var(--ores-r); }
+        .tag.e { background: var(--ores-e); }
+        .tag.s { background: var(--ores-s); }
+        .tips {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 11px 16px;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+        .tips h3 {
+            color: var(--navy-blue);
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .tips li {
+            padding-left: 16px;
+            position: relative;
+            margin-bottom: 4px;
+        }
+        .tips li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-yellow);
+            font-weight: 700;
+        }
+        .tips li em {
+            font-style: normal;
+            background: white;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+        }
+        .footer {
+            position: absolute;
+            bottom: 10mm;
+            left: 16mm;
+            right: 16mm;
+            text-align: center;
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 6px;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="header">
+        <div>
+            <h1>O-R-E-S リファレンスシート</h1>
+            <div class="subtitle">論理的でアカデミックなスピーキングのための4ステップ・テンプレート</div>
+        </div>
+        <div class="brand">
+            <strong>AirPangaea</strong><br>
+            Global Academic Pass Course<br>
+            TOMODACHI English
+        </div>
+    </div>
+
+    <div class="intro">
+        アカデミックな場面で良い答えとは、単に<em>長い</em>答えではなく、<strong>構造がはっきりしている</strong>答えです。<strong>O-R-E-S テンプレート</strong>は、4つのステップで自分の考えを組み立てるためのツールです。ディスカッション、面接、スピーキング試験など、自分の意見を筋道立てて説明したいときに使いましょう。
+    </div>
+
+    <div class="section-title">■ 4つのステップ</div>
+    <div class="steps">
+        <div class="step o">
+            <div class="step-head">
+                <span class="step-letter">O</span>
+                <span class="step-name-en">Opinion</span>
+                <span class="step-name-jp">意見</span>
+            </div>
+            <div class="step-desc">自分の立場をはっきりと述べる。</div>
+            <div class="step-phrases">
+                <em>"I believe that..."</em><br>
+                <em>"In my view..."</em><br>
+                <em>"I am of the opinion that..."</em>
+            </div>
+        </div>
+
+        <div class="step r">
+            <div class="step-head">
+                <span class="step-letter">R</span>
+                <span class="step-name-en">Reason</span>
+                <span class="step-name-jp">理由</span>
+            </div>
+            <div class="step-desc">なぜそう考えるのかを説明する。</div>
+            <div class="step-phrases">
+                <em>"This is because..."</em><br>
+                <em>"The main reason is..."</em><br>
+                <em>"One key factor is..."</em>
+            </div>
+        </div>
+
+        <div class="step e">
+            <div class="step-head">
+                <span class="step-letter">E</span>
+                <span class="step-name-en">Example</span>
+                <span class="step-name-jp">具体例</span>
+            </div>
+            <div class="step-desc">理由を裏付ける実体験や具体的な状況を示す。</div>
+            <div class="step-phrases">
+                <em>"For instance..."</em><br>
+                <em>"In my own experience..."</em><br>
+                <em>"A clear example is..."</em>
+            </div>
+        </div>
+
+        <div class="step s">
+            <div class="step-head">
+                <span class="step-letter">S</span>
+                <span class="step-name-en">Summary</span>
+                <span class="step-name-jp">まとめ</span>
+            </div>
+            <div class="step-desc">自分の立場を一文で締めくくる。</div>
+            <div class="step-phrases">
+                <em>"Therefore..."</em><br>
+                <em>"That is why I think..."</em><br>
+                <em>"For these reasons..."</em>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">■ モデル回答</div>
+    <div class="model">
+        <div class="model-q">
+            <span class="label">質問</span>
+            Do you think online learning is better than classroom learning?
+        </div>
+        <div class="model-block o">
+            <span class="tag o">O</span>In my view, online learning has real advantages for motivated students.
+        </div>
+        <div class="model-block r">
+            <span class="tag r">R</span>The main reason is that it allows learners to study at their own pace and revisit difficult content.
+        </div>
+        <div class="model-block e">
+            <span class="tag e">E</span>For instance, when I struggled with a grammar point, I was able to rewatch the explanation three times — something impossible in a regular classroom.
+        </div>
+        <div class="model-block s">
+            <span class="tag s">S</span>That is why I believe online learning can be highly effective, provided the student is self-disciplined.
+        </div>
+    </div>
+
+    <div class="tips">
+        <h3>■ このシートの使い方</h3>
+        <ul>
+            <li>毎回のレッスン中はこのシートを手元に置いておくこと。スピーキング・セッションで必ず使います。</li>
+            <li>フレーズを丸暗記する必要はありません。各ステップから、自分が自然に言えるものを1つずつ選んで使いましょう。</li>
+            <li>O-R-E-S の回答は <strong>40〜60秒程度</strong> が目安。長すぎる答えは、かえって論点がぼやけます。</li>
+            <li>話している途中で構造を忘れても慌てず、<em>"Let me add one example..."</em> のように自然につなげて戻れば問題ありません。</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Global Academic Pass Course — O-R-E-S リファレンスシート ・ 毎回のレッスンで手元に置いてください
+    </div>
+</div>
+</body>
+</html>

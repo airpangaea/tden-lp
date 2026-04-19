@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Map Worksheet | Global Academic Pass Course</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #222;
+            --light-bg: #FFF9E5;
+            --green: #2e7d32;
+            --red: #c62828;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #e2e8f0;
+            color: var(--text-main);
+            padding: 30px 0;
+            line-height: 1.5;
+        }
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 0 auto 30px auto;
+            padding: 16mm 14mm;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .header {
+            border-bottom: 3px solid var(--navy-blue);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: var(--navy-blue);
+            letter-spacing: 0.5px;
+        }
+        .header .subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .header .brand {
+            text-align: right;
+            font-size: 10px;
+            color: #555;
+            line-height: 1.4;
+        }
+        .header .brand strong {
+            color: var(--navy-blue);
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+        .page-tag {
+            position: absolute;
+            top: 16mm;
+            right: 0;
+            background: var(--accent-yellow);
+            color: #333;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            padding: 3px 10px;
+            border-radius: 0 0 0 4px;
+        }
+        .intro {
+            background: var(--light-bg);
+            border-left: 5px solid var(--accent-yellow);
+            padding: 11px 16px;
+            margin-bottom: 14px;
+            font-size: 12.5px;
+        }
+        .intro strong { color: var(--navy-blue); }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            margin-top: 4px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+        }
+
+        .why-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .why-item {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 9px 13px;
+            font-size: 11.5px;
+        }
+        .why-item strong {
+            display: block;
+            color: var(--navy-blue);
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .parts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .part {
+            background: #f8f9fb;
+            border-top: 3px solid var(--navy-blue);
+            padding: 8px 10px;
+            border-radius: 0 0 4px 4px;
+        }
+        .part-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .part-desc {
+            font-size: 11px;
+            color: #444;
+            line-height: 1.4;
+        }
+
+        .map-container {
+            background: var(--light-bg);
+            border: 2px solid var(--accent-yellow);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+        .map-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+        .map-prompt {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 4px solid var(--navy-blue);
+            font-size: 12px;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .map-tree {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            white-space: pre;
+            color: #222;
+        }
+        .map-tree .thesis-line {
+            color: var(--navy-blue);
+            font-weight: 700;
+        }
+        .map-tree .reason-line {
+            color: #1976d2;
+        }
+        .map-tree .example-line {
+            color: var(--green);
+        }
+        .map-tree .counter-line {
+            color: var(--red);
+        }
+        .map-tree .response-line {
+            color: #6a1b9a;
+        }
+
+        .homework-banner {
+            background: var(--navy-blue);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+        .homework-banner .label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent-yellow);
+            margin-bottom: 4px;
+        }
+        .homework-banner .prompt {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .blank-map {
+            background: white;
+            border: 2px dashed var(--navy-blue);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            line-height: 2.2;
+            color: #333;
+            margin-bottom: 14px;
+            white-space: pre;
+        }
+        .blank-map .fill-line {
+            display: inline-block;
+            border-bottom: 1px solid #666;
+            min-width: 300px;
+            margin-left: 4px;
+        }
+        .blank-map .fill-line.short { min-width: 250px; }
+        .blank-map .fill-line.long { min-width: 340px; }
+        .blank-map .thesis-line { color: var(--navy-blue); font-weight: 700; }
+        .blank-map .reason-line { color: #1976d2; }
+        .blank-map .example-line { color: var(--green); }
+        .blank-map .counter-line { color: var(--red); }
+        .blank-map .response-line { color: #6a1b9a; }
+
+        .checklist {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 11px 16px;
+            font-size: 11.5px;
+        }
+        .checklist h3 {
+            color: var(--navy-blue);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+        .checklist ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 3px;
+            line-height: 1.5;
+        }
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--navy-blue);
+            font-weight: 700;
+            font-size: 14px;
+            top: -1px;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 8mm;
+            left: 14mm;
+            right: 14mm;
+            text-align: center;
+            font-size: 9.5px;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 5px;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======================= PAGE 1: Introduction + Sample ======================= -->
+<div class="page">
+    <div class="page-tag">PAGE 1 / 2</div>
+
+    <div class="header">
+        <div>
+            <h1>Logic Map Worksheet</h1>
+            <div class="subtitle">A pre-writing tool for structured academic argument</div>
+        </div>
+        <div class="brand">
+            <strong>AirPangaea</strong><br>
+            Global Academic Pass Course<br>
+            TOMODACHI English
+        </div>
+    </div>
+
+    <div class="intro">
+        Before you can write a good argument, you need to <strong>see</strong> it. A <strong>Logic Map</strong> is a simple diagram that lets you lay out your position, your reasons, your examples, and the counter-argument — all on one page, before you write a single sentence. It extends the <strong>O-R-E-S</strong> speaking template you already know into something sharper: a map that also accounts for what the other side might say.
+    </div>
+
+    <div class="section-title">Why use a Logic Map?</div>
+    <div class="why-box">
+        <div class="why-item">
+            <strong>It reveals weak spots early.</strong>
+            If you cannot fill in "Example" under your Reason, your argument is probably too abstract. Fix it on the map — not halfway through writing.
+        </div>
+        <div class="why-item">
+            <strong>It forces you to meet the counter-argument.</strong>
+            A strong academic answer does not ignore the other side. It names it, then responds to it.
+        </div>
+    </div>
+
+    <div class="section-title">The four parts of a Logic Map</div>
+    <div class="parts">
+        <div class="part">
+            <div class="part-label">Thesis</div>
+            <div class="part-desc">Your main position. One clear sentence.</div>
+        </div>
+        <div class="part">
+            <div class="part-label">Reason</div>
+            <div class="part-desc">The strongest reason supporting your thesis.</div>
+        </div>
+        <div class="part">
+            <div class="part-label">Example</div>
+            <div class="part-desc">A real, specific situation — not a general claim.</div>
+        </div>
+        <div class="part">
+            <div class="part-label">Counter + Response</div>
+            <div class="part-desc">What critics would say, and why you still hold your view.</div>
+        </div>
+    </div>
+
+    <div class="section-title">Worked example</div>
+    <div class="map-container">
+        <div class="map-label">Sample prompt</div>
+        <div class="map-prompt">"Should schools ban smartphones in classrooms?"</div>
+
+        <div class="map-label" style="margin-top: 6px;">Completed Logic Map</div>
+<div class="map-tree"><span class="thesis-line">THESIS: Schools should ban smartphones during class
+        but allow them during breaks.</span>
+
+ ├─ <span class="reason-line">Reason: Phones fragment attention even when
+ │          students are not actively using them.</span>
+ │   └─ <span class="example-line">Example: In my class, a teacher ran a one-week
+ │              phone-free trial. Discussion got noticeably
+ │              more focused — even quieter students spoke up.</span>
+ │
+ └─ <span class="counter-line">Counter: Phones can be useful learning tools
+            (dictionaries, research, translation).</span>
+     └─ <span class="response-line">My response: Those uses are real but rare in a
+                   typical class. A shared classroom tablet
+                   or laptop can handle them without the
+                   constant notification pull a phone has.</span></div>
+    </div>
+
+    <div class="checklist">
+        <h3>What makes a Logic Map work</h3>
+        <ul>
+            <li>The <strong>Thesis</strong> is one sentence — and clear enough that someone could disagree with it.</li>
+            <li>The <strong>Example</strong> is concrete (a specific moment, class, or experience) — not a generalisation.</li>
+            <li>The <strong>Counter-argument</strong> is the strongest version of the opposing view, not a straw man.</li>
+            <li>The <strong>Response</strong> does not dismiss the counter — it acknowledges what is true in it, then explains why your position still holds.</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Global Academic Pass Course — Logic Map Worksheet · Continued on Page 2
+    </div>
+</div>
+
+<!-- ======================= PAGE 2: Homework ======================= -->
+<div class="page">
+    <div class="page-tag">PAGE 2 / 2</div>
+
+    <div class="header">
+        <div>
+            <h1>Your Homework</h1>
+            <div class="subtitle">Bring this completed sheet to your next Logic &amp; Writing class</div>
+        </div>
+        <div class="brand">
+            <strong>AirPangaea</strong><br>
+            Global Academic Pass Course<br>
+            TOMODACHI English
+        </div>
+    </div>
+
+    <div class="homework-banner">
+        <div class="label">PROMPT FOR NEXT CLASS</div>
+        <div class="prompt">"Should university education be free for everyone? Give two reasons for your opinion."</div>
+    </div>
+
+    <div class="intro" style="margin-bottom: 10px;">
+        Fill in the Logic Map below <strong>before your next class</strong>. You only need to complete the map — you do <strong>not</strong> need to write the full paragraph at home. We will build the written version together in class, using your map as the starting point.
+    </div>
+
+    <div class="section-title">Fill in your Logic Map</div>
+    <div class="blank-map">
+<span class="thesis-line">THESIS:</span> <span class="fill-line long"></span>
+<span style="margin-left: 64px;"><span class="fill-line long"></span></span>
+
+ ├─ <span class="reason-line">Reason:</span> <span class="fill-line"></span>
+ │       <span class="fill-line"></span>
+ │   └─ <span class="example-line">Example:</span> <span class="fill-line short"></span>
+ │              <span class="fill-line short"></span>
+ │              <span class="fill-line short"></span>
+ │
+ └─ <span class="counter-line">Counter:</span> <span class="fill-line"></span>
+             <span class="fill-line"></span>
+     └─ <span class="response-line">My response:</span> <span class="fill-line short"></span>
+                    <span class="fill-line short"></span>
+                    <span class="fill-line short"></span>
+    </div>
+
+    <div class="checklist">
+        <h3>Before you finish — self-check</h3>
+        <ul>
+            <li>Can someone reasonably <em>disagree</em> with your Thesis? If not, it is too vague — sharpen it.</li>
+            <li>Is your Example a <em>specific</em> moment from your life, school, or community? Avoid "in general" or "many people say".</li>
+            <li>Did you write the Counter-argument in a way the <em>other side</em> would actually agree with? If they would say "that is not what we mean," rewrite it.</li>
+            <li>Does your Response show <em>why your view still holds</em> after hearing the counter — not just repeat your Thesis?</li>
+        </ul>
+    </div>
+
+    <div style="margin-top: 12px; background: #eef2ff; border-left: 4px solid var(--navy-blue); padding: 10px 14px; border-radius: 4px; font-size: 11.5px; color: #333;">
+        <strong style="color: var(--navy-blue);">A note on doing this well:</strong> A filled map with short, specific lines is much more useful than a map with long, vague ones. If you find yourself writing long sentences to fill each blank, stop and ask: <em>"What is the core of what I am trying to say?"</em> — then write just that.
+    </div>
+
+    <div class="footer">
+        Global Academic Pass Course — Logic Map Worksheet · Bring this sheet (or a digital version) to your next Logic &amp; Writing class
+    </div>
+</div>
+
+</body>
+</html>

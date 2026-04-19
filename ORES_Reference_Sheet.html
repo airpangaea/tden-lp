@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O-R-E-S Reference Sheet | Global Academic Pass Course</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #222;
+            --light-bg: #FFF9E5;
+            --ores-o: #f9a825;
+            --ores-r: #003366;
+            --ores-e: #2e7d32;
+            --ores-s: #6a1b9a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #e2e8f0;
+            color: var(--text-main);
+            padding: 30px 0;
+            line-height: 1.5;
+        }
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 0 auto;
+            padding: 18mm 16mm;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .header {
+            border-bottom: 3px solid var(--navy-blue);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header h1 {
+            font-size: 26px;
+            color: var(--navy-blue);
+            letter-spacing: 0.5px;
+        }
+        .header .brand {
+            text-align: right;
+            font-size: 11px;
+            color: #555;
+            line-height: 1.4;
+        }
+        .header .brand strong {
+            color: var(--navy-blue);
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .intro {
+            background: var(--light-bg);
+            border-left: 5px solid var(--accent-yellow);
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            font-size: 13.5px;
+        }
+        .intro strong { color: var(--navy-blue); }
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .step {
+            border-radius: 6px;
+            padding: 11px 14px;
+            border-left: 5px solid;
+        }
+        .step.o { background: #fff8e1; border-color: var(--ores-o); }
+        .step.r { background: #e8eef6; border-color: var(--ores-r); }
+        .step.e { background: #e8f5e9; border-color: var(--ores-e); }
+        .step.s { background: #f3e5f5; border-color: var(--ores-s); }
+        .step-head {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .step-letter {
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .step.o .step-letter { color: var(--ores-o); }
+        .step.r .step-letter { color: var(--ores-r); }
+        .step.e .step-letter { color: var(--ores-e); }
+        .step.s .step-letter { color: var(--ores-s); }
+        .step-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #222;
+        }
+        .step-desc {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+        .step-phrases {
+            font-size: 12.5px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .step-phrases em {
+            font-style: normal;
+            background: white;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        .model {
+            border: 2px solid var(--navy-blue);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+        .model-q {
+            background: var(--navy-blue);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .model-q .label {
+            color: var(--accent-yellow);
+            font-size: 11px;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .model-block {
+            padding: 7px 11px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            border-left: 4px solid;
+            font-size: 12.5px;
+            line-height: 1.5;
+        }
+        .model-block.o { background: #fff8e1; border-color: var(--ores-o); }
+        .model-block.r { background: #e8eef6; border-color: var(--ores-r); }
+        .model-block.e { background: #e8f5e9; border-color: var(--ores-e); }
+        .model-block.s { background: #f3e5f5; border-color: var(--ores-s); }
+        .tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 10px;
+            color: white;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .tag.o { background: var(--ores-o); color: #333; }
+        .tag.r { background: var(--ores-r); }
+        .tag.e { background: var(--ores-e); }
+        .tag.s { background: var(--ores-s); }
+        .tips {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 11px 16px;
+            font-size: 12px;
+        }
+        .tips h3 {
+            color: var(--navy-blue);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+        .tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .tips li {
+            padding-left: 16px;
+            position: relative;
+            margin-bottom: 3px;
+            line-height: 1.5;
+        }
+        .tips li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-yellow);
+            font-weight: 700;
+        }
+        .footer {
+            position: absolute;
+            bottom: 10mm;
+            left: 16mm;
+            right: 16mm;
+            text-align: center;
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 6px;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <div class="header">
+        <div>
+            <h1>O-R-E-S Reference Sheet</h1>
+            <div style="font-size: 13px; color: #666; margin-top: 3px;">A 4-step template for clear, academic speaking</div>
+        </div>
+        <div class="brand">
+            <strong>AirPangaea</strong><br>
+            Global Academic Pass Course<br>
+            TOMODACHI English
+        </div>
+    </div>
+
+    <div class="intro">
+        In academic speaking, a good answer is not just <em>long</em> — it is <strong>structured</strong>. The <strong>O-R-E-S template</strong> gives you four steps to build a complete, logical response. Use it whenever you need to explain your opinion in a discussion, interview, or speaking exam.
+    </div>
+
+    <div class="section-title">The Four Steps</div>
+    <div class="steps">
+        <div class="step o">
+            <div class="step-head">
+                <span class="step-letter">O</span>
+                <span class="step-name">Opinion</span>
+            </div>
+            <div class="step-desc">State what you believe — clearly and directly.</div>
+            <div class="step-phrases">
+                <em>"I believe that..."</em><br>
+                <em>"In my view..."</em><br>
+                <em>"I am of the opinion that..."</em>
+            </div>
+        </div>
+
+        <div class="step r">
+            <div class="step-head">
+                <span class="step-letter">R</span>
+                <span class="step-name">Reason</span>
+            </div>
+            <div class="step-desc">Explain why you hold this opinion.</div>
+            <div class="step-phrases">
+                <em>"This is because..."</em><br>
+                <em>"The main reason is..."</em><br>
+                <em>"One key factor is..."</em>
+            </div>
+        </div>
+
+        <div class="step e">
+            <div class="step-head">
+                <span class="step-letter">E</span>
+                <span class="step-name">Example</span>
+            </div>
+            <div class="step-desc">Give a real situation that supports your reason.</div>
+            <div class="step-phrases">
+                <em>"For instance..."</em><br>
+                <em>"In my own experience..."</em><br>
+                <em>"A clear example is..."</em>
+            </div>
+        </div>
+
+        <div class="step s">
+            <div class="step-head">
+                <span class="step-letter">S</span>
+                <span class="step-name">Summary</span>
+            </div>
+            <div class="step-desc">Close with one sentence that restates your position.</div>
+            <div class="step-phrases">
+                <em>"Therefore..."</em><br>
+                <em>"That is why I think..."</em><br>
+                <em>"For these reasons..."</em>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Model Response</div>
+    <div class="model">
+        <div class="model-q">
+            <span class="label">QUESTION</span>
+            Do you think online learning is better than classroom learning?
+        </div>
+        <div class="model-block o">
+            <span class="tag o">O</span>In my view, online learning has real advantages for motivated students.
+        </div>
+        <div class="model-block r">
+            <span class="tag r">R</span>The main reason is that it allows learners to study at their own pace and revisit difficult content.
+        </div>
+        <div class="model-block e">
+            <span class="tag e">E</span>For instance, when I struggled with a grammar point, I was able to rewatch the explanation three times — something impossible in a regular classroom.
+        </div>
+        <div class="model-block s">
+            <span class="tag s">S</span>That is why I believe online learning can be highly effective, provided the student is self-disciplined.
+        </div>
+    </div>
+
+    <div class="tips">
+        <h3>How to use this sheet</h3>
+        <ul>
+            <li>Keep this open during every class — you will use it in every speaking session.</li>
+            <li>Do not read phrases word-for-word. Pick one from each step that feels natural for you.</li>
+            <li>A good O-R-E-S response takes about 40–60 seconds. Do not try to make it longer than that.</li>
+            <li>If you forget a step during a discussion, just pause and say <em>"Let me add one example..."</em> — it sounds natural, not like a mistake.</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Global Academic Pass Course — Reference Sheet · Keep this handy in every class
+    </div>
+</div>
+</body>
+</html>

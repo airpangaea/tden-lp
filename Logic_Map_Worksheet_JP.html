@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ロジックマップ・ワークシート | Global Academic Pass Course</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #222;
+            --light-bg: #FFF9E5;
+            --green: #2e7d32;
+            --red: #c62828;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans JP', 'Roboto', sans-serif;
+            background: #e2e8f0;
+            color: var(--text-main);
+            padding: 30px 0;
+            line-height: 1.6;
+        }
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: 0 auto 30px auto;
+            padding: 16mm 14mm;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .header {
+            border-bottom: 3px solid var(--navy-blue);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header h1 {
+            font-size: 23px;
+            color: var(--navy-blue);
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .header .brand {
+            text-align: right;
+            font-size: 10px;
+            color: #555;
+            line-height: 1.5;
+            font-family: 'Roboto', sans-serif;
+        }
+        .header .brand strong {
+            color: var(--navy-blue);
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+        .page-tag {
+            position: absolute;
+            top: 16mm;
+            right: 0;
+            background: var(--accent-yellow);
+            color: #333;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            padding: 3px 10px;
+            border-radius: 0 0 0 4px;
+            font-family: 'Roboto', sans-serif;
+        }
+        .intro {
+            background: var(--light-bg);
+            border-left: 5px solid var(--accent-yellow);
+            padding: 11px 16px;
+            margin-bottom: 14px;
+            font-size: 12.5px;
+            line-height: 1.75;
+        }
+        .intro strong { color: var(--navy-blue); }
+        .intro em { font-style: normal; background: white; padding: 1px 5px; border-radius: 3px; font-family: 'Roboto', sans-serif; font-weight: 500; }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            margin-top: 4px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+        }
+
+        .why-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .why-item {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 9px 13px;
+            font-size: 11.5px;
+            line-height: 1.7;
+        }
+        .why-item strong {
+            display: block;
+            color: var(--navy-blue);
+            font-size: 12.5px;
+            margin-bottom: 3px;
+        }
+
+        .parts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .part {
+            background: #f8f9fb;
+            border-top: 3px solid var(--navy-blue);
+            padding: 8px 10px;
+            border-radius: 0 0 4px 4px;
+        }
+        .part-label-en {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            letter-spacing: 1px;
+            font-family: 'Roboto', sans-serif;
+        }
+        .part-label-jp {
+            font-size: 10px;
+            font-weight: 500;
+            color: #666;
+            margin-left: 4px;
+        }
+        .part-desc {
+            font-size: 10.5px;
+            color: #444;
+            line-height: 1.55;
+            margin-top: 4px;
+        }
+
+        .map-container {
+            background: var(--light-bg);
+            border: 2px solid var(--accent-yellow);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+        .map-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+        .map-prompt {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border-left: 4px solid var(--navy-blue);
+            font-size: 12px;
+            margin-bottom: 12px;
+            font-style: italic;
+            font-family: 'Roboto', sans-serif;
+        }
+        .map-tree {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            white-space: pre;
+            color: #222;
+        }
+        .map-tree .thesis-line {
+            color: var(--navy-blue);
+            font-weight: 700;
+        }
+        .map-tree .reason-line {
+            color: #1976d2;
+        }
+        .map-tree .example-line {
+            color: var(--green);
+        }
+        .map-tree .counter-line {
+            color: var(--red);
+        }
+        .map-tree .response-line {
+            color: #6a1b9a;
+        }
+
+        .homework-banner {
+            background: var(--navy-blue);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+        .homework-banner .label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent-yellow);
+            margin-bottom: 4px;
+        }
+        .homework-banner .prompt {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.4;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .blank-map {
+            background: white;
+            border: 2px dashed var(--navy-blue);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            line-height: 2.2;
+            color: #333;
+            margin-bottom: 14px;
+            white-space: pre;
+        }
+        .blank-map .fill-line {
+            display: inline-block;
+            border-bottom: 1px solid #666;
+            min-width: 300px;
+            margin-left: 4px;
+        }
+        .blank-map .fill-line.short { min-width: 250px; }
+        .blank-map .fill-line.long { min-width: 340px; }
+        .blank-map .thesis-line { color: var(--navy-blue); font-weight: 700; }
+        .blank-map .reason-line { color: #1976d2; }
+        .blank-map .example-line { color: var(--green); }
+        .blank-map .counter-line { color: var(--red); }
+        .blank-map .response-line { color: #6a1b9a; }
+
+        .checklist {
+            background: #f5f5f5;
+            border-radius: 6px;
+            padding: 11px 16px;
+            font-size: 11.5px;
+            line-height: 1.7;
+        }
+        .checklist h3 {
+            color: var(--navy-blue);
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .checklist ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 4px;
+        }
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--navy-blue);
+            font-weight: 700;
+            font-size: 14px;
+            top: -1px;
+        }
+        .checklist li em,
+        .why-item em {
+            font-style: normal;
+            background: white;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 8mm;
+            left: 14mm;
+            right: 14mm;
+            text-align: center;
+            font-size: 9.5px;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 5px;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .page { box-shadow: none; margin: 0; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======================= PAGE 1: 解説+サンプル ======================= -->
+<div class="page">
+    <div class="page-tag">PAGE 1 / 2</div>
+
+    <div class="header">
+        <div>
+            <h1>ロジックマップ・ワークシート</h1>
+            <div class="subtitle">論理的なアカデミック・アーギュメントを組み立てる事前整理ツール</div>
+        </div>
+        <div class="brand">
+            <strong>AirPangaea</strong><br>
+            Global Academic Pass Course<br>
+            TOMODACHI English
+        </div>
+    </div>
+
+    <div class="intro">
+        よい議論を書く前に、まずは議論の形を<strong>「見える化」</strong>することが大切です。<strong>ロジックマップ</strong>は、自分の立場・理由・具体例・反論への応答を、1枚の紙の上に図として整理するツールです。授業で学んだ <strong>O-R-E-S</strong> スピーキング・テンプレートをさらに一歩進め、「反対意見にも応える」という要素を加えたものと考えてください。文章を書き始める前にマップで思考を整えることで、論点がぶれない、まとまりのあるパラグラフが書けるようになります。
+    </div>
+
+    <div class="section-title">■ なぜロジックマップを使うのか？</div>
+    <div class="why-box">
+        <div class="why-item">
+            <strong>① 論理の弱い箇所が早い段階で見える</strong>
+            自分のReasonの下にExampleが書けないなら、その議論はおそらく抽象的すぎます。文章を書き始めてから気づくのではなく、マップの段階で修正できます。
+        </div>
+        <div class="why-item">
+            <strong>② 反対意見に向き合う構造ができる</strong>
+            アカデミックな良い答えは、反対意見を無視しません。あえて「反対側はこう言うだろう」と書き出したうえで、それに対して自分の立場を擁護します。
+        </div>
+    </div>
+
+    <div class="section-title">■ ロジックマップの4つの要素</div>
+    <div class="parts">
+        <div class="part">
+            <div><span class="part-label-en">Thesis</span><span class="part-label-jp">主張</span></div>
+            <div class="part-desc">自分の中心的な立場を、明確な一文で。</div>
+        </div>
+        <div class="part">
+            <div><span class="part-label-en">Reason</span><span class="part-label-jp">理由</span></div>
+            <div class="part-desc">主張を支える、最も強い理由。</div>
+        </div>
+        <div class="part">
+            <div><span class="part-label-en">Example</span><span class="part-label-jp">具体例</span></div>
+            <div class="part-desc">一般論ではなく、具体的で現実の状況。</div>
+        </div>
+        <div class="part">
+            <div><span class="part-label-en">Counter + Response</span><span class="part-label-jp">反論 + 応答</span></div>
+            <div class="part-desc">反対派の主張と、それでも自分の立場が成り立つ理由。</div>
+        </div>
+    </div>
+
+    <div class="section-title">■ 記入例</div>
+    <div class="map-container">
+        <div class="map-label">サンプル・プロンプト</div>
+        <div class="map-prompt">"Should schools ban smartphones in classrooms?"</div>
+
+        <div class="map-label" style="margin-top: 6px;">記入済みロジックマップ（英語で記入）</div>
+<div class="map-tree"><span class="thesis-line">THESIS: Schools should ban smartphones during class
+        but allow them during breaks.</span>
+
+ ├─ <span class="reason-line">Reason: Phones fragment attention even when
+ │          students are not actively using them.</span>
+ │   └─ <span class="example-line">Example: In my class, a teacher ran a one-week
+ │              phone-free trial. Discussion got noticeably
+ │              more focused — even quieter students spoke up.</span>
+ │
+ └─ <span class="counter-line">Counter: Phones can be useful learning tools
+            (dictionaries, research, translation).</span>
+     └─ <span class="response-line">My response: Those uses are real but rare in a
+                   typical class. A shared classroom tablet
+                   or laptop can handle them without the
+                   constant notification pull a phone has.</span></div>
+    </div>
+
+    <div class="checklist">
+        <h3>■ よいロジックマップの条件</h3>
+        <ul>
+            <li><strong>Thesis（主張）</strong>は一文。しかも「誰かが反対できる程度に具体的」であること。誰もが同意する内容は主張として弱い。</li>
+            <li><strong>Example（具体例）</strong>は、具体的な場面・授業・経験であること。"<em>in general</em>" や "<em>many people say</em>" のような一般論は避ける。</li>
+            <li><strong>Counter-argument（反論）</strong>は、反対派が「その通りだ」と同意してくれるような形で書くこと。"それは違う" と言われるような雑な反論ではダメ。</li>
+            <li><strong>Response（応答）</strong>は、反論を聞いたうえで、なぜ自分の主張が<em>それでも成り立つ</em>のかを説明する部分。主張をくり返すだけでは応答になりません。</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        Global Academic Pass Course — ロジックマップ・ワークシート ・ 次ページに宿題プロンプトがあります
+    </div>
+</div>
+
+<!-- ======================= PAGE 2: 宿題 ======================= -->
+<div class="page">
+    <div class="page-tag">PAGE 2 / 2</div>
+
+    <div class="header">
+        <div>
+            <h1>宿題：ロジックマップを埋める</h1>
+            <div class="subtitle">次回の Logic &amp; Writing のクラスに、記入したこのシートを持ってきてください</div>
+        </div>
+        <div class="brand">
+            <strong>AirPangaea</strong><br>
+            Global Academic Pass Course<br>
+            TOMODACHI English
+        </div>
+    </div>
+
+    <div class="homework-banner">
+        <div class="label">次回のプロンプト</div>
+        <div class="prompt">"Should university education be free for everyone? Give two reasons for your opinion."</div>
+    </div>
+
+    <div class="intro" style="margin-bottom: 10px;">
+        上記のプロンプトについて、下のロジックマップを <strong>次回の授業までに記入</strong> してください。マップは<strong>英語</strong>で書きましょう（難しい表現を使う必要はありません。短く、具体的であることのほうが大切です）。なお、家でパラグラフを書き上げる必要は<strong>ありません</strong>。マップを元にパラグラフを書くのは、次回の授業で一緒に行います。
+    </div>
+
+    <div class="section-title">■ あなたのロジックマップを記入</div>
+    <div class="blank-map">
+<span class="thesis-line">THESIS:</span> <span class="fill-line long"></span>
+<span style="margin-left: 64px;"><span class="fill-line long"></span></span>
+
+ ├─ <span class="reason-line">Reason:</span> <span class="fill-line"></span>
+ │       <span class="fill-line"></span>
+ │   └─ <span class="example-line">Example:</span> <span class="fill-line short"></span>
+ │              <span class="fill-line short"></span>
+ │              <span class="fill-line short"></span>
+ │
+ └─ <span class="counter-line">Counter:</span> <span class="fill-line"></span>
+             <span class="fill-line"></span>
+     └─ <span class="response-line">My response:</span> <span class="fill-line short"></span>
+                    <span class="fill-line short"></span>
+                    <span class="fill-line short"></span>
+    </div>
+
+    <div class="checklist">
+        <h3>■ 提出前のセルフチェック</h3>
+        <ul>
+            <li>自分の <strong>Thesis</strong> に、他の人が反対する可能性はありますか？ 誰もが同意する内容なら、主張として弱いのでもっと鋭くしましょう。</li>
+            <li><strong>Example</strong> は、自分の生活・学校・地域で起きた<em>具体的な出来事</em>ですか？「一般的に」「多くの人は」といった表現を避けましょう。</li>
+            <li><strong>Counter-argument</strong> は、反対派が実際に言いそうな形で書けていますか？「そうじゃない」と言われる内容だと、反論として成立しません。</li>
+            <li><strong>Response</strong> は、反論を踏まえたうえで自分の立場がなぜ成り立つのかを説明していますか？ Thesisの繰り返しになっていませんか？</li>
+        </ul>
+    </div>
+
+    <div style="margin-top: 12px; background: #eef2ff; border-left: 4px solid var(--navy-blue); padding: 10px 14px; border-radius: 4px; font-size: 11.5px; color: #333; line-height: 1.7;">
+        <strong style="color: var(--navy-blue);">上手に書くコツ：</strong>各欄を埋めるのに長い文章を書く必要はありません。むしろ、<strong>短く・具体的な</strong>記述のほうが役に立ちます。長文になりそうになったら、一度立ち止まって「自分が本当に言いたいことの核は何か？」と自問し、それだけを書くようにしましょう。
+    </div>
+
+    <div class="footer">
+        Global Academic Pass Course — ロジックマップ・ワークシート ・ 記入したマップ（紙でもデジタルでも可）を次回の Logic &amp; Writing のクラスに持参してください
+    </div>
+</div>
+
+</body>
+</html>

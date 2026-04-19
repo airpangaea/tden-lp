@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Academic Pass Course - Lesson 1: Education &amp; Future</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --pdf-bg: #FFF9E5;
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #333333;
+            --white: #ffffff;
+            --notes-bg: #1e1e2e;
+            --notes-text: #cdd6f4;
+            --notes-label: #89b4fa;
+            --notes-tip: #a6e3a1;
+            --notes-warn: #f38ba8;
+            /* O-R-E-S colors */
+            --ores-o: #f9a825;
+            --ores-r: #003366;
+            --ores-e: #2e7d32;
+            --ores-s: #6a1b9a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .slide-wrapper { width: 1280px; margin-bottom: 0; }
+
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--pdf-bg);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* ── Notes Panel ── */
+        .notes-panel {
+            width: 1280px;
+            background-color: var(--notes-bg);
+            color: var(--notes-text);
+            font-size: 15px;
+            line-height: 1.7;
+            border-top: 3px solid var(--notes-label);
+            margin-bottom: 60px;
+        }
+
+        .notes-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 28px;
+            cursor: pointer;
+            background: #2a2a3e;
+            border: none;
+            color: var(--notes-label);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            width: 100%;
+            text-align: left;
+            font-family: 'Roboto', sans-serif;
+        }
+        .notes-toggle:hover { background: #333350; }
+        .notes-toggle .arrow { margin-left: auto; transition: transform 0.2s; }
+        .notes-toggle.open .arrow { transform: rotate(180deg); }
+
+        .notes-body { display: none; padding: 24px 36px 28px 36px; }
+        .notes-body.open { display: block; }
+
+        .notes-section { margin-bottom: 18px; }
+        .notes-label {
+            color: var(--notes-label);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .notes-say {
+            background: #2a2a3e;
+            border-left: 4px solid var(--notes-label);
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 15px;
+            color: #e0e0ff;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .notes-tip {
+            background: #1e2e1e;
+            border-left: 4px solid var(--notes-tip);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--notes-tip);
+            margin-bottom: 6px;
+        }
+        .notes-warn {
+            background: #2e1e1e;
+            border-left: 4px solid var(--notes-warn);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--notes-warn);
+            margin-bottom: 6px;
+        }
+        .notes-time {
+            display: inline-block;
+            background: var(--notes-label);
+            color: #1e1e2e;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* ── Slide internals ── */
+        .meta-header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+        }
+        .meta-header .left-meta { font-size: 18px; color: #555; line-height: 1.4; }
+        .meta-header .right-logo { text-align: right; color: var(--navy-blue); }
+        .meta-header .logo-brand { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+
+        .slide-title-area { padding: 0 60px; margin-bottom: 18px; }
+        .slide-title {
+            font-size: 44px; font-weight: 700; margin: 0; color: #000;
+            border-bottom: 4px solid var(--navy-blue); display: inline-block; padding-bottom: 5px;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            padding: 0 60px 80px 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: var(--white); border-radius: 12px; padding: 22px 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;
+        }
+
+        .ui-footer {
+            position: absolute; bottom: 18px; left: 40px; right: 40px;
+            display: flex; align-items: center; justify-content: flex-start;
+            font-size: 15px; color: #555; font-style: italic;
+        }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+        .bullet-list { list-style: none; padding-left: 0; margin: 0; }
+        .bullet-list li {
+            font-size: 20px; margin-bottom: 10px; position: relative;
+            padding-left: 26px; line-height: 1.4;
+        }
+        .bullet-list li::before {
+            content: "•"; color: var(--navy-blue); font-weight: bold;
+            position: absolute; left: 6px; font-size: 22px; top: -2px;
+        }
+        .bullet-list li .voca-example {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+            margin-top: 3px;
+            padding-left: 2px;
+        }
+
+        .step-list { list-style: none; padding-left: 0; margin: 0; }
+        .step-list li {
+            font-size: 18px; margin-bottom: 8px; padding-left: 14px;
+            line-height: 1.4; border-left: 4px solid var(--accent-yellow);
+        }
+        .step-list li.dim { border-left-color: #ccc; color: #555; }
+
+        .role-a { color: var(--navy-blue); font-weight: 700; }
+        .role-b { color: #b8860b; font-weight: 700; }
+
+        .template-box { border-top: 4px solid var(--accent-yellow); padding-top: 7px; margin-bottom: 11px; }
+        .template-label { font-weight: 700; color: var(--accent-yellow); font-size: 18px; }
+
+        .title-slide { background-color: var(--navy-blue); color: var(--white); text-align: center; }
+        .title-slide h1 { font-size: 68px; margin: 0; }
+        .title-slide .subtitle { font-size: 30px; margin-top: 20px; opacity: 0.9; }
+
+        h3 { color: var(--navy-blue); font-size: 21px; margin-top: 0; margin-bottom: 10px; }
+
+        .note-box {
+            background: #eef2ff; border-left: 5px solid var(--navy-blue); border-radius: 6px;
+            padding: 9px 14px; font-size: 16px; color: #444; margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-block; background: var(--navy-blue); color: white;
+            font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-right: 4px;
+        }
+        .tag-yellow { background: var(--accent-yellow); color: #333; }
+
+        /* O-R-E-S Model Response */
+        .ores-block {
+            border-radius: 6px;
+            padding: 9px 14px;
+            margin-bottom: 8px;
+            font-size: 17px;
+            line-height: 1.5;
+        }
+        .ores-block .ores-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-right: 7px;
+            vertical-align: middle;
+            color: white;
+        }
+        .ores-o-block { background: #fff8e1; border-left: 4px solid var(--ores-o); }
+        .ores-o-block .ores-tag { background: var(--ores-o); color: #333; }
+        .ores-r-block { background: #e8eef6; border-left: 4px solid var(--ores-r); }
+        .ores-r-block .ores-tag { background: var(--ores-r); }
+        .ores-e-block { background: #e8f5e9; border-left: 4px solid var(--ores-e); }
+        .ores-e-block .ores-tag { background: var(--ores-e); }
+        .ores-s-block { background: #f3e5f5; border-left: 4px solid var(--ores-s); }
+        .ores-s-block .ores-tag { background: var(--ores-s); }
+
+        /* Vocab reminder list */
+        .voca-reminder {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .voca-chip {
+            background: #eef2ff;
+            border: 1px solid #c5cae9;
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--navy-blue);
+        }
+        .voca-chip span {
+            font-weight: 400;
+            color: #666;
+            font-size: 14px;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ SLIDE 1: Title -->
+<div class="slide-wrapper">
+<div class="slide-container title-slide">
+    <div class="meta-header" style="position: absolute; top: 0; width: 100%;">
+        <div class="left-meta" style="color: white;">Lesson 1-1<br>Term 1: Global Success<br>Week 1: Speaking</div>
+        <div class="right-logo" style="color: white;">
+            <div class="logo-brand">AirPangaea</div>
+            <div style="font-size: 14px;">TOMODACHI English</div>
+        </div>
+    </div>
+    <div class="content-area" style="justify-content: center;">
+        <p style="font-size: 22px; letter-spacing: 4px; margin-bottom: 10px;">Global Academic Pass Course</p>
+        <h1>Lesson 1: Education &amp; Future</h1>
+        <div style="width: 150px; height: 4px; background: var(--accent-yellow); margin: 28px auto;"></div>
+        <p class="subtitle">(Speaking Focus)</p>
+    </div>
+    <div class="ui-footer" style="color: white; opacity: 0.4; font-style: normal; justify-content: center;">TOMODACHI English Project</div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 1: Opening
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">Before class</span> Preparation</div>
+            <div class="notes-tip">✓ Share the O-R-E-S reference sheet in the Zoom chat before students join.</div>
+            <div class="notes-tip">✓ Confirm that the Assistant and Instructor are ready and know their role for today's Reflection.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">0:00</span> Opening</div>
+            <div class="notes-say">"Welcome, everyone. Today is Lesson 1 of the Global Academic Pass Course. Over the coming weeks, we are going to move from everyday conversation toward something more structured — the kind of logical, academic speaking that university life requires. We will borrow the IELTS Speaking format to give us a clear practice frame, but our goal is broader than any single exam: to think and speak with real clarity. Today we start with the foundation: a tool called the O-R-E-S template. By the end of this class, you will have used it twice in real discussions. Let's get started."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Tone note</div>
+            <div class="notes-tip">Keep the opening energetic but calm. If students hear "IELTS" and feel intimidated, normalize it early — we use the IELTS Speaking format as a useful practice frame, but the real goal is clear, academic thinking, not passing an exam today.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 2: Learning Objectives -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">1. Learning Objectives</h2></div>
+    <div class="content-area">
+        <div class="card">
+            <p style="font-size: 22px; font-weight: 500; margin-top: 0; margin-bottom: 16px;">By the end of this lesson, students will be able to:</p>
+            <ul class="bullet-list">
+                <li>Use the <strong>O-R-E-S Logic Template</strong> (Opinion, Reason, Example, Summary) to structure spoken responses.</li>
+                <li>Discuss the <strong>pros and cons</strong> of different educational systems with a partner.</li>
+                <li>Incorporate <strong>Academic Vocabulary</strong> into discussions as a first step toward academic-level expression.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 2: Learning Objectives
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"Let me quickly walk you through what we will accomplish today. First, you will learn a four-step structure called O-R-E-S — Opinion, Reason, Example, Summary. Second, you will use that structure to have real discussions about education with a partner. And third, we will practise upgrading everyday words into more academic ones. These three things together are the core of what IELTS Speaking Part 3 is asking you to do."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Note</div>
+            <div class="notes-tip">Do not spend more than 60 seconds here. The objectives are on screen — point, read, move on. Save energy for the Key Concepts demo.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 3: Warm-up -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">2. Warm-up (5 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column" style="align-items: center;">
+            <div style="text-align: center;">
+                <i class="fa-solid fa-comments" style="font-size: 150px; color: var(--accent-yellow);"></i>
+            </div>
+            <div>
+                <h3>Quick Choice &amp; Why</h3>
+                <p style="font-size: 19px; margin-bottom: 12px;">Choose one and answer in 30 seconds:</p>
+                <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 9px;">
+                    <p style="font-size: 19px; font-weight: 700; margin: 0;"><span style="color: var(--accent-yellow);">A.</span> "If you could study only ONE subject for the rest of your life, would it be Science, Art, or Languages? Why?"</p>
+                </div>
+                <div class="card" style="border-left: 8px solid var(--navy-blue); margin-bottom: 9px;">
+                    <p style="font-size: 19px; font-weight: 700; margin: 0;"><span style="color: var(--navy-blue);">B.</span> "Do you think going to university is necessary to have a successful career? Why or why not?"</p>
+                </div>
+                <div class="card" style="border-left: 8px solid #888; margin-bottom: 9px;">
+                    <p style="font-size: 19px; font-weight: 700; margin: 0;"><span style="color: #888;">C.</span> "What is one thing about your school or education system that you would like to change, and why?"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 3: Warm-up
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">5 mins</span> Setup</div>
+            <div class="notes-say">"Let's start with a quick warm-up. Look at the three questions on the screen. Choose the one that feels most natural for you, and take about 30 seconds to answer. I will call on each of you. There is no right or wrong answer here — just speak."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Calling on students</div>
+            <div class="notes-say">"[Student name], which question did you choose? Go ahead." — After each response: "Thank you. Anyone who chose the same question — did you have a different opinion?"</div>
+            <div class="notes-tip">Aim to hear from every student at least briefly. If a student gives a very short answer, gently prompt: "Can you tell us a bit more about why?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition</div>
+            <div class="notes-say">"Good. Notice that some of you gave a clear reason, and some of you gave mainly a feeling. Today we are going to work on turning those feelings into structured, logical arguments. Let's look at how."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-warn">⚠ Do not let this run over 5 minutes. If students are chatty, acknowledge and redirect: "Great energy — let's save that for the discussion later."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 4a: Key Concepts (Template only) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">3. Key Concepts: The O-R-E-S Template (10 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">In IELTS Speaking Part 3, examiners assess your ability to develop and justify ideas. Use this structure to organize your response clearly:</p>
+        <div class="two-column">
+            <div class="card">
+                <div class="template-box"><div class="template-label">Opinion (O)</div><p style="margin: 4px 0; font-size: 18px;">I believe that... / In my view...</p></div>
+                <div class="template-box"><div class="template-label">Reason (R)</div><p style="margin: 4px 0; font-size: 18px;">This is because... / The main reason is...</p></div>
+                <div class="template-box"><div class="template-label">Example (E)</div><p style="margin: 4px 0; font-size: 18px;">For instance... / In my country, for example...</p></div>
+                <div class="template-box"><div class="template-label">Summary (S)</div><p style="margin: 4px 0; font-size: 18px;">Therefore... / That is why I think...</p></div>
+            </div>
+            <div class="card" style="background: #eef2ff; border: 2px dashed var(--navy-blue);">
+                <h4 style="margin-top:0; color: var(--navy-blue); font-size: 20px;"><i class="fa-solid fa-play-circle"></i> Demo</h4>
+                <p style="font-size: 18px;">Instructor &amp; Assistant: <strong>"Weak Answer"</strong> vs. <strong>"O-R-E-S Answer"</strong></p>
+                <div style="background: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 12px;">
+                    <p style="margin: 0; font-size: 17px; color: #888; font-style: italic;">"I like online schools. It's easy."</p>
+                </div>
+                <p style="font-size: 17px; color: var(--accent-yellow); font-weight: 700; margin: 0 0 10px 0;">→ How can we rebuild this with O-R-E-S?</p>
+                <div class="note-box">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Note:</strong> The O-R-E-S reference sheet has been shared with you — keep it handy.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 4a: Key Concepts (before demo)
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">10 mins</span> Explaining O-R-E-S</div>
+            <div class="notes-say">"In IELTS Speaking Part 3, the examiner wants to see that you can think, not just talk. The O-R-E-S template gives you a four-step structure to do exactly that. O is your Opinion — what you believe. R is your Reason — why you believe it. E is your Example — a real situation that supports your reason. And S is your Summary — one sentence to close your argument."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Demo — Weak Answer first</div>
+            <div class="notes-say">"Watch this. [Assistant], ask me: 'Do you think online learning is better than classroom learning?'"</div>
+            <div class="notes-say">Assistant asks. You reply: "I like online schools. It's easy." — Then pause and look at students. "So — what is missing from that answer?"</div>
+            <div class="notes-tip">Let students respond. Accept answers like "reason," "example," "details." Then move to the next slide for the Model Response.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 4b: Key Concepts (Model Response) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">3. Key Concepts: The O-R-E-S Template (10 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">In IELTS Speaking Part 3, examiners assess your ability to develop and justify ideas. Use this structure to organize your response clearly:</p>
+        <div class="two-column">
+            <div class="card">
+                <div class="template-box"><div class="template-label">Opinion (O)</div><p style="margin: 4px 0; font-size: 18px;">I believe that... / In my view...</p></div>
+                <div class="template-box"><div class="template-label">Reason (R)</div><p style="margin: 4px 0; font-size: 18px;">This is because... / The main reason is...</p></div>
+                <div class="template-box"><div class="template-label">Example (E)</div><p style="margin: 4px 0; font-size: 18px;">For instance... / In my country, for example...</p></div>
+                <div class="template-box"><div class="template-label">Summary (S)</div><p style="margin: 4px 0; font-size: 18px;">Therefore... / That is why I think...</p></div>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0; color: var(--navy-blue); font-size: 20px;"><i class="fa-solid fa-circle-check" style="color: var(--ores-e);"></i> Model Response</h4>
+                <div class="ores-block ores-o-block">
+                    <span class="ores-tag">O</span>In my view, online learning has real advantages for motivated students.
+                </div>
+                <div class="ores-block ores-r-block">
+                    <span class="ores-tag">R</span>The main reason is that it allows learners to study at their own pace and revisit difficult content.
+                </div>
+                <div class="ores-block ores-e-block">
+                    <span class="ores-tag">E</span>For instance, when I struggled with a grammar point, I was able to rewatch the explanation three times — something impossible in a regular classroom.
+                </div>
+                <div class="ores-block ores-s-block">
+                    <span class="ores-tag">S</span>That is why I believe online learning can be highly effective, provided the student is self-disciplined.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 4b: Key Concepts (Model Response)
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Delivering the Model Response</div>
+            <div class="notes-say">"Now let me try again using O-R-E-S." — Read each block naturally as a connected speech, not bullet by bullet. Then point to the color-coded steps on screen: "Notice — yellow is Opinion, blue is Reason, green is Example, purple is Summary. Four steps, one complete answer."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Your O-R-E-S sheet is in the chat — please keep it open. You will use it in both discussion sessions today."</div>
+            <div class="notes-warn">⚠ Do not ask students to practise O-R-E-S here. The practice happens in Sessions 1 and 2. Keep this to explanation and demo only.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5: Academic Vocabulary -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Academic Vocabulary</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Small changes make a big difference in how academic you sound:</p>
+        <div class="two-column" style="margin-bottom: 16px;">
+            <div class="card">
+                <h4 style="color: #2e7d32; margin-top: 0; font-size: 18px;">Instead of "good"</h4>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>Beneficial</strong> — "It is beneficial because..."
+                        <span class="voca-example">"Regular exercise is beneficial because it reduces stress."</span>
+                    </li>
+                    <li><strong>Advantageous</strong> — "One advantageous aspect is..."
+                        <span class="voca-example">"One advantageous aspect of online school is flexibility."</span>
+                    </li>
+                    <li><strong>Essential</strong> — "It is essential for students to..."
+                        <span class="voca-example">"It is essential for students to develop critical thinking."</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4 style="color: #c62828; margin-top: 0; font-size: 18px;">Instead of "bad"</h4>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>Harmful</strong> — "This could be harmful to..."
+                        <span class="voca-example">"Too much screen time could be harmful to concentration."</span>
+                    </li>
+                    <li><strong>Challenging</strong> — "One challenging aspect is..."
+                        <span class="voca-example">"One challenging aspect of university life is managing time."</span>
+                    </li>
+                    <li><strong>Disadvantageous</strong> — "It is disadvantageous when..."
+                        <span class="voca-example">"It is disadvantageous when students lack access to technology."</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue);">
+            <p style="font-size: 20px; margin: 0;"><strong>Instead of "I think":</strong>&nbsp;&nbsp;"I am of the opinion that..." &nbsp;/&nbsp; "I would argue that..."</p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5: Academic Vocabulary
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~4 mins</span> Introduction</div>
+            <div class="notes-say">"Before we go into the discussions, let's look at one more tool: Academic Vocabulary. The words you choose signal to a listener — a classmate, a teacher, or an examiner — how sophisticated your thinking is. These are not complicated words. They are simply more precise alternatives to words you already use every day."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Walking through the vocabulary</div>
+            <div class="notes-say">"Instead of 'good,' try 'beneficial' — regular exercise is beneficial because it reduces stress. Or 'essential' — it is essential for students to develop self-discipline. Instead of 'bad,' try 'harmful' — excessive screen time can be harmful to concentration. And instead of 'I think,' try 'I would argue that' — it sounds more confident and academic without being unnatural."</div>
+            <div class="notes-tip">Read two or three examples aloud — you do not need to cover all of them. Students will pick up the rest through use in Sessions 1 and 2.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition into Session 1</div>
+            <div class="notes-say">"In Session 2, your challenge is to use at least two of these words in your O-R-E-S response. Do not force them — let them come naturally. Alright, let's move into the first discussion."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6: Session 1 -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">5. 1-on-1 Exchange — Session 1 (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="card" style="background: var(--navy-blue); color: white; margin-bottom: 16px; padding: 18px 28px;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent-yellow); margin-bottom: 10px;">PROMPT</div>
+            <p style="font-size: 22px; font-weight: 700; margin: 0; line-height: 1.4;">"Some people think online learning is better than classroom learning. What is your opinion?"</p>
+        </div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Steps</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">A:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-b">B:</span> Ask one follow-up question</li>
+                    <li><span class="role-a">A:</span> Respond &rarr; <em>"How about you?"</em></li>
+                    <li><span class="role-b">B:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-a">A:</span> Ask one follow-up question</li>
+                    <li class="dim">Open discussion — agree, disagree, cultural differences</li>
+                    <li class="dim">Tell your partner one thing they did well</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Follow-up question ideas</h3>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"How is this different in your country?"</li>
+                    <li>"Can you give a specific example?"</li>
+                    <li>"What would be one disadvantage of that?"</li>
+                    <li>"Do most students in your school feel the same?"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor picks 1-2 expressions to highlight (1-2 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 6: Session 1
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">15 mins</span> Setup</div>
+            <div class="notes-say">"Okay, let's go into breakout rooms. You will discuss today's first prompt — it is on the screen. Person A starts by sharing their opinion using O-R-E-S. Person B listens, then asks one follow-up question. After A responds, A turns it around with 'How about you?' — and then B goes through their O-R-E-S. After both of you have shared, use the remaining time to discuss freely. Finally, before you come back, tell your partner one specific thing they did well. I will be moving between rooms. Any questions before we start?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Pairing</div>
+            <div class="notes-tip">Pair students from different countries together where possible — the cultural contrast is part of the value. If numbers are uneven, the Assistant or Instructor steps in to keep all pairs 1-on-1.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Is O-R-E-S being used, or are students just chatting?</div>
+            <div class="notes-tip">✓ Note 1-2 strong expressions or phrases you hear — you will highlight these after.</div>
+            <div class="notes-warn">⚠ If a pair is silent or stuck, prompt: "Try starting with 'In my view...' and finish that sentence first."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Session 1 — feedback (1-2 mins)</div>
+            <div class="notes-say">"Welcome back. I heard some really good things in the rooms. I want to highlight this expression: [quote what you heard]. Notice how that follows the O-R-E-S structure clearly. Well done. Let's keep that energy going in Session 2."</div>
+            <div class="notes-tip">One or two observations maximum. Do not correct errors at this point — save detailed feedback for after Session 2.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7: Session 2 -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. 1-on-1 Exchange — Session 2 (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="card" style="background: var(--accent-yellow); margin-bottom: 16px; padding: 18px 28px;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--navy-blue); margin-bottom: 10px;">PROMPT</div>
+            <p style="font-size: 22px; font-weight: 700; margin: 0; line-height: 1.4; color: #222;">"Is the main purpose of university to get a job, or to become a better person?"</p>
+        </div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Steps — same format as Session 1</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">A:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-b">B:</span> Ask one follow-up question</li>
+                    <li><span class="role-a">A:</span> Respond &rarr; <em>"How about you?"</em></li>
+                    <li><span class="role-b">B:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-a">A:</span> Ask one follow-up question</li>
+                    <li class="dim">Open discussion — agree, disagree, cultural differences</li>
+                    <li class="dim">Tell your partner one thing they did well</li>
+                </ul>
+            </div>
+            <div class="card" style="border: 3px solid var(--accent-yellow);">
+                <h4 style="color: var(--accent-yellow); margin-top: 0; font-size: 19px;"><i class="fa-solid fa-fire"></i> Session 2 Challenge</h4>
+                <p style="font-size: 17px; margin-bottom: 12px;">Use at least <strong>two of these words</strong> in your O-R-E-S response:</p>
+                <div class="voca-reminder">
+                    <div class="voca-chip">Beneficial <span>— "It is beneficial because..."</span></div>
+                    <div class="voca-chip">Advantageous <span>— "One advantageous aspect is..."</span></div>
+                    <div class="voca-chip">Essential <span>— "It is essential for..."</span></div>
+                    <div class="voca-chip">Harmful <span>— "This could be harmful to..."</span></div>
+                    <div class="voca-chip">Challenging <span>— "One challenging aspect is..."</span></div>
+                    <div class="voca-chip">I would argue that... <span>— instead of "I think"</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor feedback &amp; group discussion (3 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7: Session 2
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">15 mins</span> Setup</div>
+            <div class="notes-say">"Same format as before, same steps — but a new prompt, and one extra challenge. This time, try to use at least two of the Academic Vocabulary words listed on the right side of the screen. The goal is not to force them in — it is to find a natural moment where a more precise word fits. Ready? Into breakout rooms."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Are students attempting the Academic Vocabulary? Even one word used naturally is worth highlighting.</div>
+            <div class="notes-tip">✓ Is the O-R-E-S structure tighter than Session 1? Note any improvement.</div>
+            <div class="notes-warn">⚠ If a student is struggling with the vocabulary, do not intervene immediately. Let them work through it and note it for the group feedback.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Session 2 — group feedback (3 mins)</div>
+            <div class="notes-say">"Welcome back. Good work. Let me share a couple of things I noticed. First, [positive observation — e.g., 'I heard someone use "beneficial" very naturally in their Reason step — that is exactly what we are aiming for.']. Second, one area to work on: [one common issue — e.g., 'A few of you gave a strong Opinion and Reason, but the Summary was quite short. Next time, try closing with one full sentence that echoes your Opinion.']."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Experience corner — asking the Assistant / Instructor</div>
+            <div class="notes-say">"Assistant / Instructor, thinking about your time at university — has there been a moment where being able to argue clearly like this, with a reason and an example, actually made a difference? In class, or even outside of it?"</div>
+            <div class="notes-tip">This keeps the question open and personal rather than test-specific. If they draw a blank, rephrase: "Even a casual conversation — a moment where you felt your point landed because you explained it well?"</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8: Reflection -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-1 | Week 1: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. Reflection (8 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="card">
+                <h3><i class="fa-solid fa-users"></i> Task 1 — Breakout Rooms (5 mins)</h3>
+                <p style="font-size: 17px; margin-bottom: 12px;">
+                    <span class="tag">Room 1</span> Japanese students &nbsp;|&nbsp;
+                    <span class="tag tag-yellow">Room 2</span> Indonesian students
+                </p>
+                <p style="font-size: 18px; margin-bottom: 10px;">In your own language, discuss:</p>
+                <div style="background: #f8f8f8; border-left: 5px solid var(--accent-yellow); padding: 13px 16px; border-radius: 6px; font-size: 19px; font-weight: 600;">
+                    "Which step of O-R-E-S was the hardest for you today — and why?"
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-microphone"></i> Task 2 — Main Room (3 mins)</h3>
+                <p style="font-size: 18px;">Share one reflection with everyone:</p>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"Today I found it difficult to..."</li>
+                    <li>"One expression I want to use more is..."</li>
+                    <li>"Something my partner said that surprised me was..."</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8: Reflection
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">8 mins</span> Setup</div>
+            <div class="notes-say">"Alright, last activity. We are going to split into two rooms — Japanese students in Room 1, Indonesian students in Room 2. In your room, discuss in your own language: which step of O-R-E-S felt hardest today, and why? The Assistant will join Room 1 and the Instructor will join Room 2 to give advice based on what they hear. You have five minutes. Then we come back together for a quick final share."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Brief for the Assistant / Instructor (share before class)</div>
+            <div class="notes-tip">Ask students the question, listen, and offer one piece of practical advice each. For example: "If Example is hard, think of a moment from your own life first, then put it into English." One or two sentences of genuine advice per student is enough.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Task 2 — Main room (3 mins)</div>
+            <div class="notes-say">"Welcome back. Can one person from each group share — what was the hardest step today, and what advice did you get?"</div>
+            <div class="notes-tip">Hear from 2-3 students. Do not go around the whole group — time is short.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Great work today. You used O-R-E-S for the first time, and you already sound more structured than when we started. That is real progress. Next week we move into Logic &amp; Writing — we will take the thinking skill you practised today and extend it onto the page, using the Logic Map you complete for homework. See you then."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 9: Homework -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header" style="background-color: var(--navy-blue); padding: 15px 40px;">
+        <div class="left-meta" style="color: white;">Homework | Week 1</div>
+        <div class="right-logo" style="color: white;"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="content-area" style="padding-top: 36px;">
+        <div class="card">
+            <h2 style="color: var(--navy-blue); margin-top: 0;">Logic Map for Next Week</h2>
+            <p style="font-size: 19px; margin-top: 10px;">Next week's class is <strong>Logic &amp; Writing</strong> — we will turn a spoken argument into a written paragraph. To prepare, fill in the <strong>Logic Map Worksheet</strong> (shared with you as a PDF) for the prompt below.</p>
+            <div style="background: var(--navy-blue); color: white; padding: 18px 28px; border-radius: 8px; margin: 18px 0;">
+                <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent-yellow); margin-bottom: 10px;">PROMPT</div>
+                <p style="font-size: 23px; font-weight: 700; margin: 0; line-height: 1.4;">"Should university education be free for everyone? Give two reasons for your opinion."</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px;">
+                <div style="background: #fff8e1; border-left: 5px solid var(--accent-yellow); padding: 11px 16px; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--navy-blue); letter-spacing: 1.5px; margin-bottom: 5px;">WHAT TO DO</div>
+                    <div style="font-size: 15px; line-height: 1.5;">Complete the four parts of the map: <strong>Thesis</strong>, one <strong>Reason</strong>, one <strong>Example</strong>, and one <strong>Counter-argument with your response</strong>.</div>
+                </div>
+                <div style="background: #e8eef6; border-left: 5px solid var(--navy-blue); padding: 11px 16px; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--navy-blue); letter-spacing: 1.5px; margin-bottom: 5px;">WHAT NOT TO DO</div>
+                    <div style="font-size: 15px; line-height: 1.5;">You do <strong>not</strong> need to write the full paragraph at home. Short, specific lines on the map are more useful than long vague ones.</div>
+                </div>
+            </div>
+            <p style="font-size: 15px; color: #666; margin-top: 16px; margin-bottom: 0;"><i class="fa-solid fa-calendar-check"></i>&nbsp; Bring your completed map (paper or digital) to next week's class — we will build the written version together from it.</p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 9: Homework
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"One last thing before we finish — your homework for next week. Next class is Logic &amp; Writing, where we will take the thinking we practised today and turn it into written academic paragraphs. To prepare, I have shared a Logic Map Worksheet with you as a PDF. On page 2 of that sheet, fill in a Logic Map for the prompt on screen — university education being free. You do not need to write the full paragraph at home. Just complete the four parts of the map: Thesis, Reason, Example, and one Counter-argument with your response. Bring the map to class and we will build the paragraph together."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why this homework, not a full paragraph</div>
+            <div class="notes-tip">The Logic Map is deliberately shorter than writing 100 words. It lowers the psychological barrier to doing homework, and it gives us a structured artefact to work with in next week's class — whether the student came prepared or not. Students who bring a completed map get deeper feedback; students who did not can complete one quickly at the start of class.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">If students look uncertain</div>
+            <div class="notes-tip">Point them to the worked example on page 1 of the Logic Map Worksheet (the smartphone-ban sample). Remind them: short, specific lines are better than long vague ones. Four blanks, not four paragraphs.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"That is it for today. Thank you — see you next week for Logic &amp; Writing."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    function toggleNotes(btn) {
+        btn.classList.toggle('open');
+        btn.nextElementSibling.classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

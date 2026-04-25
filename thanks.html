@@ -14,7 +14,9 @@
         gtag('js', new Date());
         gtag('config', 'G-4MCJE21MS4');
         gtag('config', 'AW-349915755');
-        if (!sessionStorage.getItem('lead_sent')) {
+        // ?ok=1 がある（apply.js経由の本物の送信）かつ未送信の場合のみ発火
+        const isRealSubmission = new URLSearchParams(window.location.search).get('ok') === '1';
+        if (isRealSubmission && !sessionStorage.getItem('lead_sent')) {
             gtag('event', 'generate_lead');
             sessionStorage.setItem('lead_sent', '1');
         }
@@ -32,7 +34,10 @@
         'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '654712559538676');
         fbq('track', 'PageView');
-        fbq('track', 'Lead');
+        // 本物の送信（?ok=1）の場合のみLeadイベントを送信
+        if (new URLSearchParams(window.location.search).get('ok') === '1') {
+            fbq('track', 'Lead');
+        }
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=654712559538676&ev=PageView&noscript=1"/></noscript>
 

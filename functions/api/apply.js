@@ -12,13 +12,13 @@ export async function onRequestPost(context) {
 
   // a. ハニーポット: botが非表示フィールドに入力した場合
   if (rawForm.website) {
-    return Response.redirect(thanksUrl, 303);
+    return Response.redirect(thanksUrl, 303); // ?ok=1なし → tracking発火しない
   }
 
   // b. 時間ベースチェック: 3秒未満の送信はbot
   const ts = parseInt(rawForm._ts || '0', 10);
   if (ts && (Date.now() - ts) < 3000) {
-    return Response.redirect(thanksUrl, 303);
+    return Response.redirect(thanksUrl, 303); // ?ok=1なし → tracking発火しない
   }
 
   const firstName       = rawForm.firstName || '';
@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
   // e. URL含有チェック（名前・学校名にURLが含まれる場合はスパム）
   const urlPattern = /https?:\/\/|telegra\.ph|\.me\//i;
   if (urlPattern.test(firstName) || urlPattern.test(school)) {
-    return Response.redirect(thanksUrl, 303);
+    return Response.redirect(thanksUrl, 303); // ?ok=1なし → tracking発火しない
   }
 
   const genderMap = {
@@ -108,5 +108,5 @@ export async function onRequestPost(context) {
     return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
   }
 
-  return Response.redirect(thanksUrl, 303);
+  return Response.redirect(thanksUrl + '?ok=1', 303); // 本物の送信成功のみ
 }

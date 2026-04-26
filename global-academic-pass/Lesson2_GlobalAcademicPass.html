@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Academic Pass - Lesson 2: Education &amp; Future</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --pdf-bg: #FFF9E5;
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #333333;
+            --white: #ffffff;
+            --notes-bg: #1e1e2e;
+            --notes-text: #cdd6f4;
+            --notes-label: #89b4fa;
+            --notes-tip: #a6e3a1;
+            --notes-warn: #f38ba8;
+            --ores-o: #f9a825;
+            --ores-r: #003366;
+            --ores-e: #2e7d32;
+            --ores-s: #6a1b9a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .slide-wrapper { width: 1280px; margin-bottom: 0; }
+
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--pdf-bg);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* ── Notes Panel ── */
+        .notes-panel {
+            width: 1280px;
+            background-color: var(--notes-bg);
+            color: var(--notes-text);
+            font-size: 15px;
+            line-height: 1.7;
+            border-top: 3px solid var(--notes-label);
+            margin-bottom: 60px;
+        }
+        .notes-toggle {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 28px; cursor: pointer; background: #2a2a3e;
+            border: none; color: var(--notes-label); font-size: 13px;
+            font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+            width: 100%; text-align: left; font-family: 'Roboto', sans-serif;
+        }
+        .notes-toggle:hover { background: #333350; }
+        .notes-toggle .arrow { margin-left: auto; transition: transform 0.2s; }
+        .notes-toggle.open .arrow { transform: rotate(180deg); }
+        .notes-body { display: none; padding: 24px 36px 28px 36px; }
+        .notes-body.open { display: block; }
+        .notes-section { margin-bottom: 18px; }
+        .notes-label {
+            color: var(--notes-label); font-weight: 700; font-size: 13px;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .notes-say {
+            background: #2a2a3e; border-left: 4px solid var(--notes-label);
+            padding: 10px 16px; border-radius: 4px; font-size: 15px;
+            color: #e0e0ff; margin-bottom: 8px; font-style: italic;
+        }
+        .notes-tip {
+            background: #1e2e1e; border-left: 4px solid var(--notes-tip);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-tip); margin-bottom: 6px;
+        }
+        .notes-warn {
+            background: #2e1e1e; border-left: 4px solid var(--notes-warn);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-warn); margin-bottom: 6px;
+        }
+        .notes-time {
+            display: inline-block; background: var(--notes-label); color: #1e1e2e;
+            font-size: 12px; font-weight: 700; padding: 2px 10px;
+            border-radius: 20px; margin-right: 8px; vertical-align: middle;
+        }
+
+        /* ── Slide internals ── */
+        .meta-header {
+            padding: 20px 40px; display: flex;
+            justify-content: space-between; align-items: flex-start; z-index: 10;
+        }
+        .meta-header .left-meta { font-size: 18px; color: #555; line-height: 1.4; }
+        .meta-header .right-logo { text-align: right; color: var(--navy-blue); }
+        .meta-header .logo-brand { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+
+        .slide-title-area { padding: 0 60px; margin-bottom: 18px; }
+        .slide-title {
+            font-size: 44px; font-weight: 700; margin: 0; color: #000;
+            border-bottom: 4px solid var(--navy-blue); display: inline-block; padding-bottom: 5px;
+        }
+
+        .content-area {
+            flex-grow: 1; padding: 0 60px 80px 60px; display: flex; flex-direction: column;
+        }
+
+        .card {
+            background: var(--white); border-radius: 12px; padding: 22px 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;
+        }
+
+        .ui-footer {
+            position: absolute; bottom: 18px; left: 40px; right: 40px;
+            display: flex; align-items: center; justify-content: flex-start;
+            font-size: 15px; color: #555; font-style: italic;
+        }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+        .bullet-list { list-style: none; padding-left: 0; margin: 0; }
+        .bullet-list li {
+            font-size: 20px; margin-bottom: 10px; position: relative;
+            padding-left: 26px; line-height: 1.4;
+        }
+        .bullet-list li::before {
+            content: "•"; color: var(--navy-blue); font-weight: bold;
+            position: absolute; left: 6px; font-size: 22px; top: -2px;
+        }
+
+        .numbered-list { list-style: none; padding-left: 0; margin: 0; counter-reset: num; }
+        .numbered-list li {
+            font-size: 18px; margin-bottom: 10px; position: relative;
+            padding-left: 32px; line-height: 1.5; counter-increment: num;
+        }
+        .numbered-list li::before {
+            content: counter(num); position: absolute; left: 0; top: 1px;
+            width: 22px; height: 22px; background: var(--navy-blue); color: white;
+            border-radius: 50%; font-size: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .step-list { list-style: none; padding-left: 0; margin: 0; }
+        .step-list li {
+            font-size: 18px; margin-bottom: 8px; padding-left: 14px;
+            line-height: 1.4; border-left: 4px solid var(--accent-yellow);
+        }
+        .step-list li.dim { border-left-color: #ccc; color: #555; }
+
+        .role-a { color: var(--navy-blue); font-weight: 700; }
+        .role-b { color: #b8860b; font-weight: 700; }
+
+        .title-slide { background-color: var(--navy-blue); color: var(--white); text-align: center; }
+        .title-slide h1 { font-size: 68px; margin: 0; }
+        .title-slide .subtitle { font-size: 30px; margin-top: 20px; opacity: 0.9; }
+
+        h3 { color: var(--navy-blue); font-size: 21px; margin-top: 0; margin-bottom: 10px; }
+
+        .note-box {
+            background: #eef2ff; border-left: 5px solid var(--navy-blue); border-radius: 6px;
+            padding: 9px 14px; font-size: 16px; color: #444; margin-top: 10px;
+        }
+
+        /* O-R-E-S blocks */
+        .ores-block {
+            border-radius: 6px; padding: 9px 14px; margin-bottom: 8px;
+            font-size: 17px; line-height: 1.5;
+        }
+        .ores-block .ores-tag {
+            display: inline-block; font-size: 12px; font-weight: 700;
+            padding: 1px 8px; border-radius: 10px; margin-right: 7px;
+            vertical-align: middle; color: white;
+        }
+        .ores-o-block { background: #fff8e1; border-left: 4px solid var(--ores-o); }
+        .ores-o-block .ores-tag { background: var(--ores-o); color: #333; }
+        .ores-r-block { background: #e8eef6; border-left: 4px solid var(--ores-r); }
+        .ores-r-block .ores-tag { background: var(--ores-r); }
+        .ores-e-block { background: #e8f5e9; border-left: 4px solid var(--ores-e); }
+        .ores-e-block .ores-tag { background: var(--ores-e); }
+        .ores-s-block { background: #f3e5f5; border-left: 4px solid var(--ores-s); }
+        .ores-s-block .ores-tag { background: var(--ores-s); }
+
+        /* Inline ORES tag (used within flowing text) */
+        .it {
+            display: inline-block; font-size: 11px; font-weight: 700;
+            padding: 1px 7px; border-radius: 8px; margin: 0 3px;
+            vertical-align: middle; color: white; line-height: 1.6;
+        }
+        .it-o { background: var(--ores-o); color: #333; }
+        .it-r { background: var(--ores-r); }
+        .it-e { background: var(--ores-e); }
+        .it-s { background: var(--ores-s); }
+
+        /* O-R-E-S recap chips */
+        .ores-recap { display: flex; flex-direction: column; gap: 10px; }
+        .ores-recap-row { display: flex; gap: 16px; align-items: center; }
+        .ores-chip {
+            width: 90px; flex-shrink: 0; text-align: center;
+            font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px;
+        }
+        .chip-o { background: #fff8e1; color: #b8860b; border: 2px solid var(--ores-o); }
+        .chip-r { background: #e8eef6; color: var(--navy-blue); border: 2px solid var(--navy-blue); }
+        .chip-e { background: #e8f5e9; color: #2e7d32; border: 2px solid var(--ores-e); }
+        .chip-s { background: #f3e5f5; color: #6a1b9a; border: 2px solid var(--ores-s); }
+        .ores-recap-row p { font-size: 18px; margin: 0; color: #444; }
+        .ores-recap-row p em { color: var(--navy-blue); font-style: normal; font-weight: 600; }
+
+        /* Phrase box */
+        .phrase-box {
+            background: #f8f8ff; border: 1px solid #c5cae9; border-radius: 10px;
+            padding: 18px 22px; margin: 12px 0;
+        }
+        .phrase-box h4 {
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--navy-blue); margin: 14px 0 6px;
+        }
+        .phrase-box h4:first-child { margin-top: 0; }
+        .phrase-box p { font-size: 17px; margin: 4px 0; color: #333; }
+
+        /* Logic Map */
+        .logic-map {
+            background: #f8f9fa; border: 1px dashed #aaa; border-radius: 8px;
+            padding: 16px 20px; font-family: "SF Mono", Consolas, Monaco, monospace;
+            font-size: 14px; line-height: 1.8; white-space: pre; overflow-x: auto;
+            margin: 12px 0; color: #333;
+        }
+
+        /* Dialogue */
+        .dialogue {
+            background: var(--white); border: 1px solid #dde; border-radius: 10px;
+            padding: 16px 20px; margin: 12px 0;
+        }
+        .dialogue p { font-size: 17px; margin: 6px 0; line-height: 1.5; }
+
+        /* Weak / Strong boxes */
+        .weak-box {
+            background: #fff0f0; border-left: 4px solid #c62828;
+            border-radius: 8px; padding: 14px 18px; margin: 10px 0;
+        }
+        .strong-box {
+            background: #f0fff0; border-left: 4px solid #2e7d32;
+            border-radius: 8px; padding: 14px 18px; margin: 10px 0;
+        }
+        .box-label {
+            display: inline-block; font-size: 11px; font-weight: 700;
+            padding: 2px 10px; border-radius: 10px; margin-bottom: 8px;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .label-weak { background: #c62828; color: white; }
+        .label-strong { background: #2e7d32; color: white; }
+        .weak-box p, .strong-box p { font-size: 17px; margin: 0; line-height: 1.7; color: #333; }
+
+        /* Checklist */
+        .checklist {
+            background: var(--white); border: 1px solid #dde; border-radius: 10px;
+            padding: 16px 20px; margin: 10px 0;
+        }
+        .checklist ul { list-style: none; padding-left: 0; margin: 0; }
+        .checklist li {
+            font-size: 18px; padding-left: 28px; margin-bottom: 8px;
+            position: relative; line-height: 1.4;
+        }
+        .checklist li::before {
+            content: "☐"; position: absolute; left: 0;
+            color: var(--navy-blue); font-size: 17px; top: 1px;
+        }
+
+        /* Blockquote */
+        .bq {
+            border-left: 4px solid var(--accent-yellow); background: #fff8e1;
+            padding: 12px 18px; border-radius: 0 8px 8px 0;
+            font-size: 19px; font-style: italic; color: #444; margin: 12px 0;
+        }
+
+        /* Paragraph frame */
+        .para-frame {
+            background: #f8f8ff; border: 1px solid #c5cae9;
+            border-radius: 10px; padding: 18px 22px; margin: 12px 0;
+        }
+        .para-frame h4 {
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--navy-blue); margin: 12px 0 6px;
+        }
+        .para-frame h4:first-child { margin-top: 0; }
+        .para-frame p { font-size: 16px; margin: 4px 0; color: #444; padding-left: 10px; }
+
+        /* Voca chip */
+        .voca-reminder { display: flex; flex-direction: column; gap: 5px; }
+        .voca-chip {
+            background: #eef2ff; border: 1px solid #c5cae9; border-radius: 6px;
+            padding: 5px 12px; font-size: 16px; font-weight: 600; color: var(--navy-blue);
+        }
+        .voca-chip span { font-weight: 400; color: #666; font-size: 14px; margin-left: 6px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ SLIDE 1: Title -->
+<div class="slide-wrapper">
+<div class="slide-container title-slide">
+    <div class="meta-header" style="position: absolute; top: 0; width: 100%;">
+        <div class="left-meta" style="color: white;">Lesson 1-2<br>Term 1: Global Success<br>Week 2: Logic &amp; Writing</div>
+        <div class="right-logo" style="color: white;">
+            <div class="logo-brand">AirPangaea</div>
+            <div style="font-size: 14px;">TOMODACHI English</div>
+        </div>
+    </div>
+    <div class="content-area" style="justify-content: center;">
+        <p style="font-size: 22px; letter-spacing: 4px; margin-bottom: 10px;">Global Academic Pass Course</p>
+        <h1>Lesson 2: Education &amp; Future</h1>
+        <p style="font-size: 24px; font-style: italic; margin-top: 8px; opacity: 0.8;">Should university be free?</p>
+        <div style="width: 150px; height: 4px; background: var(--accent-yellow); margin: 28px auto;"></div>
+        <p class="subtitle">(Logic &amp; Writing Focus)</p>
+    </div>
+    <div class="ui-footer" style="color: white; opacity: 0.4; font-style: normal; justify-content: center;">TOMODACHI English Project</div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 1: Opening
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">Before class</span> Preparation</div>
+            <div class="notes-tip">✓ Share the <strong>O-R-E-S &amp; Logic Map reference sheet</strong> before students join. New joiners will need this.</div>
+            <div class="notes-tip">✓ Have the shared Google Doc ready — the same one used for the Logic Map homework.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">0:00</span> Opening</div>
+            <div class="notes-say">"Welcome back. Last week we used O-R-E-S to speak. Today we use the exact same structure to write. Specifically, we are going to take the first step into IELTS Writing Task 2 — not the whole essay, just the opening part. By the end of class, you will have written about 100 words of real academic English, and a partner will have read and challenged it. Let's get started."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Tone note</div>
+            <div class="notes-tip">Some students hear "Writing" and tense up. Reassure them early: today is a logic gym, not a typing test. We write little, we think a lot.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 2: Learning Objectives -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">1. Learning Objectives</h2></div>
+    <div class="content-area">
+        <div class="card">
+            <p style="font-size: 22px; font-weight: 500; margin-top: 0; margin-bottom: 18px;">By the end of this lesson, students will be able to:</p>
+            <ul class="bullet-list">
+                <li>Convert a spoken <strong>O-R-E-S</strong> response into a written <strong>IELTS Task 2 paragraph</strong> (Introduction + Body 1).</li>
+                <li>Strengthen their argument by letting a partner <strong>challenge</strong> their logic before drafting.</li>
+                <li>Apply <strong>cohesive devices</strong> (<em>Firstly, For instance, Consequently…</em>) to improve <strong>Coherence &amp; Cohesion</strong> — a core IELTS Task 2 scoring criterion.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 2: Learning Objectives
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"Three goals today. First, O-R-E-S becomes the backbone of a written paragraph — same four steps, new mode. Second, you will work with a partner whose job is to challenge your logic, not agree with you. Third, we introduce cohesive devices — small linking words that make a huge difference to how academic your writing sounds."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Note</div>
+            <div class="notes-tip">Do not spend more than 60 seconds here. Point, read, move on. Save the energy for the demo on Slide 5b.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 3: O-R-E-S Recap -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">2. O-R-E-S Quick Recap (3 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 20px; color: #555;">A fast reminder — and a welcome for anyone joining the course this week.</p>
+        <div class="card">
+            <div class="ores-recap">
+                <div class="ores-recap-row">
+                    <div class="ores-chip chip-o">Opinion</div>
+                    <p><em>"In my view…"</em> — What you believe.</p>
+                </div>
+                <div class="ores-recap-row">
+                    <div class="ores-chip chip-r">Reason</div>
+                    <p><em>"The main reason is…"</em> — Why you believe it.</p>
+                </div>
+                <div class="ores-recap-row">
+                    <div class="ores-chip chip-e">Example</div>
+                    <p><em>"For instance…"</em> — A real situation that supports it.</p>
+                </div>
+                <div class="ores-recap-row">
+                    <div class="ores-chip chip-s">Summary</div>
+                    <p><em>"That is why…"</em> — One sentence to close.</p>
+                </div>
+            </div>
+            <div class="note-box" style="margin-top: 20px;">
+                <i class="fa-solid fa-circle-info"></i> Full reference: see the O-R-E-S &amp; Logic Map sheet.
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 3: O-R-E-S Recap
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">3 mins</span> For new joiners</div>
+            <div class="notes-say">"If this is your first Global Academic Pass course, welcome. O-R-E-S is the structure we use every time we express an opinion. Four steps: Opinion, Reason, Example, Summary. The full reference is in the sheet — please keep it open in another tab. You will pick this up quickly today."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">For returning students</div>
+            <div class="notes-say">"If you were here last week, you already know this. But here is the twist: O-R-E-S is not just for speaking. It is the hidden structure inside every good written paragraph. That is the bridge we are crossing today."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-warn">⚠ Keep this to 3 minutes maximum. Do not re-teach the whole template. Establish that it exists, that the sheet has the details, and move on.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 4: Warm-up -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">3. Warm-up — Global Check-in (5 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 20px; margin-bottom: 16px;">Choose one and answer in 30 seconds:</p>
+        <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 12px;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: var(--accent-yellow);">A.</span> "Do you think university in your country is expensive or affordable for most families?"</p>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue); margin-bottom: 12px;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: var(--navy-blue);">B.</span> "Besides tuition fees, what other costs do you think students need to pay for when they go to university?"</p>
+        </div>
+        <div class="card" style="border-left: 8px solid #888;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: #888;">C.</span> "If university became free tomorrow in your country, would that be mostly a good thing or mostly a bad thing?"</p>
+        </div>
+        <div class="note-box" style="margin-top: 14px;">
+            <i class="fa-solid fa-circle-info"></i>&nbsp; If thinking about university feels difficult, feel free to think about middle school or high school instead.
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 4: Warm-up
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">5 mins</span> Setup</div>
+            <div class="notes-say">"Quick warm-up. Three questions on the screen — choose one, answer in about 30 seconds. I will call on each of you. Speak naturally, no structure needed yet."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Calling on students</div>
+            <div class="notes-tip">Aim to hear from every student. Keep it light — these are warm-up questions, not a quiz. If a student gives a short answer, that is fine. You can gently prompt for a bit more: "Can you think of any examples?" but do not push too hard. The goal is to get students thinking about the topic, not to produce perfect answers.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition</div>
+            <div class="notes-say">"Good. Notice how different the answers are between countries. Those differences are going to be useful in a minute, because you are going to use each other's perspectives to build a stronger argument."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-warn">⚠ Do not let this run over 5 minutes. If a student gives a long answer: "Hold that thought — you will use it soon."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5a: Key Concept -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Key Concept: Spoken O-R-E-S → Written Paragraph (10 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 16px;">Last week, you used O-R-E-S when you <strong>spoke</strong>. Today, the same four steps become a <strong>written paragraph</strong>. The structure stays — but four things change:</p>
+        <div class="card">
+            <ol class="numbered-list">
+                <li><strong>You need an explicit Topic Sentence.</strong> In speech, your Opinion can arrive softly. In writing, the first sentence must announce it clearly.</li>
+                <li><strong>Linking words become visible.</strong> <em>Firstly, For instance, Consequently.</em> In speech these are optional. In writing, the reader needs them.</li>
+                <li><strong>The reader cannot ask "Why?"</strong> So you must anticipate the question and answer it inside your paragraph.</li>
+                <li><strong>The tone becomes more formal.</strong> "I would argue that" instead of "I think." "Consequently" instead of "So."</li>
+            </ol>
+            <div class="bq" style="margin-top: 16px;">Today's target: Introduction (2–3 sentences) + Body 1 (4–5 sentences) = about <strong>100 words</strong></div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5a: Key Concept (before demo)
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~3 mins</span> Delivery</div>
+            <div class="notes-say">"Same structure, different mode. When you speak, your voice, your pauses, your expression all help the listener follow. When you write, none of that is there — just words on a page. So we need four small adjustments."</div>
+            <div class="notes-tip">Read each numbered point with one quick example. Do not over-explain. The point will land when they see the demo on the next slide.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Reassurance</div>
+            <div class="notes-say">"Look at the target — only about 100 words. This is not a full essay. This is the opening move, done well."</div>
+            <div class="notes-warn">⚠ Do not introduce Body 2 or Conclusion. If a student asks, say: "That comes after you master this first move."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5b: Demo -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Demo — What Is Wrong Here?</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Here is a paragraph someone wrote about today's topic. Read it and think: <strong>how would you improve it?</strong></p>
+        <div class="weak-box" style="max-width: 700px;">
+            <span class="box-label label-weak">Weak Paragraph</span>
+            <p>"I think university should be free. It is good because many people want to study but they have no money. For example my friend. So university should be free."</p>
+        </div>
+        <h3 style="margin-top: 24px;"><i class="fa-solid fa-comments"></i> Discussion: What is missing?</h3>
+        <p style="font-size: 19px;">Think about O-R-E-S. Which steps are weak or missing? What would make this stronger?</p>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5b: Weak Paragraph
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~3 mins</span> Let students think first</div>
+            <div class="notes-say">Read the Weak paragraph aloud with a slightly flat voice. Then pause. "What is missing? Think about O-R-E-S — which steps are weak?"</div>
+            <div class="notes-tip">Accept 2–3 student responses. Do not correct or reveal the answer yet — just collect. Expected answers: Opinion is vague ("I think"), Reason is too general ("it is good"), Example has no detail ("my friend"), no linking words, Summary just repeats the first sentence.</div>
+            <div class="notes-say">"Good observations. Now let me show you what this person could have done before writing — a tool called a Logic Map."</div>
+            <div class="notes-warn">⚠ Do NOT show the Strong paragraph yet. Keep it hidden until the next slide. You want students to think about improvement before seeing the answer.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5c: Logic Map → Strong -->
+<div class="slide-wrapper">
+<div class="slide-container" style="height: 800px;">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Demo — From Logic Map to Strong Paragraph</h2></div>
+    <div class="content-area">
+        <p style="font-size: 18px; margin-bottom: 8px;"><strong>Step 1:</strong> Before writing, this person built a Logic Map:</p>
+        <div class="logic-map" style="line-height: 1.4; padding: 12px 18px; margin: 8px 0;">THESIS: University should be free for students who meet academic requirements
+ ├─ Reason 1: Creates equal opportunity
+ │   └─ Example: My classmate chose a cheaper school — could not afford fees
+ └─ Counter: Tax burden on society
+     └─ Response: Long-term economic benefit outweighs the cost</div>
+        <p style="font-size: 18px; margin-bottom: 8px;"><strong>Step 2:</strong> Then they turned it into a paragraph:</p>
+        <div class="strong-box">
+            <span class="box-label label-strong">Strong — Model</span>
+            <p>The question of whether university should be free is widely debated. <span class="it it-o">O</span>In my view, university should be free for all students who meet the academic requirements, because education should depend on ability, not on family wealth. <span class="it it-r">R</span>To begin with, free university creates equal opportunity. <span class="it it-e">E</span>For instance, a classmate of mine chose a local college over her first-choice university simply because her family could not afford the fees. <span class="it it-s">S</span>Consequently, society loses the potential of capable young people, and this is why I would argue that removing financial barriers is essential.</p>
+        </div>
+        <div class="note-box" style="margin-top: 10px;">
+            <i class="fa-solid fa-lightbulb"></i>&nbsp; THESIS → Reason → Example in the Map became <span class="it it-o">O</span> → <span class="it it-r">R</span> → <span class="it it-e">E</span> → <span class="it it-s">S</span> in the paragraph. The difference between Weak and Strong is not talent — it is <strong>planning</strong>.
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-circle-info" style="margin-right: 8px;"></i>
+        Note: This model paragraph covers Introduction + Body 1 only. The Counter-argument from the Logic Map is saved for Body 2 — we are not writing that today.
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5c: Logic Map → Strong Paragraph
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~4 mins</span> The "aha" moment</div>
+            <div class="notes-say">Show the Logic Map first. Point at each branch: "THESIS at the top — that becomes the Opinion. Reason 1 — that becomes the Reason. Example — that becomes the Example. And the Counter-argument — this person thought about the other side before writing."</div>
+            <div class="notes-say">Then show the Strong paragraph. Read it aloud and point at the O-R-E-S tags: "Same person, same topic as the Weak paragraph. But they made a Map first, and now a reader can follow every step."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Key message</div>
+            <div class="notes-say">"The difference between the Weak and Strong paragraph is not talent. It is planning. The Logic Map is the planning tool. In Practice 1, you are going to build one of these with a partner."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Assistant Real Talk (~2 mins)</div>
+            <div class="notes-say">"Assistant — when you write essays or reports, whether for IELTS, university, or work, what was harder than you expected: coming up with the ideas, or organizing them clearly on the page?"</div>
+            <div class="notes-tip">Most people say organization was the hard part. This applies beyond IELTS — university essays, research papers, and professional writing all require the same logical structure. Reinforce the message: thinking clearly before writing is the real academic skill.</div>
+            <div class="notes-warn">⚠ Do not break down every sentence of the model. Point at the tags and the map — that is enough.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6: Cohesive Devices -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">5. Cohesive Devices Toolkit</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">These linking words are essential for academic writing — they guide your reader through your argument. They are also one of the four IELTS Task 2 scoring criteria (Coherence &amp; Cohesion), so mastering them improves both your academic skills and your test performance.</p>
+        <div class="phrase-box">
+            <h4>To open Body 1 — the Reason slot</h4>
+            <p>"Firstly, …" &nbsp;/&nbsp; "To begin with, …" &nbsp;/&nbsp; "The main reason is that…"</p>
+            <h4>To introduce an Example</h4>
+            <p>"For instance, …" &nbsp;/&nbsp; "A clear example of this is…" &nbsp;/&nbsp; "In my experience, …"</p>
+            <h4>To link cause and effect — the Summary slot</h4>
+            <p>"Consequently, …" &nbsp;/&nbsp; "As a result, …" &nbsp;/&nbsp; "This is why I would argue that…"</p>
+            <h4>For your Opinion — carried over from Lesson 1</h4>
+            <p>"In my view, …" &nbsp;/&nbsp; "I would argue that…"</p>
+        </div>
+        <div class="note-box" style="margin-top: 12px;">
+            <i class="fa-solid fa-comment-dots"></i>&nbsp; This toolkit is shared in the Zoom chat — keep it open while you write.
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 6: Cohesive Devices
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~2 mins</span> Delivery</div>
+            <div class="notes-say">"These are not fancy words. They are signals. 'Firstly' tells the reader: here comes my reason. 'For instance': here comes my proof. 'Consequently': here is the result. Four signals, and your reader never gets lost."</div>
+            <div class="notes-tip">Read 2–3 examples aloud. Do not drill. Students will pick up the rest when drafting.</div>
+            <div class="notes-tip"><strong>Share the toolkit in chat NOW</strong> so it is already visible when breakouts open.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7a: Practice 1 Setup -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. Practice 1 — Logic Co-Construction (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="bq" style="margin-bottom: 16px;">"Should university education be free for everyone? Give your opinion."<br><span style="font-size: 14px; font-style: normal; color: #888;">Same prompt as last week's homework. Students with a draft may use it as a starting point.</span></div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Mode: Challenger Pair — this is NOT brainstorming</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">Presenter (A)</span> — Share your opinion using your Logic Map. If you did not do the homework, build your map as you speak.</li>
+                    <li><span class="role-b">Challenger (B)</span> — Your job is <em>not</em> to agree. Ask "Why?", "Can you give a real example?", "What about the other side?" Push until your partner's argument can survive.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Steps</h3>
+                <ul class="step-list">
+                    <li><strong>Round 1 (6 min)</strong> — A presents, B challenges. Refine the Logic Map together in the shared doc.</li>
+                    <li><strong>Round 2 (6 min)</strong> — Switch roles.</li>
+                    <li class="dim">Return to main room (2 min) — Instructor shows 1–2 Logic Maps.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right" style="margin-right: 8px;"></i>
+        See next slide for Challenger Questions, Logic Map, and Dialogue example — show this before releasing to breakout rooms.
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7a: Practice 1 Setup
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Setup — the most important instruction of today</div>
+            <div class="notes-say">"Here is the key rule for the next 15 minutes. You are not brainstorming. You are not agreeing. One of you is Presenter — share your Logic Map from the homework. The other is Challenger — your job is to make your partner's argument stronger by questioning it. Think of it as a friendly sparring match."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Pairing</div>
+            <div class="notes-tip">Pair students from different countries wherever possible. The cultural gap is the point — each side will ask questions the other would never ask itself. If numbers are uneven, the Assistant joins as Challenger (never Presenter — students must do the speaking).</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">About homework</div>
+            <div class="notes-tip">Students who did the homework should present their Logic Map as a starting point. Students who did not can build their map while speaking — the Challenger questions will guide them through it naturally.</div>
+            <div class="notes-warn">⚠ Before releasing to breakout rooms, show Slide 7b — the Challenger questions and dialogue example. Students need to see that before they start.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7b: Challenger Q & Dialogue -->
+<div class="slide-wrapper">
+<div class="slide-container" style="height: 800px;">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. Practice 1 — Challenger Questions &amp; Example</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <h3>Challenger Question Sequence — ask in this order</h3>
+                <div class="phrase-box">
+                    <ol class="numbered-list" style="margin: 0;">
+                        <li><strong>"Why do you think so? Is it always true?"</strong><br><span style="font-size: 13px; color: #888;">→ fills <em>Reason</em> in the Logic Map</span></li>
+                        <li><strong>"Can you give me a real example — from your own life?"</strong><br><span style="font-size: 13px; color: #888;">→ fills <em>Example</em></span></li>
+                        <li><strong>"What would someone who disagrees say? How would you respond?"</strong><br><span style="font-size: 13px; color: #888;">→ fills <em>Counter-argument</em> and <em>Response</em></span></li>
+                        <li><strong>"Is your example specific enough? Can you add one detail?"</strong><br><span style="font-size: 13px; color: #888;">→ sharpens the <em>Example</em></span></li>
+                    </ol>
+                    <div class="note-box" style="margin-top: 10px; background: #f8f8f0;">
+                        <i class="fa-solid fa-circle-info"></i>&nbsp; If all four are done and time remains, you may ask freely.
+                    </div>
+                </div>
+                <h3 style="margin-top: 14px;">Logic Map Template</h3>
+                <div class="logic-map">THESIS: ____________________________
+
+ ├─ Reason 1: ______________________
+ │   └─ Example: ___________________
+ │
+ └─ Counter-argument: _______________
+     └─ My response: ________________</div>
+            </div>
+            <div>
+                <h3>Example Challenger Exchange</h3>
+                <div class="dialogue">
+                    <p><span class="role-a">A:</span> "My opinion is that university should be free for everyone."</p>
+                    <p><span class="role-b">B (Q1):</span> "Why? Is it always a good idea?"</p>
+                    <p><span class="role-a">A:</span> "Because then poor students can also go to university."</p>
+                    <p><span class="role-b">B (Q2):</span> "Can you give me a real example from your life?"</p>
+                    <p><span class="role-a">A:</span> "A friend of mine was very smart, but her family could not pay. She chose a cheaper school."</p>
+                    <p><span class="role-b">B (Q3):</span> "What would someone who disagrees say?"</p>
+                    <p><span class="role-a">A:</span> "Hmm… maybe that taxes would go up. But I think the long-term benefit is bigger."</p>
+                    <p><span class="role-b">B (Q4):</span> "Is your example specific enough? Can you add a detail?"</p>
+                    <p><span class="role-a">A:</span> "She wanted to study medicine, but ended up studying business at a local college because of fees."</p>
+                    <p><span class="role-b">B:</span> "Good — your Map is strong now. Write it down."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7b: During Breakout
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Demo before breakout (~1 min)</div>
+            <div class="notes-say">Read the dialogue aloud with the Assistant playing A. Emphasize the question numbers: "Notice B is following the sequence — Q1, Q2, Q3, Q4. Each question fills a different part of the Map. By the time Q4 is done, the Map is complete."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why a fixed sequence?</div>
+            <div class="notes-tip">A fixed sequence solves two problems: (1) it prevents "polite agreement" — each question requires the Presenter to justify, exemplify, and face counter-arguments, and (2) it keeps the activity on time — four questions in six minutes is natural pacing. If pairs finish early, they may continue freely.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Is the Challenger actually challenging, or just being polite?</div>
+            <div class="notes-tip">✓ Is the Presenter's argument changing under questioning? (That is the success signal.)</div>
+            <div class="notes-tip">✓ Note 1–2 Logic Maps that visibly evolved — you will show these afterwards.</div>
+            <div class="notes-warn">⚠ If a pair has collapsed into "yes, I agree with you too," jump in: "B, I haven't heard you disagree yet. Ask A — what if rich families also got it for free? Is that fair?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Practice 1 — main room (~2 mins)</div>
+            <div class="notes-say">"Pick 1–2 Logic Maps that visibly evolved. Show them: 'A started with free for everyone. After 4 minutes with B, it became free for students who pass an academic threshold, because talent should not be wasted. That is what challenge does. Now it is ready to be written.'"</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8a: Practice 2 Drafting -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. Practice 2 — Micro-Drafting (8 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Use your Logic Map refined with your partner in Practice 1 to write your <strong>Introduction + Body 1</strong> in the shared Google Doc. Target: about <strong>100 words</strong>.</p>
+        <div class="para-frame">
+            <h4>Paragraph Frame</h4>
+            <p><strong>Introduction (2–3 sentences):</strong></p>
+            <p>"The question of whether ______ is widely debated. <span class="it it-o">O</span> In my view, ______, because ______."</p>
+            <p style="margin-top: 10px;"><strong>Body 1 (4–5 sentences):</strong></p>
+            <p><span class="it it-r">R</span> "To begin with, ______. <span class="it it-e">E</span> For instance, ______. <span class="it it-s">S</span> Consequently, ______, and this is why I would argue that ______."</p>
+        </div>
+        <div class="note-box" style="margin-top: 12px;">
+            <i class="fa-solid fa-file-pen"></i>&nbsp; Write in the shared doc — in the next activity, a <strong>new partner</strong> will read your draft.
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-circle-info" style="margin-right: 8px;"></i>
+        Focus on Introduction + Body 1 only. Do not include the Counter-argument — that belongs in Body 2.
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8a: Drafting Phase
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~30 sec</span> Setup</div>
+            <div class="notes-say">"Now you write. Use the Logic Map you refined with your partner. Only Introduction and Body 1 — about 100 words. You have 8 minutes. Use the Paragraph Frame on screen if you need a scaffold. Write in the shared Google Doc. You do not need a perfect essay — convert your spoken argument into written form. Remember: do not include the Counter-argument — that is for Body 2."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Stay in main room during drafting</div>
+            <div class="notes-tip">Students write silently in the shared doc (muted). Keep them in the main room — this lets you announce "2 minutes left" clearly and makes the partner switch for Peer Review fast and clean.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During drafting — what to do</div>
+            <div class="notes-tip">✓ Monitor students' Google Docs to check progress. Do NOT correct.</div>
+            <div class="notes-tip">✓ If stuck: "What did your partner push you on earlier? Start from that sentence."</div>
+            <div class="notes-tip">✓ If finished very early: "Good. Now read it silently to yourself. Does every sentence do a job?"</div>
+            <div class="notes-warn">⚠ 8 minutes is the target, and time pressure is part of the training. However, if all students finish early, confirm and move to Peer Review — no need to wait out the clock.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8b: Peer Review -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. Practice 2 — Peer Review with a New Partner (6 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">You will now be paired with a <strong>different partner</strong> from Practice 1. After moving to your breakout room, read your new partner's draft in the shared doc, and prepare oral feedback using the checklist below. See the suggested process on the right.</p>
+        <div class="two-column">
+            <div>
+                <div class="checklist">
+                    <ul>
+                        <li>Is the <strong>Opinion</strong> clear in the Introduction?</li>
+                        <li>Does Body 1 contain all four O-R-E-S elements?</li>
+                        <li>Is the <strong>Example</strong> specific, or just general? ("my friend" alone is not specific.)</li>
+                        <li>Are there linking words? (<em>Firstly, For instance, Consequently…</em>)</li>
+                        <li>Does the <strong>Summary</strong> actually close the argument?</li>
+                    </ul>
+                </div>
+                <h3 style="margin-top: 12px;">Feedback Phrases</h3>
+                <div class="voca-reminder">
+                    <div class="voca-chip" style="background:#e8f5e9; border-color:#a5d6a7; color:#2e7d32;">Positive <span style="color:#555;">— "Your [Opinion / Reason / Example] was very clear because…"</span></div>
+                    <div class="voca-chip" style="background:#e8eef6; border-color:#90caf9; color:#003366;">Suggestion <span style="color:#555;">— "One thing that could be stronger is… — maybe you could add…"</span></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-clock"></i> Suggested Process</h3>
+                <ol class="numbered-list" style="margin: 0;">
+                    <li><strong>Silent reading (2 min)</strong><br>Read your partner's draft. Use the checklist to prepare one positive comment and one suggestion.</li>
+                    <li><strong>A gives oral feedback (2 min)</strong><br>A shares feedback with B. You may also type comments into B's Google Doc.</li>
+                    <li><strong>B gives oral feedback (2 min)</strong><br>B shares feedback with A. Same format.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor highlights (2 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8b: Peer Review &amp; Highlights
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Setup — announce the partner switch</div>
+            <div class="notes-say">"Drafting time is over, even if you are not finished. Now you are switching to a new partner — a fresh pair of eyes. Move to your assigned breakout room. First, spend 2 minutes reading your partner's draft silently and preparing your feedback. Then take turns giving oral feedback — 2 minutes each. You can also type comments directly into their Google Doc."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During peer review — what to listen for</div>
+            <div class="notes-tip">✓ Are students giving specific feedback based on the checklist, or vague praise? Specific is the goal.</div>
+            <div class="notes-tip">✓ The hardest thing is saying "your Example was too general." Model it yourself if a room is stuck.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After — main room highlights (~2 mins)</div>
+            <div class="notes-say">"Share one strong sentence you saw — quote directly. Then share one common improvement (anonymous). Example: 'A few of you wrote a strong Reason, but the Example was just my friend. Next time, add one detail — what subject, what happened. Details make examples believable.'"</div>
+            <div class="notes-warn">⚠ Do not correct grammar or vocabulary now. Today is logic and cohesion only.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 9: Reflection -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-2 | Week 2: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">8. Reflection (7 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="card">
+                <h3><i class="fa-solid fa-users"></i> Task 1 — Breakout Rooms (5 mins)</h3>
+                <p style="font-size: 17px; margin-bottom: 12px;">
+                    <span class="tag">Room 1</span> Japanese students &nbsp;|&nbsp;
+                    <span class="tag tag-yellow">Room 2</span> Indonesian students
+                </p>
+                <p style="font-size: 18px; margin-bottom: 10px;">In your own language, discuss:</p>
+                <div style="background: #f8f8f8; border-left: 5px solid var(--accent-yellow); padding: 13px 16px; border-radius: 6px; font-size: 19px; font-weight: 600;">
+                    "Which was harder today — <em>thinking</em> of the argument, or <em>writing</em> it down? Why?"
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-microphone"></i> Task 2 — Main Room (2 mins)</h3>
+                <p style="font-size: 18px;">Share one reflection with everyone:</p>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"Today I found it hard to…"</li>
+                    <li>"One thing I want to try next time is…"</li>
+                    <li>"Something my partner did that surprised me was…"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 9: Reflection
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">7 mins</span> Setup</div>
+            <div class="notes-say">"Last activity. We split into two rooms — Japanese students in Room 1, Indonesian students in Room 2. In your own language, discuss: was it harder to think of a good argument, or to write it down? Why? Assistant joins Room 1, Instructor joins Room 2 — they will listen and give one piece of practical advice each. Five minutes."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Brief for the Assistant</div>
+            <div class="notes-tip">Listen for what students find hardest. Offer one practical tip per student. Examples: "If writing feels slow, plan your Logic Map in your native language first, then translate sentence by sentence." / "If thinking is hard, always start from a real person you know — the reason builds itself from there."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Task 2 — Main room (~2 mins)</div>
+            <div class="notes-tip">Hear from 2–3 students. Do not go around the whole group — time is short.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Great work today. Last week you used O-R-E-S to speak. This week you used it to write. That is the bridge between spoken English and academic English, and you just crossed it. Next week we return to Speaking and use what you built today to make your verbal arguments even sharper. See you then."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 10: Next Lesson -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header" style="background-color: var(--navy-blue); padding: 15px 40px;">
+        <div class="left-meta" style="color: white;">Next Lesson | Week 3</div>
+        <div class="right-logo" style="color: white;"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="content-area" style="padding-top: 50px; justify-content: center;">
+        <div class="card" style="text-align: center; max-width: 700px; margin: 0 auto;">
+            <h2 style="color: var(--navy-blue); margin-top: 0;">
+                <i class="fa-solid fa-microphone" style="margin-right: 10px; color: var(--accent-yellow);"></i>
+                Lesson 1-3 — Speaking
+            </h2>
+            <div style="width: 80px; height: 3px; background: var(--accent-yellow); margin: 20px auto;"></div>
+            <p style="font-size: 22px; margin: 20px 0;">Handling <em>unexpected</em> questions</p>
+            <p style="font-size: 18px; color: #666; margin: 10px 0;">The kind where you do not immediately have an opinion — and how to buy yourself thinking time without losing flow.</p>
+            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 30px; font-size: 16px; color: #888;">
+                <span><i class="fa-solid fa-comments" style="margin-right: 6px;"></i> Speaking Focus</span>
+                <span><i class="fa-solid fa-brain" style="margin-right: 6px;"></i> Think on your feet</span>
+                <span><i class="fa-solid fa-users" style="margin-right: 6px;"></i> Pair discussions</span>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer" style="text-align: center; justify-content: center;">
+        <i class="fa-solid fa-hand-peace" style="margin-right: 8px;"></i> Great work today — see you next week!
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 10: Next Lesson
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Closing (~30 sec)</div>
+            <div class="notes-say">"No homework this week. Next week we go back to Speaking — and we will practice handling questions you did not prepare for. See you then!"</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    function toggleNotes(btn) {
+        btn.classList.toggle('open');
+        btn.nextElementSibling.classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

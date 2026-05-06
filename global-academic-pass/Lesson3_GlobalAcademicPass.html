@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Academic Pass - Lesson 3: Handling Unexpected Questions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --pdf-bg: #FFF9E5;
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #333333;
+            --white: #ffffff;
+            --notes-bg: #1e1e2e;
+            --notes-text: #cdd6f4;
+            --notes-label: #89b4fa;
+            --notes-tip: #a6e3a1;
+            --notes-warn: #f38ba8;
+            --notes-skip: #cba6f7;
+            /* O-R-E-S colors */
+            --ores-o: #f9a825;
+            --ores-r: #003366;
+            --ores-e: #2e7d32;
+            --ores-s: #6a1b9a;
+            /* Strategy colors */
+            --strat-buy: #00838f;
+            --strat-bridge: #5d4037;
+            --strat-hedge: #6a1b9a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .slide-wrapper { width: 1280px; margin-bottom: 0; }
+
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--pdf-bg);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* ── Notes Panel ── */
+        .notes-panel {
+            width: 1280px;
+            background-color: var(--notes-bg);
+            color: var(--notes-text);
+            font-size: 15px;
+            line-height: 1.7;
+            border-top: 3px solid var(--notes-label);
+            margin-bottom: 60px;
+        }
+        .notes-toggle {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 28px; cursor: pointer; background: #2a2a3e;
+            border: none; color: var(--notes-label); font-size: 13px;
+            font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+            width: 100%; text-align: left; font-family: 'Roboto', sans-serif;
+        }
+        .notes-toggle:hover { background: #333350; }
+        .notes-toggle .arrow { margin-left: auto; transition: transform 0.2s; }
+        .notes-toggle.open .arrow { transform: rotate(180deg); }
+        .notes-body { display: none; padding: 24px 36px 28px 36px; }
+        .notes-body.open { display: block; }
+        .notes-section { margin-bottom: 18px; }
+        .notes-label {
+            color: var(--notes-label); font-weight: 700; font-size: 13px;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .notes-say {
+            background: #2a2a3e; border-left: 4px solid var(--notes-label);
+            padding: 10px 16px; border-radius: 4px; font-size: 15px;
+            color: #e0e0ff; margin-bottom: 8px; font-style: italic;
+        }
+        .notes-tip {
+            background: #1e2e1e; border-left: 4px solid var(--notes-tip);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-tip); margin-bottom: 6px;
+        }
+        .notes-warn {
+            background: #2e1e1e; border-left: 4px solid var(--notes-warn);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-warn); margin-bottom: 6px;
+        }
+        .notes-skip {
+            background: #2a1e3e; border-left: 4px solid var(--notes-skip);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-skip); margin-bottom: 6px;
+        }
+        .notes-time {
+            display: inline-block; background: var(--notes-label); color: #1e1e2e;
+            font-size: 12px; font-weight: 700; padding: 2px 10px;
+            border-radius: 20px; margin-right: 8px; vertical-align: middle;
+        }
+
+        /* ── Slide internals ── */
+        .meta-header {
+            padding: 20px 40px; display: flex;
+            justify-content: space-between; align-items: flex-start; z-index: 10;
+        }
+        .meta-header .left-meta { font-size: 18px; color: #555; line-height: 1.4; }
+        .meta-header .right-logo { text-align: right; color: var(--navy-blue); }
+        .meta-header .logo-brand { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+
+        .slide-title-area { padding: 0 60px; margin-bottom: 18px; }
+        .slide-title {
+            font-size: 44px; font-weight: 700; margin: 0; color: #000;
+            border-bottom: 4px solid var(--navy-blue); display: inline-block; padding-bottom: 5px;
+        }
+
+        .content-area {
+            flex-grow: 1; padding: 0 60px 80px 60px; display: flex; flex-direction: column;
+        }
+
+        .card {
+            background: var(--white); border-radius: 12px; padding: 22px 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;
+        }
+
+        .ui-footer {
+            position: absolute; bottom: 18px; left: 40px; right: 40px;
+            display: flex; align-items: center; justify-content: flex-start;
+            font-size: 15px; color: #555; font-style: italic;
+        }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+        .bullet-list { list-style: none; padding-left: 0; margin: 0; }
+        .bullet-list li {
+            font-size: 20px; margin-bottom: 10px; position: relative;
+            padding-left: 26px; line-height: 1.4;
+        }
+        .bullet-list li::before {
+            content: "•"; color: var(--navy-blue); font-weight: bold;
+            position: absolute; left: 6px; font-size: 22px; top: -2px;
+        }
+        .bullet-list li .voca-example {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+            margin-top: 3px;
+            padding-left: 2px;
+        }
+
+        .step-list { list-style: none; padding-left: 0; margin: 0; }
+        .step-list li {
+            font-size: 18px; margin-bottom: 8px; padding-left: 14px;
+            line-height: 1.4; border-left: 4px solid var(--accent-yellow);
+        }
+        .step-list li.dim { border-left-color: #ccc; color: #555; }
+
+        .role-a { color: var(--navy-blue); font-weight: 700; }
+        .role-b { color: #b8860b; font-weight: 700; }
+
+        .template-box { border-top: 4px solid var(--accent-yellow); padding-top: 7px; margin-bottom: 11px; }
+        .template-label { font-weight: 700; color: var(--accent-yellow); font-size: 18px; }
+
+        .title-slide { background-color: var(--navy-blue); color: var(--white); text-align: center; }
+        .title-slide h1 { font-size: 68px; margin: 0; }
+        .title-slide .subtitle { font-size: 30px; margin-top: 20px; opacity: 0.9; }
+
+        h3 { color: var(--navy-blue); font-size: 21px; margin-top: 0; margin-bottom: 10px; }
+
+        .note-box {
+            background: #eef2ff; border-left: 5px solid var(--navy-blue); border-radius: 6px;
+            padding: 9px 14px; font-size: 16px; color: #444; margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-block; background: var(--navy-blue); color: white;
+            font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-right: 4px;
+        }
+        .tag-yellow { background: var(--accent-yellow); color: #333; }
+
+        /* O-R-E-S Model Response */
+        .ores-block {
+            border-radius: 6px;
+            padding: 9px 14px;
+            margin-bottom: 8px;
+            font-size: 17px;
+            line-height: 1.5;
+        }
+        .ores-block .ores-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-right: 7px;
+            vertical-align: middle;
+            color: white;
+        }
+        .ores-o-block { background: #fff8e1; border-left: 4px solid var(--ores-o); }
+        .ores-o-block .ores-tag { background: var(--ores-o); color: #333; }
+        .ores-r-block { background: #e8eef6; border-left: 4px solid var(--ores-r); }
+        .ores-r-block .ores-tag { background: var(--ores-r); }
+        .ores-e-block { background: #e8f5e9; border-left: 4px solid var(--ores-e); }
+        .ores-e-block .ores-tag { background: var(--ores-e); }
+        .ores-s-block { background: #f3e5f5; border-left: 4px solid var(--ores-s); }
+        .ores-s-block .ores-tag { background: var(--ores-s); }
+
+        /* Vocab reminder list (used in Session 2 challenge) */
+        .voca-reminder { display: flex; flex-direction: column; gap: 5px; }
+        .voca-chip {
+            background: #eef2ff; border: 1px solid #c5cae9; border-radius: 6px;
+            padding: 5px 12px; font-size: 16px; font-weight: 600; color: var(--navy-blue);
+        }
+        .voca-chip span { font-weight: 400; color: #666; font-size: 14px; margin-left: 6px; }
+
+        /* O-R-E-S recap chips */
+        .ores-recap { display: flex; flex-direction: column; gap: 10px; }
+        .ores-recap-row { display: flex; gap: 16px; align-items: center; }
+        .ores-chip-recap {
+            width: 90px; flex-shrink: 0; text-align: center;
+            font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px;
+        }
+        .chip-o { background: #fff8e1; color: #b8860b; border: 2px solid var(--ores-o); }
+        .chip-r { background: #e8eef6; color: var(--navy-blue); border: 2px solid var(--navy-blue); }
+        .chip-e { background: #e8f5e9; color: #2e7d32; border: 2px solid var(--ores-e); }
+        .chip-s { background: #f3e5f5; color: #6a1b9a; border: 2px solid var(--ores-s); }
+        .ores-recap-row p { font-size: 18px; margin: 0; color: #444; }
+        .ores-recap-row p em { color: var(--navy-blue); font-style: normal; font-weight: 600; }
+
+        /* Strategy color tags (inline, used in model response) */
+        .strat-tag {
+            display: inline-block; font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 10px; margin-right: 6px;
+            vertical-align: middle; color: white;
+        }
+        .tag-buy { background: var(--strat-buy); }
+        .tag-bridge { background: var(--strat-bridge); }
+        .tag-hedge { background: var(--strat-hedge); }
+
+        /* Strategy heading colors (used in bullet list) */
+        .strat-name-buy { color: var(--strat-buy); }
+        .strat-name-bridge { color: var(--strat-bridge); }
+        .strat-name-hedge { color: var(--strat-hedge); }
+
+        /* Skippable badge */
+        .skippable {
+            display: inline-block; background: #cba6f7; color: #1e1e2e;
+            font-size: 12px; font-weight: 700; padding: 2px 10px;
+            border-radius: 12px; letter-spacing: 1px; margin-left: 10px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ SLIDE 1: Title -->
+<div class="slide-wrapper">
+<div class="slide-container title-slide">
+    <div class="meta-header" style="position: absolute; top: 0; width: 100%;">
+        <div class="left-meta" style="color: white;">Lesson 1-3<br>Term 1: Global Success<br>Week 3: Speaking</div>
+        <div class="right-logo" style="color: white;">
+            <div class="logo-brand">AirPangaea</div>
+            <div style="font-size: 14px;">TOMODACHI English</div>
+        </div>
+    </div>
+    <div class="content-area" style="justify-content: center;">
+        <p style="font-size: 22px; letter-spacing: 4px; margin-bottom: 10px;">Global Academic Pass Course</p>
+        <h1>Lesson 3: Handling Unexpected Questions</h1>
+        <p style="font-size: 24px; font-style: italic; margin-top: 8px; opacity: 0.8;">Buy time, bridge, hedge — staying structured under pressure</p>
+        <div style="width: 150px; height: 4px; background: var(--accent-yellow); margin: 28px auto;"></div>
+        <p class="subtitle">(Speaking Focus)</p>
+    </div>
+    <div class="ui-footer" style="color: white; opacity: 0.4; font-style: normal; justify-content: center;">TOMODACHI English Project</div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 1: Opening
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">Before class</span> Preparation</div>
+            <div class="notes-tip">✓ Make sure students received <strong>this slide deck</strong> and the <strong>O-R-E-S reference sheet</strong> in advance — they will refer to both during today's sessions.</div>
+            <div class="notes-tip">✓ Confirm whether <strong>any new students</strong> are joining today. If yes → run the 3-min O-R-E-S Recap (Slide 3). If no → tell students you will skip it.</div>
+            <div class="notes-tip">✓ Confirm the Assistant and Instructor each know which Reflection room they will join.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">0:00</span> Opening</div>
+            <div class="notes-say">"Welcome back. In Lessons 1 and 2 you built the foundation: O-R-E-S as your structure for any spoken or written argument. Today we add a real-world skill on top of it — handling unexpected questions. In any university interview, IELTS Speaking Part 3, or even a normal classroom discussion, someone will ask you something you didn't prepare for. The question today is — what do you do in that moment? By the end of class you will have three concrete strategies, and you will have used them in two real discussions."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Tone note</div>
+            <div class="notes-tip">Frame this as a <strong>confidence skill</strong>, not a trick. The point is not to dodge — it is to stay structured under pressure. Keep energy up but calm.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 2: Learning Objectives -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">1. Learning Objectives</h2></div>
+    <div class="content-area">
+        <div class="card">
+            <p style="font-size: 22px; font-weight: 500; margin-top: 0; margin-bottom: 18px;">By the end of this lesson, students will be able to:</p>
+            <ul class="bullet-list">
+                <li>Apply <strong>three strategies</strong> — <em>Buy Time, Bridge, and Hedge</em> — to respond to unexpected questions without losing composure.</li>
+                <li>Maintain <strong>O-R-E-S structure</strong> under pressure when answering follow-up questions on a familiar topic.</li>
+                <li>Continue building <strong>Academic Vocabulary</strong> by replacing high-frequency words (<em>important, many people, use</em>) with more precise alternatives.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 2: Learning Objectives
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"Three things today. First, three strategies for unexpected questions — Buy Time, Bridge, Hedge. Second, you keep using O-R-E-S — the structure does not go away just because the question is hard. Third, we keep growing our Academic Vocabulary, today with three new word groups."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Note</div>
+            <div class="notes-tip">Do not spend more than 60 seconds here. Point, read, move on.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 3: O-R-E-S Recap (skippable) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">2. O-R-E-S Quick Recap (3 mins) <span class="skippable">SKIP IF NO NEW STUDENTS</span></h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 20px; color: #555;">A fast reminder — and a welcome for anyone joining the course this week.</p>
+        <div class="card">
+            <div class="ores-recap">
+                <div class="ores-recap-row">
+                    <div class="ores-chip-recap chip-o">Opinion</div>
+                    <p><em>"In my view…"</em> — What you believe.</p>
+                </div>
+                <div class="ores-recap-row">
+                    <div class="ores-chip-recap chip-r">Reason</div>
+                    <p><em>"The main reason is…"</em> — Why you believe it.</p>
+                </div>
+                <div class="ores-recap-row">
+                    <div class="ores-chip-recap chip-e">Example</div>
+                    <p><em>"For instance…"</em> — A real situation that supports it.</p>
+                </div>
+                <div class="ores-recap-row">
+                    <div class="ores-chip-recap chip-s">Summary</div>
+                    <p><em>"That is why…"</em> — One sentence to close.</p>
+                </div>
+            </div>
+            <div class="note-box" style="margin-top: 20px;">
+                <i class="fa-solid fa-circle-info"></i> Full reference: see the O-R-E-S sheet shared with you in advance.
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 3: O-R-E-S Recap
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Skip if no new students</div>
+            <div class="notes-skip">⤴ If <strong>all students were present in Lessons 1 or 2</strong>, skip this slide entirely. Tell the class: "You all know O-R-E-S already — let's go straight to today's new skill." This saves 3 minutes for the more important practice time later.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">3 mins</span> For new joiners</div>
+            <div class="notes-say">"If this is your first Global Academic Pass course, welcome. O-R-E-S is the structure we use every time we express an opinion. Four steps: Opinion, Reason, Example, Summary. The full reference is on the sheet you received before class. You will pick this up quickly today."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">For returning students</div>
+            <div class="notes-say">"You all know this. Today's new skill sits on top of O-R-E-S — not instead of it. The structure stays; we just add three tools for when the question gets hard."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-warn">⚠ Even with new students, this slide must end within 3 minutes. If a new student looks lost, reassure them: "You will pick it up by watching others in Session 1 — don't worry."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 4: Warm-up -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">3. Warm-up — AI &amp; You (5 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 20px; margin-bottom: 16px;">Choose one and answer in 30 seconds:</p>
+        <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 12px;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: var(--accent-yellow);">A.</span> "Have you ever used an AI tool like ChatGPT for your homework? What did you use it for, and how did it go?"</p>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue); margin-bottom: 12px;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: var(--navy-blue);">B.</span> "Do your teachers know that students use AI tools? How do they react to it?"</p>
+        </div>
+        <div class="card" style="border-left: 8px solid #888;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: #888;">C.</span> "If a friend used AI to write their entire essay, would you tell them it is wrong? Why or why not?"</p>
+        </div>
+        <div class="note-box" style="margin-top: 14px;">
+            <i class="fa-solid fa-circle-info"></i>&nbsp; If you have not used AI tools yourself, talk about classmates or what you have seen others do.
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 4: Warm-up
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">5 mins</span> Setup</div>
+            <div class="notes-say">"Quick warm-up. Today's theme is AI tools and homework. Choose the question that feels easiest, and take about 30 seconds. There is no right answer — just speak from your own experience."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Calling on students</div>
+            <div class="notes-tip">Aim to hear from <strong>every student</strong> at least briefly. If a student gives a one-line answer, prompt: "Can you tell us a bit more about why?" If two students chose the same question, ask the second one: "Did you have a different experience?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition</div>
+            <div class="notes-say">"Notice — when I asked you a question, some of you knew immediately what to say, and some of you paused. That pause is normal. Today we are going to make that pause work <em>for</em> you instead of against you. Let's look at how."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-warn">⚠ Hard cap at 5 minutes. If students get chatty, redirect: "Great — save that for the discussion later."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5a: Key Concept (3 Strategies) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Key Concept: Three Strategies for Unexpected Questions (8 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">When a question catches you off guard, use one of these three to stay structured. They are not tricks — they are <strong>tools to keep your O-R-E-S alive</strong> under pressure.</p>
+        <div class="two-column">
+            <div class="card">
+                <ul class="bullet-list">
+                    <li>
+                        <strong class="strat-name-buy">Buy Time</strong> — Give yourself a moment to think without going silent.
+                        <span class="voca-example">"That's an interesting question — let me think for a moment."</span>
+                    </li>
+                    <li>
+                        <strong class="strat-name-bridge">Bridge</strong> — Connect the question to something you <em>can</em> talk about.
+                        <span class="voca-example">"I'm not sure about that exactly, but in my own experience…"</span>
+                    </li>
+                    <li>
+                        <strong class="strat-name-hedge">Hedge</strong> — Soften your claim when you are unsure, instead of pretending to be certain.
+                        <span class="voca-example">"It could be argued that…"</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card" style="background: #eef2ff; border: 2px dashed var(--navy-blue);">
+                <h4 style="margin-top:0; color: var(--navy-blue); font-size: 20px;"><i class="fa-solid fa-play-circle"></i> Demo</h4>
+                <p style="font-size: 18px;">Instructor &amp; Assistant: <strong>"Weak Answer"</strong> vs. <strong>"Rebuilt with Strategies"</strong></p>
+                <div style="background: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 12px;">
+                    <p style="margin: 0 0 6px 0; font-size: 15px; color: #555;"><strong>Q:</strong> "But isn't using AI just cheating?"</p>
+                    <p style="margin: 0; font-size: 17px; color: #888; font-style: italic;">A: <em>(long pause)</em> "Uhhh... I don't know. Maybe."</p>
+                </div>
+                <p style="font-size: 17px; color: var(--accent-yellow); font-weight: 700; margin: 0 0 10px 0;">→ How can we rebuild this with the three strategies?</p>
+                <div class="note-box">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Note:</strong> The full phrase list for each strategy is on this slide deck — keep it open while you work.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5a: Key Concept (before demo)
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~4 mins</span> Explaining the three strategies</div>
+            <div class="notes-say">"Three strategies, three different problems. <strong>Buy Time</strong> is for when your brain just needs two seconds to catch up — instead of going silent, you say something like 'That's an interesting question, let me think for a moment.' <strong>Bridge</strong> is for when you genuinely cannot answer the exact question, but you can say something related. <strong>Hedge</strong> is for when you have an opinion but you're not 100% sure — you soften it instead of pretending to be certain."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why these three, in this order</div>
+            <div class="notes-tip">The order is roughly <strong>how much you commit</strong>. Buy Time is just a pause-with-words. Bridge changes the question slightly. Hedge actually answers but with caution. Students will naturally combine them — that is fine and encouraged.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Demo — Weak Answer first</div>
+            <div class="notes-say">"Watch this. [Assistant], ask me: 'But isn't using AI just cheating?'" — Assistant asks. You reply with the weak version on screen, with a long pause and the contradictions. Then look at students. <em>"What's wrong with that answer?"</em></div>
+            <div class="notes-tip">Let students respond. Accept answers like "no structure," "silence," "no opinion." Then ask: "Which of today's three strategies could have helped?" Most will say Buy Time. Then move to Slide 5b for the rebuilt version.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5b: Key Concept (Model Response) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Key Concept: Three Strategies for Unexpected Questions (8 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 18px; margin-bottom: 12px;"><strong>Same question</strong> — "But isn't using AI just cheating?" — rebuilt with <strong>Buy Time → Bridge → O-R-E-S</strong>. The structure didn't disappear; the strategies bought the time and the bridge to <em>get into</em> O-R-E-S.</p>
+        <div class="card">
+            <h4 style="margin-top:0; color: var(--navy-blue); font-size: 20px;"><i class="fa-solid fa-circle-check" style="color: var(--ores-e);"></i> Model Response</h4>
+            <div style="background: #f5f5f5; border-radius: 6px; padding: 8px 14px; margin-bottom: 6px; font-size: 16px;">
+                <span class="strat-tag tag-buy">Buy Time</span>"That's a fair question — let me think about that for a moment."
+            </div>
+            <div style="background: #f5f5f5; border-radius: 6px; padding: 8px 14px; margin-bottom: 6px; font-size: 16px;">
+                <span class="strat-tag tag-bridge">Bridge</span>"I'm not sure I'd call it cheating in every case. Let me explain how I see it."
+            </div>
+            <div class="ores-block ores-o-block">
+                <span class="ores-tag">O</span>In my view, whether AI use is cheating depends on what the student does with it.
+            </div>
+            <div class="ores-block ores-r-block">
+                <span class="ores-tag">R</span>The main reason is that AI can be used to learn, or to avoid learning — those are very different actions.
+            </div>
+            <div class="ores-block ores-e-block">
+                <span class="ores-tag">E</span>For instance, when I use AI to explain a math concept and then solve the problem myself, I am studying. If I copy the answer without reading it, I am not.
+            </div>
+            <div class="ores-block ores-s-block">
+                <span class="ores-tag">S</span>That is why I would argue the issue is not the tool — it is how students choose to use it.
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5b: Key Concept (Model Response)
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Delivering the Model Response</div>
+            <div class="notes-say">"Now let me try again — same question, but using the strategies." — Read the response naturally as connected speech, not block by block. Buy time first, then bridge, then go straight into O-R-E-S as usual.</div>
+            <div class="notes-tip">After reading, point at the colored tags: "Notice — the structure didn't disappear. The strategies just bought the time and the bridge to <em>get into</em> O-R-E-S."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Key message</div>
+            <div class="notes-say">"You don't need to use all three strategies every time. Pick the one that fits. Sometimes you only need Buy Time. Sometimes all three. The point is — you never go silent, and your O-R-E-S never collapses."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"You will use these in both Sessions today — the slide deck has the full phrase list, so keep it open."</div>
+            <div class="notes-warn">⚠ Do not ask students to practise the strategies here. Practice happens in Sessions 1 and 2.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6: Academic Vocabulary -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">5. Academic Vocabulary</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Continuing from Lesson 1 — three more high-frequency words to upgrade. Small changes, sharper academic tone:</p>
+        <div class="two-column" style="margin-bottom: 16px;">
+            <div class="card">
+                <h4 style="color: var(--navy-blue); margin-top: 0; font-size: 18px;">Instead of "important"</h4>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>Crucial</strong> — "It is crucial that..."
+                        <span class="voca-example">"It is crucial that students learn to think for themselves."</span>
+                    </li>
+                    <li><strong>Significant</strong> — "...has a significant impact on..."
+                        <span class="voca-example">"AI has a significant impact on how students study."</span>
+                    </li>
+                    <li><strong>Essential</strong> — "...is essential for..."
+                        <span class="voca-example">"Critical thinking is essential for university success."</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4 style="color: var(--navy-blue); margin-top: 0; font-size: 18px;">Instead of "many people / many students"</h4>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>The majority of</strong> — "The majority of students..."
+                        <span class="voca-example">"The majority of students in my class use AI for homework."</span>
+                    </li>
+                    <li><strong>A considerable number of</strong>
+                        <span class="voca-example">"A considerable number of teachers now allow it in class."</span>
+                    </li>
+                    <li><strong>Most</strong> — "Most teenagers I know..."
+                        <span class="voca-example">"Most teenagers I know rely on AI for at least one subject."</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue);">
+            <p style="font-size: 20px; margin: 0;"><strong>Instead of "use":</strong>&nbsp;&nbsp;"Employ" &nbsp;/&nbsp; "Utilize" &nbsp;/&nbsp; "Rely on"&nbsp;&nbsp;<span style="font-size: 14px; color: #888; font-style: italic; margin-left: 6px;">"Students employ AI to summarise long articles."</span></p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 6: Academic Vocabulary
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~4 mins</span> Introduction</div>
+            <div class="notes-say">"Continuing the Academic Vocabulary work from Lesson 1. Today, three more high-frequency words: <em>important</em>, <em>many people</em>, and <em>use</em>. Every one of you reaches for these without thinking — today we upgrade them."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Walking through the vocabulary</div>
+            <div class="notes-say">"Instead of 'important,' try 'crucial' — it is crucial that students learn to think for themselves. Or 'significant' — AI has a significant impact on how students study. Instead of 'many people,' 'the majority of' — the majority of students in my class use AI. And instead of 'use,' try 'employ,' 'utilize,' or 'rely on' — students rely on AI when they get stuck."</div>
+            <div class="notes-tip">Read two or three examples aloud — you do not need to cover all of them. Students will pick up the rest through use in Session 2.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition into Session 1</div>
+            <div class="notes-say">"In Session 2, your challenge is to use at least two of these words in your O-R-E-S response. Do not force them — let them come naturally. For Session 1, just standard O-R-E-S — let's start there."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7: Session 1 -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. 1-on-1 Exchange — Session 1 (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="card" style="background: var(--navy-blue); color: white; margin-bottom: 16px; padding: 18px 28px;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent-yellow); margin-bottom: 10px;">PROMPT</div>
+            <p style="font-size: 22px; font-weight: 700; margin: 0; line-height: 1.4;">"Should high schools allow students to use AI tools (like ChatGPT) for homework? What is your opinion?"</p>
+        </div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Steps</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">A:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-b">B:</span> Ask one follow-up question</li>
+                    <li><span class="role-a">A:</span> Respond &rarr; <em>"How about you?"</em></li>
+                    <li><span class="role-b">B:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-a">A:</span> Ask one follow-up question</li>
+                    <li class="dim">Open discussion — agree, disagree, cultural differences</li>
+                    <li class="dim">Tell your partner one thing they did well</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Follow-up question ideas</h3>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"How is this different in your country?"</li>
+                    <li>"Can you give a specific example?"</li>
+                    <li>"What would be one disadvantage of that?"</li>
+                    <li>"Do most students in your school feel the same?"</li>
+                </ul>
+                <div class="note-box" style="margin-top: 12px;">
+                    <i class="fa-solid fa-bolt"></i>&nbsp; B may also ask <strong>tougher, unexpected</strong> questions. If A gets one, A uses today's strategies — <strong>Buy Time → Bridge → Hedge</strong> (Slide 5).
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor picks 1-2 expressions to highlight (1-2 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7: Session 1
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">15 mins</span> Setup</div>
+            <div class="notes-say">"Okay, into breakout rooms. Today's first prompt is on the screen — AI tools for homework. Person A starts by sharing their opinion using O-R-E-S. Person B listens, then asks one follow-up question. After A responds, A turns it around with 'How about you?' — and B does their O-R-E-S. After both, use the remaining time to discuss freely. Before you come back, tell your partner one specific thing they did well."</div>
+            <div class="notes-say">"One new thing today: B, you can ask a tougher question if you want — something unexpected. If you do, A — that's your chance to use today's strategies: Buy Time, Bridge, Hedge."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Pairing</div>
+            <div class="notes-tip">Pair students from <strong>different countries</strong> where possible — the cultural contrast on AI use is rich. If numbers are uneven, the Assistant or Instructor steps in to keep all pairs 1-on-1.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Is O-R-E-S being used, or are students just chatting?</div>
+            <div class="notes-tip">✓ Did anyone use a Buy Time / Bridge / Hedge phrase naturally? Note it.</div>
+            <div class="notes-tip">✓ Note 1–2 strong expressions to share after.</div>
+            <div class="notes-warn">⚠ If a pair is silent or stuck, prompt: "Try starting with 'In my view...' and finish that sentence first."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Session 1 — feedback (1–2 mins)</div>
+            <div class="notes-say">"Welcome back. I want to highlight this expression I heard: <em>[quote what you heard]</em>. Notice how that follows the O-R-E-S structure clearly — well done."</div>
+            <div class="notes-tip">One or two observations maximum. Save detailed feedback for after Session 2.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8: Session 2 -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. 1-on-1 Exchange — Session 2 (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="card" style="background: var(--accent-yellow); margin-bottom: 16px; padding: 18px 28px;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--navy-blue); margin-bottom: 10px;">PROMPT</div>
+            <p style="font-size: 22px; font-weight: 700; margin: 0; line-height: 1.4; color: #222;">"Will AI tools eventually replace teachers in some subjects? What is your opinion?"</p>
+        </div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Steps — same format as Session 1</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">A:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-b">B:</span> Ask one follow-up question</li>
+                    <li><span class="role-a">A:</span> Respond &rarr; <em>"How about you?"</em></li>
+                    <li><span class="role-b">B:</span> Share opinion using O-R-E-S</li>
+                    <li><span class="role-a">A:</span> Ask one follow-up question</li>
+                    <li class="dim">Open discussion — agree, disagree, cultural differences</li>
+                    <li class="dim">Tell your partner one thing they did well</li>
+                </ul>
+            </div>
+            <div class="card" style="border: 3px solid var(--accent-yellow);">
+                <h4 style="color: var(--accent-yellow); margin-top: 0; font-size: 19px;"><i class="fa-solid fa-fire"></i> Session 2 Challenge</h4>
+                <p style="font-size: 17px; margin-bottom: 12px;">Use at least <strong>two of these words</strong> in your O-R-E-S response:</p>
+                <div class="voca-reminder">
+                    <div class="voca-chip">Crucial <span>— "It is crucial that..."</span></div>
+                    <div class="voca-chip">Significant <span>— "...has a significant impact on..."</span></div>
+                    <div class="voca-chip">Essential <span>— "...is essential for..."</span></div>
+                    <div class="voca-chip">The majority of <span>— "The majority of students..."</span></div>
+                    <div class="voca-chip">Employ / Utilize <span>— "...employ AI to..."</span></div>
+                    <div class="voca-chip">Rely on <span>— "...rely on AI to..."</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor feedback &amp; group discussion (3 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8: Session 2
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">15 mins</span> Setup</div>
+            <div class="notes-say">"Same format as Session 1, same steps — but a new prompt and one extra challenge. The prompt this time is more speculative — AI replacing teachers. That means you may get questions you have never thought about — a perfect chance to use Buy Time, Bridge, Hedge. Plus, this round, try to use at least two of the Academic Vocabulary words in your O-R-E-S response. Don't force them — find natural moments. Ready? Into breakout rooms."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Is anyone using the Academic Vocabulary? Even one word used naturally is worth highlighting.</div>
+            <div class="notes-tip">✓ Are the strategies (Buy Time / Bridge / Hedge) being used when questions get tough?</div>
+            <div class="notes-tip">✓ Is the O-R-E-S structure tighter than Session 1? Note any improvement.</div>
+            <div class="notes-warn">⚠ If a student is struggling with the vocabulary, do not intervene. Note it for the group feedback.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Session 2 — group feedback (3 mins)</div>
+            <div class="notes-say">"Welcome back. Two things I noticed. First, [<em>positive observation — e.g., 'I heard someone use 'rely on' very naturally — that's exactly what we want'</em>]. Second, one to work on: [<em>e.g., 'A few of you went silent when the question was unexpected. Next time, even just 'Let me think for a moment' buys you the time you need'</em>]."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Experience corner — Assistant / Instructor</div>
+            <div class="notes-tip">"Assistant — has there been a moment, in an interview or a class, when someone asked you something you hadn't prepared for? What did you actually do?" Keep it open and personal, not test-specific.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 9: Reflection -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-3 | Week 3: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">8. Reflection (8 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="card">
+                <h3><i class="fa-solid fa-users"></i> Task 1 — Breakout Rooms (5 mins)</h3>
+                <p style="font-size: 17px; margin-bottom: 12px;">
+                    <span class="tag">Room 1</span> Japanese students &nbsp;|&nbsp;
+                    <span class="tag tag-yellow">Room 2</span> Indonesian students
+                </p>
+                <p style="font-size: 18px; margin-bottom: 10px;">In your own language, discuss:</p>
+                <div style="background: #f8f8f8; border-left: 5px solid var(--accent-yellow); padding: 13px 16px; border-radius: 6px; font-size: 19px; font-weight: 600;">
+                    "Which of the three strategies — <em>Buy Time, Bridge, or Hedge</em> — was hardest for you today, and why?"
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-microphone"></i> Task 2 — Main Room (3 mins)</h3>
+                <p style="font-size: 18px;">Share one reflection with everyone:</p>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"Today I found it difficult to..."</li>
+                    <li>"One strategy I want to use more is..."</li>
+                    <li>"Something my partner said that surprised me was..."</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 9: Reflection
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">8 mins</span> Setup</div>
+            <div class="notes-say">"Last activity. Two rooms — Japanese students in Room 1, Indonesian students in Room 2. In your own language, discuss: which of today's three strategies felt hardest, and why? Assistant joins Room 1, Instructor joins Room 2 — to give one piece of practical advice based on what you hear. Five minutes, then back together for a quick share."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Brief for the Assistant / Instructor (share before class)</div>
+            <div class="notes-tip">Listen briefly to each student, then give <strong>one piece of concrete advice</strong>. Examples: "If Buy Time feels weird, just memorise one phrase — 'That's an interesting question, let me think.' That's all." / "If Bridge is hard, your job isn't to answer the exact question — find a related one you can answer." One or two sentences per student is enough.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Task 2 — Main room (3 mins)</div>
+            <div class="notes-say">"Welcome back. Can one person from each group share — what was the hardest strategy today, and what advice did you get?"</div>
+            <div class="notes-tip">Hear from 2–3 students. Don't go around everyone — time is short.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Great work today. You used three new strategies in real discussions, and you held your O-R-E-S together while doing it. That is the difference between someone who can speak fluently and someone who can speak fluently <em>under pressure</em>. See you next week."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 10: Homework -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header" style="background-color: var(--navy-blue); padding: 15px 40px;">
+        <div class="left-meta" style="color: white;">Homework | Week 3</div>
+        <div class="right-logo" style="color: white;"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="content-area" style="padding-top: 36px;">
+        <div class="card">
+            <h2 style="color: var(--navy-blue); margin-top: 0;">Logic Map for Next Week</h2>
+            <p style="font-size: 19px; margin-top: 10px;">Next week's class is <strong>Logic &amp; Writing</strong> — we will turn a spoken argument into a written paragraph. To prepare, fill in the <strong>Logic Map Worksheet</strong> (we will share it separately) for the prompt below.</p>
+            <div style="background: var(--navy-blue); color: white; padding: 18px 28px; border-radius: 8px; margin: 18px 0;">
+                <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent-yellow); margin-bottom: 10px;">PROMPT</div>
+                <p style="font-size: 23px; font-weight: 700; margin: 0; line-height: 1.4;">"Will young people who grow up with AI become smarter, or more dependent? Give two reasons for your opinion."</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px;">
+                <div style="background: #fff8e1; border-left: 5px solid var(--accent-yellow); padding: 11px 16px; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--navy-blue); letter-spacing: 1.5px; margin-bottom: 5px;">WHAT TO DO</div>
+                    <div style="font-size: 15px; line-height: 1.5;">Complete the four parts of the map: <strong>Thesis</strong>, one <strong>Reason</strong>, one <strong>Example</strong>, and one <strong>Counter-argument with your response</strong>.</div>
+                </div>
+                <div style="background: #e8eef6; border-left: 5px solid var(--navy-blue); padding: 11px 16px; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--navy-blue); letter-spacing: 1.5px; margin-bottom: 5px;">WHAT NOT TO DO</div>
+                    <div style="font-size: 15px; line-height: 1.5;">You do <strong>not</strong> need to write the full paragraph at home. Short, specific lines on the map are more useful than long vague ones.</div>
+                </div>
+            </div>
+            <p style="font-size: 15px; color: #666; margin-top: 16px; margin-bottom: 0;"><i class="fa-solid fa-calendar-check"></i>&nbsp; Have your completed map ready before next week's class — we will build the written version together from it.</p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 10: Homework
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"One last thing before we finish — your homework for next week. Next class is Logic &amp; Writing, where we will take the thinking we practised today and turn it into a written academic paragraph. To prepare, use the Logic Map Worksheet PDF — we will share it with you separately. On page 2, fill in a Logic Map for the prompt on screen: whether young people who grow up with AI will become smarter, or more dependent. You do not need to write the full paragraph at home. Just complete the four parts: Thesis, Reason, Example, and one Counter-argument with your response. Have it ready for next week's class and we will build the paragraph together."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why this prompt</div>
+            <div class="notes-tip">This prompt is deliberately different from today's two Session prompts. It asks about a future-oriented question students cannot Google an easy answer to, and forces them to think about themselves and their generation. Strong material for next week's writing class.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why this homework, not a full paragraph</div>
+            <div class="notes-tip">The Logic Map is deliberately shorter than writing 100 words. It lowers the psychological barrier to doing homework, and it gives us a structured artefact to work with in next week's class — whether the student came prepared or not.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">If students look uncertain</div>
+            <div class="notes-tip">Point them to the worked example on page 1 of the Logic Map Worksheet. Remind them: short, specific lines are better than long vague ones. Four blanks, not four paragraphs.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"That is it for today. Thank you — see you next week for Logic &amp; Writing."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    function toggleNotes(btn) {
+        btn.classList.toggle('open');
+        btn.nextElementSibling.classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

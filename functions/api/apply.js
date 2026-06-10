@@ -30,6 +30,9 @@ export async function onRequestPost(context) {
   const englishLevel    = rawForm.englishLevel || '';
   const preferredCourse = rawForm.preferredCourse || '';
   const message         = rawForm.message || '';
+  const slot1           = rawForm.preferredSlot1 || '';
+  const slot2           = rawForm.preferredSlot2 || '';
+  const slot3           = rawForm.preferredSlot3 || '';
 
   // c. バリデーション: 名前の長さチェック
   if (!firstName || firstName.length > 100) {
@@ -70,6 +73,7 @@ export async function onRequestPost(context) {
   // 希望コース・プランはフィールドレベルの編集制限があるため、Commentsに含める
   const commentParts = [];
   if (preferredCourse) commentParts.push(`【希望コース】${preferredCourse}`);
+  if ([slot1, slot2, slot3].includes('individual')) commentParts.push('【希望日時】個別調整を希望');
   if (message)         commentParts.push(message);
   const combinedComments = commentParts.join('\n');
 
@@ -90,23 +94,50 @@ export async function onRequestPost(context) {
   if (phone)            fields['fldvaJlyLqANY3IYw'] = phone;            // Phone
   if (combinedComments) fields['flddosiHxBy3F59nM'] = combinedComments; // Comments
 
-  const airtableRes = await fetch(
-    `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ records: [{ fields }], typecast: true }),
-    }
-  );
+  // 希望レッスン日時 → Preference 1/2/3 はレコード作成後に別リクエストで付与する。
+  // （typecast:true のままリンク欄にレコードIDを入れると、万一そのIDが存在しない場合に
+  //   名前とみなされてゴミTimeslotが新規生成される。typecastなしのPATCHでリンクすれば誤生成しない）
+  const isRecId = (v) => /^rec[A-Za-z0-9]{14}$/.test(v);
+  const prefFields = {};
+  if (isRecId(slot1)) prefFields['fldgmc11RN7VPgmSc'] = [slot1]; // Preference 1
+  if (isRecId(slot2)) prefFields['fld3qeqTnCCFEXvPj'] = [slot2]; // Preference 2
+  if (isRecId(slot3)) prefFields['fld78aj1QTbcX4msr'] = [slot3]; // Preference 3
 
-  if (!airtableRes.ok) {
-    const errText = await airtableRes.text();
-    console.error('Airtable error:', errText);
+  const apiBase = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`;
+  const authHeaders = {
+    'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
+    'Content-Type': 'application/json',
+  };
+
+  // 1) レコード作成（セレクト値は typecast で変換）
+  const createRes = await fetch(apiBase, {
+    method: 'POST',
+    headers: authHeaders,
+    body: JSON.stringify({ records: [{ fields }], typecast: true }),
+  });
+
+  if (!createRes.ok) {
+    console.error('Airtable create error:', await createRes.text());
     return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
   }
 
-  return Response.redirect(thanksUrl + '?ok=1', 303); // 本物の送信成功のみ
+  // 2) 希望日時の Preference リンクを付与（best-effort。失敗してもリードは確定済みなので成功扱い）
+  if (Object.keys(prefFields).length) {
+    try {
+      const created = await createRes.json();
+      const recordId = created.records && created.records[0] && created.records[0].id;
+      if (recordId) {
+        const patchRes = await fetch(apiBase, {
+          method: 'PATCH',
+          headers: authHeaders,
+          body: JSON.stringify({ records: [{ id: recordId, fields: prefFields }] }), // typecastなし＝誤生成しない
+        });
+        if (!patchRes.ok) console.error('Airtable preference link error:', await patchRes.text());
+      }
+    } catch (e) {
+      console.error('Preference link exception:', e);
+    }
+  }
+
+  return Response.redirect(thanksUrl + '?ok=1', 303); // リード確定（リンク付与は best-effort）
 }

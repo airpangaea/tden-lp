@@ -39,13 +39,7 @@ export async function onRequestPost(context) {
     return new Response('お名前を正しく入力してください。', { status: 400 });
   }
 
-  // d. バリデーション: メール形式チェック
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailRegex.test(email)) {
-    return new Response('有効なメールアドレスを入力してください。', { status: 400 });
-  }
-
-  // e. URL含有チェック（名前・学校名にURLが含まれる場合はスパム）
+  // d. URL含有チェック（名前・学校名にURLが含まれる場合はスパム）
   const urlPattern = /https?:\/\/|telegra\.ph|\.me\//i;
   if (urlPattern.test(firstName) || urlPattern.test(school)) {
     return Response.redirect(thanksUrl, 303); // ?ok=1なし → tracking発火しない
@@ -82,7 +76,6 @@ export async function onRequestPost(context) {
     'fldiatR2syOAnGeC1': firstName,                                     // Name
     'fldkgBWAY5URfwVlO': genderMap[gender] || gender,                   // Gender
     'fldxVi5K2gNiVyWf6': gradeMap[grade] || grade,                      // School Year
-    'fldwEBlgkxM3TMQeo': email,                                         // Email
     'fldteul63pEfP2j9i': englishLevelMap[englishLevel] || englishLevel,  // English Level
     'fld7kF0rL8NBwqVL9': 'Applied',                                     // Status
     'fldq5F1H26trbiiea': 'Form',                                        // Source
@@ -91,6 +84,7 @@ export async function onRequestPost(context) {
 
   // 任意フィールド（空でなければ追加）
   if (school)           fields['fldHofD6n1pignZRl'] = school;           // School Name
+  if (email)            fields['fldwEBlgkxM3TMQeo'] = email;            // Email（フォームにない場合は省略）
   if (phone)            fields['fldvaJlyLqANY3IYw'] = phone;            // Phone
   if (combinedComments) fields['flddosiHxBy3F59nM'] = combinedComments; // Comments
 

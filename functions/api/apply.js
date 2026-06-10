@@ -39,7 +39,13 @@ export async function onRequestPost(context) {
     return new Response('お名前を正しく入力してください。', { status: 400 });
   }
 
-  // d. URL含有チェック（名前・学校名にURLが含まれる場合はスパム）
+  // d. バリデーション: メール形式チェック
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    return new Response('有効なメールアドレスを入力してください。', { status: 400 });
+  }
+
+  // e. URL含有チェック（名前・学校名にURLが含まれる場合はスパム）
   const urlPattern = /https?:\/\/|telegra\.ph|\.me\//i;
   if (urlPattern.test(firstName) || urlPattern.test(school)) {
     return Response.redirect(thanksUrl, 303); // ?ok=1なし → tracking発火しない

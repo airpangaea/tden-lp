@@ -137,10 +137,20 @@
             border-radius: 14px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.35);
         }
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            position: relative;
+            z-index: 1;
+        }
         @media(max-width:767px){
-            .hero-top { flex-direction:column; gap:20px; margin-bottom:20px; }
+            .hero-top { flex-direction:column; gap:24px; margin-bottom:24px; }
             .hero-title-block { text-align:center; }
+            .hero-title-block .hero-sub { margin-bottom:0; }
             .hero-img { flex:none; width:280px; max-width:280px; border-radius:10px; }
+            .hero-actions { gap:16px; }
         }
 
         .hero-price {
@@ -161,7 +171,7 @@
 
         .hero-cta {
             display: inline-block;
-            margin-top: 38px;
+            margin-top: 0;
             background: var(--yellow);
             color: var(--navy-dark);
             font-size: 16px;
@@ -826,8 +836,10 @@
         </div>
         <img src="images/GAP_hero.jpg" alt="GAPコースのクラス風景" class="hero-img">
     </div>
-    <div class="hero-price">月額 11,800円（税込 12,980円）／入会月は25%OFF</div>
-    <a href="../#contact" class="hero-cta">このコースに申し込む</a>
+    <div class="hero-actions">
+        <div class="hero-price">月額 11,800円（税込 12,980円）／入会月は25%OFF</div>
+        <a href="../#contact" class="hero-cta">このコースに申し込む</a>
+    </div>
     <div class="hero-divider"></div>
 </section>
 

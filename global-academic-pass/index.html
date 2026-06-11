@@ -113,9 +113,23 @@
             color: rgba(255,255,255,0.65);
             font-weight: 300;
             letter-spacing: 1px;
-            margin-bottom: 36px;
+            margin-bottom: 24px;
             position: relative;
             z-index: 1;
+        }
+
+        .hero-img {
+            display: block;
+            width: 100%;
+            max-width: 560px;
+            border-radius: 14px;
+            margin: 0 auto 32px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+        @media(max-width:767px){
+            .hero-img { max-width: 100%; border-radius: 10px; }
         }
 
         .hero-price {
@@ -796,6 +810,7 @@
     <div class="hero-badge"><i class="fa-solid fa-graduation-cap"></i>&nbsp; TOMODACHI留学のアカデミック上位コース</div>
     <h1 class="hero-logo">Global<br><span>Academic Pass</span></h1>
     <p class="hero-sub">海外の同世代と、論理的な英語で世界を語る</p>
+    <img src="images/GAP_hero.jpg" alt="GAPコースのクラス風景" class="hero-img">
     <div class="hero-price">月額 ¥11,800（税込¥12,980）／入会月は25%OFF</div>
     <a href="../#contact" class="hero-cta">このコースに申し込む</a>
     <div class="hero-divider"></div>

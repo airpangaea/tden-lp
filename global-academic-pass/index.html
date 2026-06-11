@@ -671,16 +671,132 @@
 
         .hero-sub { animation-delay: 0.1s; }
         .hero-price { animation-delay: 0.2s; }
+
+        /* ── SITE HEADER（サイト共通・success-stories準拠） ── */
+        .site-header {
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .site-header .nav {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .site-header .logo img { height: 52px; width: auto; display: block; }
+        .site-header .nav-links { display: flex; align-items: center; gap: 20px; }
+        .site-header .nav-back {
+            color: #374151;
+            font-size: 16px;
+            text-decoration: none;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: color .15s, border-color .15s;
+        }
+        .site-header .nav-back:hover { color: #1e3a8a; border-bottom-color: #f97316; }
+        .site-header .nav-cta, .site-header .nav-cta-mobile {
+            background: #f97316;
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+            transition: background .15s;
+        }
+        .site-header .nav-cta { font-size: 16px; padding: 10px 22px; }
+        .site-header .nav-cta:hover, .site-header .nav-cta-mobile:hover { background: #ea580c; }
+        .site-header .nav-cta-mobile { display: none; font-size: 15px; padding: 8px 16px; }
+        .site-header .gradient-bar {
+            height: 4px;
+            background: linear-gradient(to right, #1e3a8a, #38bdf8, #f97316);
+        }
+        @media (max-width: 767px) {
+            .site-header .nav-links { display: none; }
+            .site-header .nav-cta-mobile { display: inline-block; }
+            .site-header .logo img { height: 44px; }
+        }
+
+        /* ── SITE FOOTER（LP準拠） ── */
+        .site-footer { background: #1e3a8a; color: #fff; padding: 24px; }
+        .site-footer .inner { max-width: 1120px; margin: 0 auto; text-align: center; }
+        .site-footer .copyright { font-size: 12px; color: #d1d5db; margin-bottom: 8px; }
+        .site-footer .legal {
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 8px 16px; font-size: 12px; margin-bottom: 8px;
+        }
+        .site-footer .legal a { color: #d1d5db; text-decoration: underline; }
+        .site-footer .legal a:hover { color: #fff; }
+        .site-footer .sns {
+            display: flex; justify-content: center; gap: 16px;
+            list-style: none; padding: 4px 0 0;
+        }
+        .site-footer .sns img, .site-footer .sns svg { width: 22px; height: 22px; display: block; }
+
+        /* ── IELTS 脚注 ── */
+        .ielts-note {
+            display: block;
+            margin-top: 18px;
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        /* ── 英検推奨（オレンジ） ── */
+        .eiken-rec { color: #f97316; font-weight: 700; }
+
+        /* ── KEY CONCEPTS ── */
+        .kc-container {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0,33,64,0.08);
+            margin-top: 24px;
+        }
+        .kc-lead { font-size: 13px; color: #666; margin-bottom: 20px; }
+        .kc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+        @media (max-width: 600px) { .kc-cols { grid-template-columns: 1fr; gap: 24px; } }
+        .kc-col h4 {
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--navy);
+            margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #eee;
+        }
+        .kc-list { list-style: none; }
+        .kc-list li {
+            padding: 8px 0; border-bottom: 1px solid #f4f4f4;
+            font-size: 13px; line-height: 1.65; color: #555;
+        }
+        .kc-list li:last-child { border-bottom: none; }
+        .kc-list .kc-term { font-weight: 700; color: var(--navy-dark); }
     </style>
 </head>
 <body>
+
+<!-- ── SITE HEADER（サイト共通） ── -->
+<header class="site-header">
+    <nav class="nav">
+        <a href="/" class="logo"><picture><source srcset="/images/TOMODACHI留学ロゴ_s-320.webp" type="image/webp"><img src="/images/TOMODACHI留学ロゴ_s.jpg" alt="TOMODACHI留学ロゴ" width="640" height="211"></picture></a>
+        <div class="nav-links">
+            <a href="/" class="nav-back">&larr; トップページ</a>
+            <a href="/#contact" class="nav-cta">お申し込みはこちら</a>
+        </div>
+        <a href="/#contact" class="nav-cta-mobile">申し込む</a>
+    </nav>
+    <div class="gradient-bar"></div>
+</header>
 
 <!-- ── HERO ── -->
 <section class="hero">
     <div class="hero-badge"><i class="fa-solid fa-graduation-cap"></i>&nbsp; TOMODACHI留学のアカデミック上位コース</div>
     <h1 class="hero-logo">Global<br><span>Academic Pass</span></h1>
     <p class="hero-sub">海外の同世代と、論理的な英語で世界を語る</p>
-    <div class="hero-price">月額 ¥11,800（税込¥12,980）／入会月は25〜50%OFF</div>
+    <div class="hero-price">月額 ¥11,800（税込¥12,980）／入会月は25%OFF</div>
     <a href="../#contact" class="hero-cta">このコースに申し込む</a>
     <div class="hero-divider"></div>
 </section>
@@ -690,17 +806,18 @@
     <p class="section-label">About This Course</p>
     <h2 class="section-title">このコースについて</h2>
     <p class="section-body">
-        GAPは、TOMODACHI留学の「海外の同世代と一緒に学ぶ楽しさ」を、社会や学術のテーマに向けたコースです。食べ物や学校の話から一歩進んで、環境・テクノロジー・教育といったテーマを海外の仲間と英語で議論します。<br><br>
-        ORESという型を使って、自分の意見を理由や具体例とともに筋道立てて伝える――<strong>日本人だけの教室では作れない、国際的な議論の中で論理的・学術的な英語</strong>を磨きます。<br><br>
-        海外の仲間と進路や海外大学について語り合ううちに、留学や海外大学が自分の選択肢として見えてくる。それがGAPの狙いです。
+        Global Academic Pass (GAP) コースは、TOMODACHI留学の「海外の同世代と一緒に学ぶ楽しさ」をそのままに、社会や学術のテーマへ一歩進めるコースです。食べ物や学校の話から、環境・テクノロジー・教育といったテーマへ。海外の仲間と英語で意見を交わしながら、論理的・学術的な英語を磨いていきます。<br><br>
+        ORESという「型」を使って、自分の意見を理由や具体例とともに筋道立てて伝える。さらに、海外大学への進学などで世界的に使われる <strong>IELTS*</strong> のフォーマットに倣ったライティングにも取り組みます。海外留学を視野に入れている人にとっては、その準備としても確かな手応えのある経験になります。<br><br>
+        海外の仲間と進路や海外大学について語り合ううちに、留学や海外大学が自分の選択肢として見えてくる。それがGAPコースの狙いです。
     </p>
+    <p class="ielts-note">*IELTS (アイエルツ): 海外留学、就労、移住を目的とした世界最大級の英語運用能力評価試験</p>
 
     <div class="highlight-grid">
         <div class="highlight-card featured">
             <div class="icon"><i class="fa-solid fa-globe"></i></div>
             <span class="core-label">このコースの核</span>
             <h3>海外の同世代と議論する（国際 × 学術）</h3>
-            <p>環境・テクノロジー・教育といった社会・学術テーマを、海外の仲間と英語で議論します。日本人だけの教室では作れない、国際的な対話の中でこそ論理的・学術的な英語は磨かれます。これがGAPの中心です。</p>
+            <p>環境・テクノロジー・教育といった社会・学術テーマを、海外の仲間と英語で議論します。日本人だけの教室では作れない、国際的な対話の中でこそ論理的・学術的な英語は磨かれます。これがGAPコースの核となります。</p>
         </div>
         <div class="highlight-card">
             <div class="icon"><i class="fa-solid fa-brain"></i></div>
@@ -727,7 +844,7 @@
     <div class="schedule-inner">
         <p class="section-label">Schedule</p>
         <h2 class="section-title">開講スケジュール</h2>
-        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">スタンダードと同じ枠組み。週1回60分・月4回のオンライン（Zoom）レッスンです。</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">スタンダードコースと同じ枠組み。週1回60分・月4回のオンライン（Zoom）レッスンです。</p>
 
         <div class="schedule-grid">
             <div class="schedule-card">
@@ -748,7 +865,7 @@
         </div>
 
         <p style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.9; margin-top: 28px;">
-            GAPは少人数・講師マッチングのため、現在は限られた曜日・時間での開講です。安定した出席がペアの成立に関わるため、続けて参加できる時間帯でのお申し込みをおすすめします。
+            GAPコースは限定講師による少人数クラスのため、現在は限られた曜日・時間での開講となります。安定した出席が海外生の学びにも影響するため、続けて参加できる時間帯でのお申し込みをおすすめします。
         </p>
         <p style="margin-top: 14px;">
             <a href="../#lesson-overview" style="color: var(--yellow); font-size: 14px; font-weight: 600; text-decoration: none;">レッスンの詳しい流れを見る <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i></a>
@@ -760,21 +877,21 @@
 <section class="section">
     <p class="section-label">Class</p>
     <h2 class="section-title">クラス構成</h2>
-    <p class="section-body">少人数制。日本と海外の生徒が3名ずつ集まり、講師1名とアシスタント1名が入る国際的なクラスを目安としています。</p>
+    <p class="section-body">少人数制。日本と海外の生徒が3名ずつ集まり、講師1名とアシスタント1名が入る国際的なクラスを構成します。</p>
 
     <div class="members-grid">
         <div class="member-card">
             <div class="member-avatar avatar-student"><i class="fa-solid fa-user-graduate"></i></div>
             <div class="member-info">
                 <h3>日本の生徒 × 3名（目安）</h3>
-                <p>論理的・学術的な英語にステップアップしたい中高生。互いの意見をぶつけ合いながら学びます。</p>
+                <p>論理的・学術的な英語にステップアップしたい中高生<span class="eiken-rec">（英検2級以上推奨）</span>。互いの意見をぶつけ合いながら学びます。</p>
             </div>
         </div>
         <div class="member-card">
             <div class="member-avatar avatar-student"><i class="fa-solid fa-earth-asia"></i></div>
             <div class="member-info">
                 <h3>海外の生徒 × 3名（目安）</h3>
-                <p>インドネシアなど海外のTOMODACHI参加者。社会・学術テーマをともに考え、議論する学びの相手です。</p>
+                <p>インドネシアなど海外のTOMODACHI留学の参加者で、学ぶ姿勢・英語力・出席率が一定以上と認められた生徒。社会・学術テーマをともに考え、議論する学びの相手となります。</p>
             </div>
         </div>
         <div class="member-card">
@@ -871,7 +988,7 @@
 
         <!-- Academic Vocabulary -->
         <div class="vocab-container">
-            <div class="ores-title"><i class="fa-solid fa-font"></i>&nbsp; アカデミック語彙：言葉を「格上げ」する</div>
+            <div class="ores-title"><i class="fa-solid fa-language"></i>&nbsp; アカデミック語彙：言葉を「格上げ」する</div>
             <p style="font-size: 13px; color: #666; margin-bottom: 8px;">日常的な単語をより正確で学術的な表現に置き換えるだけで、スピーキングの印象は大きく変わります。</p>
 
             <div class="vocab-grid">
@@ -904,8 +1021,8 @@
 
         <!-- 1-on-1 Exchange -->
         <div class="ores-container" style="margin-top: 24px;">
-            <div class="ores-title"><i class="fa-solid fa-comments"></i>&nbsp; 1-on-1 Exchange — Session 1</div>
-            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">ペアで15分間、O-R-E-S構造を使いながら実際に会話するセクションです。</p>
+            <div class="ores-title"><i class="fa-solid fa-comments"></i>&nbsp; 1-on-1 Exchange（ペア対話の例）</div>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">ペアで15分間、O-R-E-S構造を使いながら実際に会話するセクションです。講師とアシスタントが巡回して指導・サポートします。</p>
 
             <div style="background: #f0f4f8; border-radius: 8px; padding: 14px 18px; margin-bottom: 14px;">
                 <p style="font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700;">Discussion Topic</p>
@@ -915,21 +1032,21 @@
             <div class="ores-row">
                 <div class="ores-letter o-letter" style="font-size: 13px; min-width: 32px; height: 32px;">1</div>
                 <div class="ores-content">
-                    <h4>Person A が意見を述べる</h4>
+                    <h4>Student A が意見を述べる</h4>
                     <p>O-R-E-S構造を使って自分の意見を展開する</p>
                 </div>
             </div>
             <div class="ores-row">
                 <div class="ores-letter r-letter" style="font-size: 13px; min-width: 32px; height: 32px;">2</div>
                 <div class="ores-content">
-                    <h4>Person B がフォローアップ質問</h4>
+                    <h4>Student B がフォローアップ質問</h4>
                     <p>"How does it differ in your country?" / "Can you give an example?" など</p>
                 </div>
             </div>
             <div class="ores-row">
                 <div class="ores-letter e-letter" style="font-size: 13px; min-width: 32px; height: 32px;">3</div>
                 <div class="ores-content">
-                    <h4>役割を交代して Person B が意見を述べる</h4>
+                    <h4>役割を交代して Student B が意見を述べる</h4>
                     <p>同じくO-R-E-S構造で展開</p>
                 </div>
             </div>
@@ -938,6 +1055,36 @@
                 <div class="ores-content">
                     <h4>自由討論 → 相互フィードバック</h4>
                     <p>パートナーの良かった表現を具体的に伝えて締める</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Concepts -->
+        <div class="kc-container">
+            <div class="ores-title"><i class="fa-solid fa-layer-group"></i>&nbsp; ORESだけじゃない — GAPで学ぶ「型」の例</div>
+            <p class="kc-lead">毎回ORESを土台にしながら、さらに1回ごとに新しい思考と表現の「型（Key Concept）」を学びます。ターム全体で身につく型の一例です。</p>
+
+            <div class="kc-cols">
+                <div class="kc-col">
+                    <h4><i class="fa-solid fa-comment-dots"></i>&nbsp; Speaking（話す）</h4>
+                    <ul class="kc-list">
+                        <li><span class="kc-term">Making Examples Specific（具体例を絞り込む）</span><br>「友だち」を「地元の大学を選んだ友人リナ」のように具体化し、説得力を高める。</li>
+                        <li><span class="kc-term">Hedging Language（ヘッジング）</span><br>「〜だ」と断定せず「〜の傾向がある」「場合によっては」と和らげ、学術的で慎重な物言いにする。</li>
+                        <li><span class="kc-term">Responding to Counter-Arguments（反論への応答）</span><br>「でも〜では？」に冷静かつ論理的に応じ、自分の立場を保つ。</li>
+                        <li><span class="kc-term">Paraphrasing the Question（問いの言い換え）</span><br>質問を自分の言葉で言い直してから答える。理解を示し、考える時間も稼ぐ。</li>
+                        <li><span class="kc-term">Signposting（談話標識）</span><br>「まず」「次に」「最後に」など道しるべで、聞き手が論理を追いやすくする。</li>
+                    </ul>
+                </div>
+                <div class="kc-col">
+                    <h4><i class="fa-solid fa-pen-nib"></i>&nbsp; Writing（書く）</h4>
+                    <ul class="kc-list">
+                        <li><span class="kc-term">Spoken → Written Conversion（話し言葉→書き言葉）</span><br>話したORESを、つなぎ言葉（Firstly, For instance…）を加えて文章に整える。</li>
+                        <li><span class="kc-term">Topic Sentences（トピックセンテンス）</span><br>段落の冒頭で「何について書くか」を一文で明示する。</li>
+                        <li><span class="kc-term">Concession Structure（譲歩構文）</span><br>「Xは理解できる。しかしYだと考える」と相手の立場を認めた上で主張する。</li>
+                        <li><span class="kc-term">Deepening the Logic Map（論理の深化）</span><br>2つ目の理由（Body 2）を加え、より強い論を組み立てる。</li>
+                        <li><span class="kc-term">Peer Review（ピアレビュー）</span><br>「いいね」で終わらせず、良い点・改善点を具体的に指摘し合う。</li>
+                        <li><span class="kc-term">Full Essay Structure（エッセイ全体構成）</span><br>序論＋本論1＋本論2＋結論が1つの文章としてどうつながるかを学ぶ。</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -950,9 +1097,9 @@
         <p class="section-label">Apply</p>
         <h2 class="section-title">お申し込みについて</h2>
         <p class="contact-body">
-            GAPは少人数・講師マッチングのため、現在は限られた曜日・時間での開講です。<br>
-            ご希望を伺ったうえで空き枠をご案内します。<br>
-            枠が合わない場合は、まずスタンダードで国際交流に慣れていただくこともできます。
+            GAPコースは限定講師による少人数クラスのため、現在は限られた曜日・時間での開講となります。<br>
+            ご希望を伺ったうえで開催枠をご案内します。<br>
+            ご都合が合わない場合は、まずスタンダードコースで海外生との対話に慣れていただくこともできます。
         </p>
         <a href="../#contact" class="contact-email">
             <i class="fa-solid fa-pen-to-square"></i>
@@ -970,9 +1117,33 @@
     </div>
 </div>
 
-<!-- ── FOOTER ── -->
-<footer style="background: var(--navy-dark); padding: 28px 24px; text-align: center;">
-    <p style="font-size: 12px; color: rgba(255,255,255,0.3);">©2021-2026 AirPangaea, Inc.</p>
+<!-- ── SITE FOOTER（LP準拠） ── -->
+<footer class="site-footer">
+    <div class="inner">
+        <p class="copyright">©2021-2026 AirPangaea, Inc.</p>
+        <div class="legal">
+            <a href="https://ja.airpangaea.com/privacy-policy" target="_self">プライバシーポリシー</a>
+            <a href="https://ja.airpangaea.com/terms-and-conditions" target="_self">利用規約</a>
+            <a href="https://ja.airpangaea.com/tokushoho" target="_self">特定商取引法に基づく表記</a>
+        </div>
+        <ul class="sns" aria-label="SNS バー">
+            <li>
+                <a href="https://www.instagram.com/airpangaeajapan/" target="_blank" rel="noreferrer noopener" aria-label="Instagram">
+                    <picture><source srcset="/images/11062b_9b5a3b3607694630a7253c5fc4ff6476~mv2.webp" type="image/webp"><img src="/images/11062b_9b5a3b3607694630a7253c5fc4ff6476~mv2.png" alt="Instagram" width="22" height="22" loading="lazy"></picture>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.twitter.com/airpangaeajapan" target="_blank" rel="noreferrer noopener" aria-label="X (Twitter)">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="white"/><path d="M13.808 10.469L17.768 6h-0.938l-3.44 3.872L10.764 6H7l4.156 5.85L7 16.468h.938l3.632-4.087 2.9 4.087H17.6l-3.792-5.999zm-1.286 1.447l-.42-.582L8.4 6.75h1.44l2.7 3.736.42.582 3.51 4.862h-1.44l-2.508-3.514z" fill="#1e3a8a"/></svg>
+                </a>
+            </li>
+            <li>
+                <a href="https://www.facebook.com/airpangaeajapan" target="_blank" rel="noreferrer noopener" aria-label="Facebook">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="white"/><path d="M16.5 12.5h-3v8h-3v-8h-2v-3h2V8c0-2.21 1.29-4 3.5-4h2.5v3h-2c-.55 0-1 .45-1 1v1.5h3l-.5 3z" fill="#1e3a8a"/></svg>
+                </a>
+            </li>
+        </ul>
+    </div>
 </footer>
 
 </body>

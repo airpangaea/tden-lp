@@ -3,9 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <meta http-equiv="refresh" content="0; url=./">
-    <title>Global Academic Pass トライアル | AirPangaea</title>
+    <title>Global Academic Pass（GAP）| TOMODACHI留学のアカデミック上位コース</title>
+    <meta name="description" content="TOMODACHI留学のアカデミック上位コース。海外の同世代と社会・学術テーマを英語で議論し、ORESで論理的・学術的な英語を磨きます。月額11,800円・入会月25〜50%OFF。">
+    <link rel="canonical" href="https://tomodachi-english.airpangaea.com/global-academic-pass/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Global Academic Pass（GAP）| TOMODACHI留学">
+    <meta property="og:description" content="海外の同世代と、論理的な英語で世界を語る。ORESで学術的な英語を磨くアカデミック上位コースです。">
+    <meta property="og:image" content="https://tomodachi-english.airpangaea.com/images/tden-og.jpg">
+    <meta property="og:url" content="https://tomodachi-english.airpangaea.com/global-academic-pass/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TOMODACHI留学">
+    <meta property="og:locale" content="ja_JP">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Global Academic Pass（GAP）| TOMODACHI留学">
+    <meta name="twitter:description" content="海外の同世代と、論理的な英語で世界を語る。ORESで学術的な英語を磨くアカデミック上位コースです。">
+    <meta name="twitter:image" content="https://tomodachi-english.airpangaea.com/images/tden-og.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
@@ -103,19 +118,43 @@
             z-index: 1;
         }
 
-        .hero-free {
+        .hero-price {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: var(--yellow);
-            color: var(--navy-dark);
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: #ffffff;
             font-size: 15px;
             font-weight: 700;
             padding: 10px 28px;
             border-radius: 40px;
             position: relative;
             z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            margin-top: 26px;
+            background: var(--yellow);
+            color: var(--navy-dark);
+            font-size: 16px;
+            font-weight: 700;
+            padding: 15px 44px;
+            border-radius: 40px;
+            white-space: nowrap;
+            text-decoration: none;
+            position: relative;
+            z-index: 1;
             letter-spacing: 1px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(249,168,37,0.4);
         }
 
         .hero-divider {
@@ -197,6 +236,31 @@
             font-size: 13px;
             color: #666;
             line-height: 1.7;
+        }
+
+        /* 国際×学術の心臓カード */
+        .highlight-card.featured {
+            grid-column: 1 / -1;
+            background: var(--navy);
+            border-top: 4px solid var(--yellow);
+            color: #fff;
+        }
+
+        .highlight-card.featured .icon { color: var(--yellow); }
+        .highlight-card.featured h3 { color: #fff; font-size: 17px; }
+        .highlight-card.featured p { color: rgba(255,255,255,0.85); font-size: 14px; }
+
+        .core-label {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--navy-dark);
+            background: var(--yellow);
+            padding: 3px 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
         }
 
         /* ── SCHEDULE ── */
@@ -601,22 +665,23 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .hero-badge, .hero-logo, .hero-sub, .hero-free {
+        .hero-badge, .hero-logo, .hero-sub, .hero-price {
             animation: fadeUp 0.6s ease both;
         }
 
         .hero-sub { animation-delay: 0.1s; }
-        .hero-free { animation-delay: 0.2s; }
+        .hero-price { animation-delay: 0.2s; }
     </style>
 </head>
 <body>
 
 <!-- ── HERO ── -->
 <section class="hero">
-    <div class="hero-badge"><i class="fa-solid fa-star"></i>&nbsp; 招待制・無料トライアル</div>
+    <div class="hero-badge"><i class="fa-solid fa-graduation-cap"></i>&nbsp; TOMODACHI留学のアカデミック上位コース</div>
     <h1 class="hero-logo">Global<br><span>Academic Pass</span></h1>
-    <p class="hero-sub">論理的英語表現で、世界と対話する</p>
-    <div class="hero-free"><i class="fa-solid fa-gift"></i> 参加費：無料</div>
+    <p class="hero-sub">海外の同世代と、論理的な英語で世界を語る</p>
+    <div class="hero-price">月額 ¥11,800（税込¥12,980）／入会月は25〜50%OFF</div>
+    <a href="../#contact" class="hero-cta">このコースに申し込む</a>
     <div class="hero-divider"></div>
 </section>
 
@@ -625,32 +690,32 @@
     <p class="section-label">About This Course</p>
     <h2 class="section-title">このコースについて</h2>
     <p class="section-body">
-        TOMODACHI留学の「楽しく話す」から一歩進んで、<strong>論理的・学術的な英語表現</strong>を身につけるための特別コースです。
-        IELTSのフレームワークを活用しながら、自分の意見を構造的に組み立て、異文化のパートナーと深いディスカッションができるスキルを磨きます。<br><br>
-        「英語が話せる」から<strong>「英語で考えを伝えられる」</strong>へ。大学受験・留学・海外大学での学びを見据えた生徒を対象とした新設コースを検討しており、今回はその実現に向けた<strong>4回限定のトライアル</strong>です。<br><br>
-        <span class="trial-note"><i class="fa-solid fa-comment-dots"></i>&nbsp; 授業後のフィードバックにぜひご協力ください。皆さんの声がこのコースをつくります。</span>
+        GAPは、TOMODACHI留学の「海外の同世代と一緒に学ぶ楽しさ」を、社会や学術のテーマに向けたコースです。食べ物や学校の話から一歩進んで、環境・テクノロジー・教育といったテーマを海外の仲間と英語で議論します。<br><br>
+        ORESという型を使って、自分の意見を理由や具体例とともに筋道立てて伝える――<strong>日本人だけの教室では作れない、国際的な議論の中で論理的・学術的な英語</strong>を磨きます。<br><br>
+        海外の仲間と進路や海外大学について語り合ううちに、留学や海外大学が自分の選択肢として見えてくる。それがGAPの狙いです。
     </p>
 
     <div class="highlight-grid">
+        <div class="highlight-card featured">
+            <div class="icon"><i class="fa-solid fa-globe"></i></div>
+            <span class="core-label">このコースの核</span>
+            <h3>海外の同世代と議論する（国際 × 学術）</h3>
+            <p>環境・テクノロジー・教育といった社会・学術テーマを、海外の仲間と英語で議論します。日本人だけの教室では作れない、国際的な対話の中でこそ論理的・学術的な英語は磨かれます。これがGAPの中心です。</p>
+        </div>
         <div class="highlight-card">
             <div class="icon"><i class="fa-solid fa-brain"></i></div>
             <h3>論理構成スキル</h3>
-            <p>O-R-E-Sテンプレートで、意見・理由・例・まとめを一貫した流れで話す力を養います。</p>
+            <p>O-R-E-Sテンプレートで、意見・理由・例・まとめを一貫した流れで伝える力を養います。</p>
         </div>
         <div class="highlight-card">
             <div class="icon"><i class="fa-solid fa-book-open"></i></div>
             <h3>アカデミック語彙</h3>
-            <p>日常英語からIELTSレベルの表現へ。語彙の選択でスピーキングの印象が大きく変わります。</p>
-        </div>
-        <div class="highlight-card">
-            <div class="icon"><i class="fa-solid fa-globe"></i></div>
-            <h3>異文化ディスカッション</h3>
-            <p>海外の生徒と社会的なテーマについて議論し、世界標準の対話力を実践的に身につけます。</p>
+            <p>日常的な単語を、より正確で学術的な表現へ。語彙の選択でアウトプットの印象が大きく変わります。</p>
         </div>
         <div class="highlight-card">
             <div class="icon"><i class="fa-solid fa-pen-nib"></i></div>
-            <h3>ライティングも強化</h3>
-            <p>スピーキングで培った論理構成をライティングにも応用。IELTS Task 2形式で実力を高めます。</p>
+            <h3>アカデミック・ライティング</h3>
+            <p>話す力で培った論理構成をライティングにも応用。IELTS Task 2形式を、海外大で求められるアカデミックな書き方の基準として扱います。</p>
         </div>
     </div>
 </section>
@@ -661,35 +726,33 @@
 <div class="schedule-bg">
     <div class="schedule-inner">
         <p class="section-label">Schedule</p>
-        <h2 class="section-title">トライアル開催スケジュール</h2>
-        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">毎回火曜日 22:00〜23:00（Zoom開催・全4回）</p>
+        <h2 class="section-title">開講スケジュール</h2>
+        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">スタンダードと同じ枠組み。週1回60分・月4回のオンライン（Zoom）レッスンです。</p>
 
         <div class="schedule-grid">
             <div class="schedule-card">
-                <div class="session-num">Session 1</div>
-                <div class="session-date">4月21日（火）</div>
-                <div class="session-time">22:00 – 23:00</div>
-                <span class="session-tag tag-speaking">Speaking</span>
+                <div class="session-num">Frequency</div>
+                <div class="session-date">週1回・60分</div>
+                <div class="session-time">月4回のレッスン</div>
             </div>
             <div class="schedule-card">
-                <div class="session-num">Session 2</div>
-                <div class="session-date">4月28日（火）</div>
-                <div class="session-time">22:00 – 23:00</div>
-                <span class="session-tag tag-writing">Writing</span>
+                <div class="session-num">Time</div>
+                <div class="session-date">20:30 / 22:00</div>
+                <div class="session-time">平日（月〜金）の時間帯から</div>
             </div>
             <div class="schedule-card">
-                <div class="session-num">Session 3</div>
-                <div class="session-date">5月12日（火）</div>
-                <div class="session-time">22:00 – 23:00</div>
-                <span class="session-tag tag-speaking">Speaking</span>
-            </div>
-            <div class="schedule-card">
-                <div class="session-num">Session 4</div>
-                <div class="session-date">5月19日（火）</div>
-                <div class="session-time">22:00 – 23:00</div>
-                <span class="session-tag tag-writing">Writing</span>
+                <div class="session-num">Booking</div>
+                <div class="session-date">個別調整</div>
+                <div class="session-time">ご希望の曜日・時間を伺います</div>
             </div>
         </div>
+
+        <p style="color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.9; margin-top: 28px;">
+            GAPは少人数・講師マッチングのため、現在は限られた曜日・時間での開講です。安定した出席がペアの成立に関わるため、続けて参加できる時間帯でのお申し込みをおすすめします。
+        </p>
+        <p style="margin-top: 14px;">
+            <a href="../#lesson-overview" style="color: var(--yellow); font-size: 14px; font-weight: 600; text-decoration: none;">レッスンの詳しい流れを見る <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i></a>
+        </p>
     </div>
 </div>
 
@@ -697,38 +760,43 @@
 <section class="section">
     <p class="section-label">Class</p>
     <h2 class="section-title">クラス構成</h2>
-    <p class="section-body">少人数制・招待制。今回のトライアルは、日本と海外の生徒が2名ずつ集まり、インターナショナルなクラスを構成します。</p>
+    <p class="section-body">少人数制。日本と海外の生徒が3名ずつ集まり、講師1名とアシスタント1名が入る国際的なクラスを目安としています。</p>
 
     <div class="members-grid">
         <div class="member-card">
             <div class="member-avatar avatar-student"><i class="fa-solid fa-user-graduate"></i></div>
             <div class="member-info">
-                <h3>日本人生徒 × 2名</h3>
-                <p>TOMODACHI留学参加者から招待。英検2級以上を目安とした英語力を持つ生徒が対象です。</p>
+                <h3>日本の生徒 × 3名（目安）</h3>
+                <p>論理的・学術的な英語にステップアップしたい中高生。互いの意見をぶつけ合いながら学びます。</p>
             </div>
         </div>
         <div class="member-card">
             <div class="member-avatar avatar-student"><i class="fa-solid fa-earth-asia"></i></div>
             <div class="member-info">
-                <h3>海外生徒 × 2名</h3>
-                <p>インドネシアなど海外のTOMODACHI参加者。社会テーマについてともに考え議論するパートナーです。</p>
+                <h3>海外の生徒 × 3名（目安）</h3>
+                <p>インドネシアなど海外のTOMODACHI参加者。社会・学術テーマをともに考え、議論する学びの相手です。</p>
             </div>
         </div>
         <div class="member-card">
             <div class="member-avatar avatar-instructor"><i class="fa-solid fa-chalkboard-user"></i></div>
             <div class="member-info">
-                <h3>講師：Jomer</h3>
-                <p>授業進行・フィードバック・論理構成の指導を担当。生徒の発言を引き出しながら授業をリードします。</p>
+                <h3>講師</h3>
+                <p>授業進行と、論理・構成のコーチングおよびファシリテーションを担当。生徒の発言を引き出しながら議論をリードします。</p>
             </div>
         </div>
         <div class="member-card">
             <div class="member-avatar avatar-assistant"><i class="fa-solid fa-star"></i></div>
             <div class="member-info">
-                <h3>アシスタント：Tiffany</h3>
-                <p>IELTSを用いてマレーシアのトップ大学に進学した現役大学生。日本語も流暢で、リアルな海外大学受験の経験談を共有してくれます。</p>
+                <h3>アシスタント</h3>
+                <p>各ブレイクアウトでの対話をサポートし、一人ひとりが議論にしっかり参加できるよう支えます。</p>
             </div>
         </div>
     </div>
+
+    <p style="margin-top: 28px; font-size: 14px; color: #444;">
+        講師陣はTOMODACHI留学と同じです。
+        <a href="../#instructors" style="color: var(--navy); font-weight: 600; text-decoration: none;">講師陣のプロフィールを見る <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i></a>
+    </p>
 </section>
 
 <hr class="divider">
@@ -737,34 +805,10 @@
 <div class="preview-bg">
     <div class="preview-inner">
         <p class="section-label">Lesson Preview</p>
-        <h2 class="section-title" style="color: var(--navy-dark);">Session 1 のスピーキングを<br>少し覗いてみよう</h2>
+        <h2 class="section-title" style="color: var(--navy-dark);">授業の中身を少しお見せします</h2>
         <div class="preview-note">
             <i class="fa-solid fa-eye"></i>
-            Session 1（4/21）の授業内容より抜粋。実際のコンテンツは英語のみ。
-        </div>
-
-        <!-- 事前配布資料 -->
-        <div class="ores-container">
-            <div class="ores-title"><i class="fa-solid fa-file-lines"></i>&nbsp; 事前配布資料</div>
-            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">授業で実際に使う2つの資料を事前に公開しています。Session 1 の前にざっと目を通しておくと、当日よりスムーズに授業に入れます。</p>
-
-            <div style="background: #fff8e1; border-left: 4px solid var(--yellow); border-radius: 6px; padding: 14px 18px; margin-bottom: 12px;">
-                <h4 style="font-size: 15px; font-weight: 700; color: var(--navy-dark); margin-bottom: 6px;">O-R-E-S リファレンスシート</h4>
-                <p style="font-size: 13px; color: #555; margin-bottom: 12px; line-height: 1.65;">授業で毎回使う4ステップ・テンプレートのリファレンス。各ステップで使える英語表現とモデル回答を1枚にまとめています。</p>
-                <div>
-                    <a href="./ORES_Reference_Sheet_JP" target="_blank" rel="noopener" style="display: inline-block; font-size: 12px; color: var(--navy); background: white; border: 1px solid var(--navy); padding: 6px 14px; border-radius: 4px; text-decoration: none; margin-right: 6px; font-weight: 500;">日本語版 <i class="fa-solid fa-up-right-from-square" style="font-size: 10px; margin-left: 2px;"></i></a>
-                    <a href="./ORES_Reference_Sheet" target="_blank" rel="noopener" style="display: inline-block; font-size: 12px; color: #666; background: white; border: 1px solid #bbb; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-weight: 500;">English <i class="fa-solid fa-up-right-from-square" style="font-size: 10px; margin-left: 2px;"></i></a>
-                </div>
-            </div>
-
-            <div style="background: #e8eef6; border-left: 4px solid var(--navy); border-radius: 6px; padding: 14px 18px;">
-                <h4 style="font-size: 15px; font-weight: 700; color: var(--navy-dark); margin-bottom: 6px;">ロジックマップ・ワークシート</h4>
-                <p style="font-size: 13px; color: #555; margin-bottom: 12px; line-height: 1.65;">Session 1 終了後の宿題として使うシート。次回の Logic &amp; Writing の授業に向けて、論理的な議論をツリー図で整理する方法を解説し、記入欄を設けています。</p>
-                <div>
-                    <a href="./Logic_Map_Worksheet_JP" target="_blank" rel="noopener" style="display: inline-block; font-size: 12px; color: var(--navy); background: white; border: 1px solid var(--navy); padding: 6px 14px; border-radius: 4px; text-decoration: none; margin-right: 6px; font-weight: 500;">日本語版 <i class="fa-solid fa-up-right-from-square" style="font-size: 10px; margin-left: 2px;"></i></a>
-                    <a href="./Logic_Map_Worksheet" target="_blank" rel="noopener" style="display: inline-block; font-size: 12px; color: #666; background: white; border: 1px solid #bbb; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-weight: 500;">English <i class="fa-solid fa-up-right-from-square" style="font-size: 10px; margin-left: 2px;"></i></a>
-                </div>
-            </div>
+            実際の授業コンテンツ（英語のみ）より抜粋しています。
         </div>
 
         <!-- O-R-E-S -->
@@ -903,18 +947,33 @@
 <!-- ── CONTACT ── -->
 <div class="contact-bg">
     <div class="contact-inner">
-        <p class="section-label">Contact</p>
-        <h2 class="section-title">参加について</h2>
+        <p class="section-label">Apply</p>
+        <h2 class="section-title">お申し込みについて</h2>
         <p class="contact-body">
-            本コースはTOMODACHI留学の参加者から一部招待制で行います。<br>
-            ご不明点や参加についてのご連絡は、事務局までメールでお送りください。
+            GAPは少人数・講師マッチングのため、現在は限られた曜日・時間での開講です。<br>
+            ご希望を伺ったうえで空き枠をご案内します。<br>
+            枠が合わない場合は、まずスタンダードで国際交流に慣れていただくこともできます。
         </p>
-        <a href="mailto:support@airpangaea.com" class="contact-email">
-            <i class="fa-solid fa-envelope"></i>
-            support@airpangaea.com
+        <a href="../#contact" class="contact-email">
+            <i class="fa-solid fa-pen-to-square"></i>
+            申込フォームへ（TOMODACHI留学）
         </a>
-        <p class="contact-note">AirPangaea 事務局</p>
+        <p class="contact-note" style="margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5);">
+            「希望コース」欄で <strong style="color: rgba(255,255,255,0.8);">Global Academic Pass（GAP）</strong> を選択し、<br>
+            ご要望欄に希望の曜日・時間帯をご記入ください。
+        </p>
+        <p style="margin-top: 24px;">
+            <a href="../#pricing" style="color: var(--yellow); font-size: 14px; font-weight: 600; text-decoration: none;">
+                <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>まずスタンダードから始める場合はこちら
+            </a>
+        </p>
     </div>
 </div>
 
-<!-- ── FOOT
+<!-- ── FOOTER ── -->
+<footer style="background: var(--navy-dark); padding: 28px 24px; text-align: center;">
+    <p style="font-size: 12px; color: rgba(255,255,255,0.3);">©2021-2026 AirPangaea, Inc.</p>
+</footer>
+
+</body>
+</html>

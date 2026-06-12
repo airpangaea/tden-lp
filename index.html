@@ -404,17 +404,15 @@
     <section id="intro-video" class="py-6 md:py-8 bg-white">
         <div class="container mx-auto px-4">
             <div class="max-w-2xl mx-auto">
-                <h2 class="text-xl md:text-2xl font-bold text-center mb-4 text-[#1e3a8a]">どんな海外の友達がいるの？ 🌏</h2>
-                <!-- ▼動画設定: data-yt-id にYouTube動画IDを入れ、下の poster 画像 src を https://i.ytimg.com/vi/<ID>/hqdefault.jpg に差し替え -->
-                <div id="hero-video" data-yt-id="vS-6E8WakiU" role="button" tabindex="0" aria-label="紹介動画を再生する" style="aspect-ratio:16/9" class="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer bg-[#1e3a8a]">
-                    <img src="https://i.ytimg.com/vi/vS-6E8WakiU/hqdefault.jpg" alt="海外生からの紹介動画（約1分）" class="absolute inset-0 w-full h-full object-cover opacity-80" width="928" height="506" loading="lazy">
-                    <span class="absolute inset-0 flex items-center justify-center">
-                        <span class="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#f97316]/90 shadow-lg">
-                            <svg class="w-8 h-8 md:w-10 md:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </span>
-                    </span>
+                <h2 class="text-xl md:text-2xl font-bold text-center mb-4 text-[#1e3a8a]">【動画】どんな海外の友達がいるの？ 🌏</h2>
+                <!-- ▼動画設定: data-yt-id にYouTube動画IDを入れる。ミュート自動再生ループ＋タップで音声ON -->
+                <div id="hero-video" data-yt-id="vS-6E8WakiU" style="position:relative;aspect-ratio:16/9;background:#1e3a8a" class="rounded-2xl overflow-hidden shadow-lg">
+                    <!-- YouTube IFrame API がこの要素を iframe に差し替える -->
+                    <div id="yt-player" style="position:absolute;inset:0;width:100%;height:100%"></div>
+                    <!-- 透明レイヤー：動画のどこをタップしても音声ON（誘導文は下のキャプション） -->
+                    <button id="hero-unmute" type="button" aria-label="動画の音声をオンにする" style="position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;cursor:pointer"></button>
                 </div>
-                <p class="text-xs text-gray-400 text-center mt-2">▶ クリックで再生（約1分）</p>
+                <p id="hero-video-caption" class="text-lg font-bold text-[#ea580c] text-center mt-3">🔊 タップで音声ON（約1分30秒）</p>
             </div>
         </div>
     </section>
@@ -2032,24 +2030,94 @@
             .catch(function () { applyData(FALLBACK_SLOTS); });
     })();
 
-    // ===== ヒーロー直下の紹介動画（クリックで初めてYouTubeを読み込む facade） =====
+    // ===== ヒーロー直下の紹介動画（ミュート自動再生ループ＋タップで音声ON） =====
     (function () {
         var box = document.getElementById('hero-video');
         if (!box) return;
-        function play() {
-            var id = box.getAttribute('data-yt-id');
-            if (!id || id === 'REPLACE_WITH_YOUTUBE_ID') return; // 動画ID未設定なら何もしない
-            var f = document.createElement('iframe');
-            f.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0';
-            f.title = '海外生からの紹介動画';
-            f.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-            f.setAttribute('allowfullscreen', '');
-            f.className = 'absolute inset-0 w-full h-full';
-            box.innerHTML = '';
-            box.appendChild(f);
+        var id = box.getAttribute('data-yt-id');
+        if (!id || id === 'REPLACE_WITH_YOUTUBE_ID') return; // 動画ID未設定なら何もしない
+
+        // YouTube IFrame Player API を読み込む
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+
+        var player, unmuted = false, inView = false, started = false;
+
+        // API 準備完了時に YouTube から呼ばれるグローバルコールバック
+        window.onYouTubeIframeAPIReady = function () {
+            player = new YT.Player('yt-player', {
+                host: 'https://www.youtube-nocookie.com',
+                videoId: id,
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                    // autoplay は使わず、画面に入ったら IntersectionObserver で頭から再生する
+                    autoplay: 0, mute: 1, controls: 1, rel: 0,
+                    playsinline: 1, modestbranding: 1, fs: 1
+                },
+                events: {
+                    onReady: function (e) {
+                        e.target.mute();
+                        // 生成された iframe をコンテナいっぱいに広げる
+                        var ifr = e.target.getIframe();
+                        ifr.style.position = 'absolute';
+                        ifr.style.top = '0';
+                        ifr.style.left = '0';
+                        ifr.style.width = '100%';
+                        ifr.style.height = '100%';
+                        setupObserver();
+                    },
+                    onStateChange: function (e) {
+                        // 画面内・ミュート中は最後まで再生したら頭出しして再生＝ループ。
+                        // 音声ON後はループせず1回で終了。
+                        if (e.data === YT.PlayerState.ENDED && !unmuted && inView) {
+                            e.target.seekTo(0);
+                            e.target.playVideo();
+                        }
+                    }
+                }
+            });
+        };
+
+        // 動画が画面に入ったら頭から再生、出たら一時停止
+        function setupObserver() {
+            if (!('IntersectionObserver' in window)) {
+                inView = true;
+                if (player && player.playVideo) player.playVideo();
+                return;
+            }
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (en) {
+                    if (en.isIntersecting) {
+                        inView = true;
+                        if (player && player.playVideo) {
+                            if (!started) { player.seekTo(0); started = true; } // 初回は冒頭から
+                            player.playVideo();
+                        }
+                    } else {
+                        inView = false;
+                        if (player && player.pauseVideo) player.pauseVideo();
+                    }
+                });
+            }, { threshold: 0.5 });
+            io.observe(box);
         }
-        box.addEventListener('click', play);
-        box.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
+
+        // オーバーレイをタップ＝音声ON（再生位置はそのまま）
+        function unmute() {
+            if (!player || typeof player.unMute !== 'function') return;
+            player.unMute();
+            player.setVolume(100);
+            unmuted = true;
+            var ov = document.getElementById('hero-unmute');
+            if (ov) ov.style.display = 'none';
+            var cap = document.getElementById('hero-video-caption');
+            if (cap) cap.textContent = '🔊 音声ON ／ 動画下のバーで一時停止・操作できます';
+        }
+
+        var ov = document.getElementById('hero-unmute');
+        if (ov) ov.addEventListener('click', unmute);
     })();
     </script>
 </body>

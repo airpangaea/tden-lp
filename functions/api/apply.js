@@ -69,11 +69,29 @@ export async function onRequestPost(context) {
     'わからないので相談したい': 'Not sure',
   };
 
+  // --- 希望日時スロットのパース ---
+  // フォームの value は "recID|ラベル"（例: "recABC...|月 20:30 Marina講師"）。
+  // recID は Preference リンク用、ラベルはメール(Comments)用に使う。
+  // "individual"（個別調整）や空文字もそのまま扱う。
+  const parseSlot = (v) => {
+    if (!v || v === 'individual') return { id: '', label: '', individual: v === 'individual' };
+    const i = v.indexOf('|');
+    if (i === -1) return { id: v, label: '', individual: false }; // 後方互換: ラベルなしrecIDのみ
+    return { id: v.slice(0, i), label: v.slice(i + 1), individual: false };
+  };
+  const p1 = parseSlot(slot1);
+  const p2 = parseSlot(slot2);
+  const p3 = parseSlot(slot3);
+
   // --- Commentsフィールドの組み立て ---
-  // 希望コース・プランはフィールドレベルの編集制限があるため、Commentsに含める
+  // 希望コース・希望日時はフィールドレベルの編集制限・リンク欄の都合があるため Comments に含める。
+  // メール(Airtable Automation)→GAS が Comments を読むので、ラベルは固定でテキスト化する。
   const commentParts = [];
   if (preferredCourse) commentParts.push(`【希望コース】${preferredCourse}`);
-  if ([slot1, slot2, slot3].includes('individual')) commentParts.push('【希望日時】個別調整を希望');
+  if (p1.label) commentParts.push(`【第1希望】${p1.label}`);
+  if (p2.label) commentParts.push(`【第2希望】${p2.label}`);
+  if (p3.label) commentParts.push(`【第3希望】${p3.label}`);
+  if (p1.individual || p2.individual || p3.individual) commentParts.push('【希望日時】個別調整を希望');
   if (message)         commentParts.push(message);
   const combinedComments = commentParts.join('\n');
 
@@ -99,9 +117,9 @@ export async function onRequestPost(context) {
   //   名前とみなされてゴミTimeslotが新規生成される。typecastなしのPATCHでリンクすれば誤生成しない）
   const isRecId = (v) => /^rec[A-Za-z0-9]{14}$/.test(v);
   const prefFields = {};
-  if (isRecId(slot1)) prefFields['fldgmc11RN7VPgmSc'] = [slot1]; // Preference 1
-  if (isRecId(slot2)) prefFields['fld3qeqTnCCFEXvPj'] = [slot2]; // Preference 2
-  if (isRecId(slot3)) prefFields['fld78aj1QTbcX4msr'] = [slot3]; // Preference 3
+  if (isRecId(p1.id)) prefFields['fldgmc11RN7VPgmSc'] = [p1.id]; // Preference 1
+  if (isRecId(p2.id)) prefFields['fld3qeqTnCCFEXvPj'] = [p2.id]; // Preference 2
+  if (isRecId(p3.id)) prefFields['fld78aj1QTbcX4msr'] = [p3.id]; // Preference 3
 
   const apiBase = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`;
   const authHeaders = {

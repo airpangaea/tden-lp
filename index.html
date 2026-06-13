@@ -2001,7 +2001,12 @@
             Array.prototype.forEach.call(selects, function (sel, idx) {
                 var placeholder = idx === 0 ? '第1希望を選択' : (idx === 1 ? '第2希望を選択' : '第3希望（任意）');
                 var html = '<option value="" ' + (idx < 2 ? 'disabled ' : '') + 'selected>' + placeholder + '</option>';
-                open.forEach(function (s) { html += '<option value="' + s.id + '">' + slotLabel(s) + '</option>'; });
+                // value は "recID|ラベル"。recIDは Preference リンク用、ラベルはメール(Comments)用。
+                // ラベルは状況注記（受付中等）を除いた「曜 時刻 講師名講師」。
+                open.forEach(function (s) {
+                    var labelForMail = s.dayJa + ' ' + s.timeLabel + ' ' + s.teacher + '講師';
+                    html += '<option value="' + s.id + '|' + labelForMail + '">' + slotLabel(s) + '</option>';
+                });
                 html += '<option value="individual">個別調整を希望（アシスト・GAP等）</option>';
                 sel.innerHTML = html;
             });

@@ -1869,18 +1869,50 @@
         const tsField = document.querySelector('input[name="_ts"]');
         if (tsField) tsField.value = Date.now();
 
-        // ① 二重送信防止: submit時にボタンを即座に無効化
+        // ① 入力検証（最初の不足を吹き出し表示）＋ 二重送信防止
         const applyForm = document.querySelector('form[action="/api/apply"]');
         if (applyForm) {
-            applyForm.addEventListener('submit', function() {
+            const emailField = applyForm.querySelector('input[name="email"]');
+            // サーバーと同じ厳格なメール形式（@の後にドメイン＋ドットを必須）
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            function validateEmail() {
+                if (!emailField) return;
+                if (emailField.value && !emailRe.test(emailField.value)) {
+                    emailField.setCustomValidity('有効なメールアドレスを入力してください（例：name@example.com）。');
+                } else {
+                    emailField.setCustomValidity('');
+                }
+            }
+            if (emailField) emailField.addEventListener('input', validateEmail);
+
+            applyForm.addEventListener('submit', function (e) {
+                validateEmail();
+                // 不足・不正があれば、最初の項目に吹き出しを出して送信を止める
+                if (!applyForm.checkValidity()) {
+                    e.preventDefault();
+                    applyForm.reportValidity();
+                    return;
+                }
+                // すべてOK → 送信中表示にして二重送信を防止
                 const btn = document.getElementById('submitBtn');
                 if (btn) {
+                    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
                     btn.disabled = true;
                     btn.textContent = '送信中...';
                     btn.classList.add('opacity-60', 'cursor-not-allowed');
                 }
             });
         }
+
+        // 戻るボタン等でページ復帰した際に送信ボタンを元に戻す（「送信中」固着の防止）
+        window.addEventListener('pageshow', function () {
+            const btn = document.getElementById('submitBtn');
+            if (btn && btn.disabled) {
+                btn.disabled = false;
+                if (btn.dataset.label) btn.textContent = btn.dataset.label;
+                btn.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
+        });
 
         // ③ 学年選択肢の生成（中1〜高3）
         (function() {
@@ -1893,6 +1925,7 @@
                 { value: '高校1年生', text: '高校1年生' },
                 { value: '高校2年生', text: '高校2年生' },
                 { value: '高校3年生', text: '高校3年生' },
+                { value: 'その他', text: 'その他' },
             ];
             options.forEach(function(opt) {
                 const el = document.createElement('option');
@@ -2010,28 +2043,39 @@
                 html += '<option value="individual">個別調整を希望（アシスト・GAP等）</option>';
                 sel.innerHTML = html;
             });
-            var prevS1Ind = false;
-            function refresh() {
-                // 第1希望が「個別調整」なら、第2・第3も個別調整に固定する
-                var s1Ind = selects[0] && selects[0].value === 'individual';
+            // いずれかの希望で「個別調整」を選んだら、それより下位の希望も個別調整に固定する。
+            // 強制的に個別調整にしたものには data-forced 印を付け、ユーザー操作と区別する。
+            function refresh(changed) {
+                if (changed && changed.removeAttribute) changed.removeAttribute('data-forced');
 
-                // 第1が個別調整から外れた直後は、固定されていた第2・第3をプレースホルダに戻す
-                if (prevS1Ind && !s1Ind) {
-                    for (var i = 1; i < selects.length; i++) {
-                        if (selects[i].value === 'individual') selects[i].value = '';
+                // ユーザー自身が「個別調整」を選んだ最初（最上位）の希望を探す
+                var firstInd = -1;
+                for (var i = 0; i < selects.length; i++) {
+                    if (selects[i].value === 'individual' && selects[i].getAttribute('data-forced') !== '1') {
+                        firstInd = i;
+                        break;
                     }
                 }
-                prevS1Ind = s1Ind;
 
-                // 第1が個別調整なら、第2・第3の値を個別調整にそろえる
-                if (s1Ind) {
-                    for (var j = 1; j < selects.length; j++) selects[j].value = 'individual';
+                // 固定対象でなくなった下位希望（強制された個別調整）はプレースホルダに戻す
+                Array.prototype.forEach.call(selects, function (sel, k) {
+                    if (sel.getAttribute('data-forced') === '1' && (firstInd === -1 || k <= firstInd)) {
+                        sel.value = '';
+                        sel.removeAttribute('data-forced');
+                    }
+                });
+                // firstInd より下位はすべて個別調整にそろえて固定する
+                if (firstInd !== -1) {
+                    for (var j = firstInd + 1; j < selects.length; j++) {
+                        selects[j].value = 'individual';
+                        selects[j].setAttribute('data-forced', '1');
+                    }
                 }
 
                 var chosen = Array.prototype.map.call(selects, function (s) { return s.value; })
                     .filter(function (v) { return v && v !== 'individual'; });
                 Array.prototype.forEach.call(selects, function (sel, idx) {
-                    var locked = s1Ind && idx > 0; // 第2・第3は個別調整のみ選択可
+                    var locked = firstInd !== -1 && idx > firstInd; // 下位希望は個別調整のみ選択可
                     Array.prototype.forEach.call(sel.options, function (o) {
                         if (locked) {
                             o.disabled = (o.value !== 'individual');
@@ -2043,7 +2087,9 @@
                     });
                 });
             }
-            Array.prototype.forEach.call(selects, function (s) { s.addEventListener('change', refresh); });
+            Array.prototype.forEach.call(selects, function (s) {
+                s.addEventListener('change', function (e) { refresh(e.target); });
+            });
         }
 
         function applyData(slots) { renderAvailability(slots); populateSelects(slots); }

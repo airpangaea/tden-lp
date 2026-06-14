@@ -86,12 +86,20 @@ export async function onRequestPost(context) {
   // --- Commentsフィールドの組み立て ---
   // 希望コース・希望日時はフィールドレベルの編集制限・リンク欄の都合があるため Comments に含める。
   // メール(Airtable Automation)→GAS が Comments を読むので、ラベルは固定でテキスト化する。
+  // 既知の学年は School Year(singleSelect) に。未知（その他 等）は Comments に逃がす
+  // （PATにスキーマ書込権限がなく、存在しない選択肢を typecast で作れないため）
+  const schoolYear = gradeMap[grade];
+
   const commentParts = [];
   if (preferredCourse) commentParts.push(`【希望コース】${preferredCourse}`);
-  if (p1.label) commentParts.push(`【第1希望】${p1.label}`);
-  if (p2.label) commentParts.push(`【第2希望】${p2.label}`);
-  if (p3.label) commentParts.push(`【第3希望】${p3.label}`);
-  if (p1.individual || p2.individual || p3.individual) commentParts.push('【希望日時】個別調整を希望');
+  if (grade && !schoolYear) commentParts.push(`【学年】${grade}`);
+  // 希望日時は第1〜第3を省略せず1行ずつ記載する（個別調整も明示）
+  const slotLine = (n, p) => {
+    if (p.label) return `【第${n}希望】${p.label}`;
+    if (p.individual) return `【第${n}希望】個別調整を希望`;
+    return null;
+  };
+  [slotLine(1, p1), slotLine(2, p2), slotLine(3, p3)].forEach((l) => { if (l) commentParts.push(l); });
   if (message)         commentParts.push(message);
   const combinedComments = commentParts.join('\n');
 
@@ -99,7 +107,6 @@ export async function onRequestPost(context) {
   const fields = {
     'fldiatR2syOAnGeC1': firstName,                                     // Name
     'fldkgBWAY5URfwVlO': genderMap[gender] || gender,                   // Gender
-    'fldxVi5K2gNiVyWf6': gradeMap[grade] || grade,                      // School Year
     'fldteul63pEfP2j9i': englishLevelMap[englishLevel] || englishLevel,  // English Level
     'fld7kF0rL8NBwqVL9': 'Applied',                                     // Status
     'fldq5F1H26trbiiea': 'Form',                                        // Source
@@ -107,6 +114,7 @@ export async function onRequestPost(context) {
   };
 
   // 任意フィールド（空でなければ追加）
+  if (schoolYear)       fields['fldxVi5K2gNiVyWf6'] = schoolYear;        // School Year（既知の学年のみ）
   if (school)           fields['fldHofD6n1pignZRl'] = school;           // School Name
   if (email)            fields['fldwEBlgkxM3TMQeo'] = email;            // Email（フォームにない場合は省略）
   if (phone)            fields['fldvaJlyLqANY3IYw'] = phone;            // Phone

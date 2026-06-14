@@ -2010,13 +2010,35 @@
                 html += '<option value="individual">個別調整を希望（アシスト・GAP等）</option>';
                 sel.innerHTML = html;
             });
+            var prevS1Ind = false;
             function refresh() {
+                // 第1希望が「個別調整」なら、第2・第3も個別調整に固定する
+                var s1Ind = selects[0] && selects[0].value === 'individual';
+
+                // 第1が個別調整から外れた直後は、固定されていた第2・第3をプレースホルダに戻す
+                if (prevS1Ind && !s1Ind) {
+                    for (var i = 1; i < selects.length; i++) {
+                        if (selects[i].value === 'individual') selects[i].value = '';
+                    }
+                }
+                prevS1Ind = s1Ind;
+
+                // 第1が個別調整なら、第2・第3の値を個別調整にそろえる
+                if (s1Ind) {
+                    for (var j = 1; j < selects.length; j++) selects[j].value = 'individual';
+                }
+
                 var chosen = Array.prototype.map.call(selects, function (s) { return s.value; })
                     .filter(function (v) { return v && v !== 'individual'; });
-                Array.prototype.forEach.call(selects, function (sel) {
+                Array.prototype.forEach.call(selects, function (sel, idx) {
+                    var locked = s1Ind && idx > 0; // 第2・第3は個別調整のみ選択可
                     Array.prototype.forEach.call(sel.options, function (o) {
-                        if (o.value && o.value !== 'individual') {
+                        if (locked) {
+                            o.disabled = (o.value !== 'individual');
+                        } else if (o.value && o.value !== 'individual') {
                             o.disabled = chosen.indexOf(o.value) !== -1 && o.value !== sel.value;
+                        } else if (o.value === 'individual') {
+                            o.disabled = false;
                         }
                     });
                 });

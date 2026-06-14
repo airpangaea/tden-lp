@@ -1869,7 +1869,8 @@
         const tsField = document.querySelector('input[name="_ts"]');
         if (tsField) tsField.value = Date.now();
 
-        // ① 入力検証（最初の不足を吹き出し表示）＋ 二重送信防止
+        // ① 入力検証（最初の不足にインラインエラーを表示）＋ 二重送信防止
+        // ネイティブの検証バブルはiOS Safari等で表示されないため、独自にエラー文を出す。
         const applyForm = document.querySelector('form[action="/api/apply"]');
         if (applyForm) {
             const emailField = applyForm.querySelector('input[name="email"]');
@@ -1883,14 +1884,62 @@
                     emailField.setCustomValidity('');
                 }
             }
-            if (emailField) emailField.addEventListener('input', validateEmail);
+
+            // 項目ごとの日本語エラー文（validationMessageが空の環境でも確実に出す）
+            function fieldErrorMessage(el) {
+                const v = el.validity;
+                if (v.customError) return el.validationMessage; // メール形式など独自メッセージ
+                if (v.valueMissing) return (el.tagName === 'SELECT') ? '項目を選択してください。' : 'この項目を入力してください。';
+                if (v.typeMismatch || v.patternMismatch) return '正しい形式で入力してください。';
+                if (v.tooLong) return '文字数が多すぎます。';
+                return el.validationMessage || '入力内容をご確認ください。';
+            }
+            function holderOf(el) { return el.closest('div') || el.parentNode; }
+            function clearError(el) {
+                const h = holderOf(el);
+                if (h) { const er = h.querySelector('.form-error'); if (er) er.remove(); }
+                el.style.borderColor = '';
+            }
+            function clearAllErrors() {
+                applyForm.querySelectorAll('.form-error').forEach(function (n) { n.remove(); });
+            }
+            function showError(el, msg) {
+                const h = holderOf(el);
+                if (!h) return;
+                const p = document.createElement('p');
+                p.className = 'form-error';
+                p.setAttribute('style', 'color:#dc2626;font-size:0.875rem;margin-top:0.25rem;font-weight:600');
+                p.textContent = msg;
+                // 入力欄の直後に差し込む（無ければ末尾）
+                if (el.nextSibling) h.insertBefore(p, el.nextSibling); else h.appendChild(p);
+                el.style.borderColor = '#dc2626';
+            }
+
+            // 入力を直したらその項目のエラーを消す
+            Array.prototype.forEach.call(applyForm.elements, function (el) {
+                if (!el.willValidate) return;
+                const evt = (el.tagName === 'SELECT') ? 'change' : 'input';
+                el.addEventListener(evt, function () {
+                    if (el === emailField) validateEmail();
+                    clearError(el);
+                });
+            });
 
             applyForm.addEventListener('submit', function (e) {
                 validateEmail();
-                // 不足・不正があれば、最初の項目に吹き出しを出して送信を止める
-                if (!applyForm.checkValidity()) {
+                clearAllErrors();
+                // 最初の不足・不正項目を探す
+                let firstInvalid = null;
+                Array.prototype.forEach.call(applyForm.elements, function (el) {
+                    if (firstInvalid) return;
+                    if (el.willValidate && !el.checkValidity()) firstInvalid = el;
+                });
+                if (firstInvalid) {
                     e.preventDefault();
-                    applyForm.reportValidity();
+                    showError(firstInvalid, fieldErrorMessage(firstInvalid));
+                    try { firstInvalid.focus({ preventScroll: true }); } catch (_) { firstInvalid.focus(); }
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (applyForm.reportValidity) applyForm.reportValidity(); // 出る環境ではネイティブ吹き出しも併用
                     return;
                 }
                 // すべてOK → 送信中表示にして二重送信を防止

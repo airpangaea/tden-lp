@@ -140,3 +140,44 @@
 ## Chrome MCP 使用時の注意
 - Chrome MCPツールを使う前に必ず `tabs_context_mcp` を最初に呼んでタブIDを取得すること
 - tabIdは必ず数値（number）として渡すこと（文字列で渡すとエラーになる）
+
+---
+
+## UTMパラメータ ルール（厳守）
+
+GA4で正しく分類するため、すべての流入URLは以下のルールに従う。**勝手な値を作らない。**
+
+### 4フィールドの役割
+
+| フィールド | 意味 | 値 |
+|---|---|---|
+| `utm_source` | どこから来た？ | `facebook` / `google` / `line` / `newsletter` / `youtube` / `instagram` / `email` |
+| `utm_medium` | どの手段？ | `paid` / `email` / `organic` / `referral` |
+| `utm_campaign` | **どのプログラムを売っている？**（時期を含めない） | `td_en` / `td_gap` / `td_combo` |
+| `utm_content` | バリエーション（任意）：配信時期・クリエイティブ・位置 | 例: `2026_06` / `video_overseas` / `btn_top` |
+
+### 核心ルール
+
+- **`utm_campaign` はプログラム固定。** 時期・月号は `utm_content` に逃がす。
+  - ❌ `utm_campaign=2026june_standard`
+  - ✅ `utm_campaign=td_en&utm_content=2026_06`
+- すべて**小文字・半角英数・アンダースコアのみ**。スペース・全角文字・大文字禁止（GA4は大小区別する）。
+- 時期表記は **`YYYY_MM` 形式**（ソート可能・国際標準）。`2026june` 不可。
+- 値は20字以内目安、簡潔に。
+
+### 標準パターン早見表
+
+| シーン | URL末尾 |
+|---|---|
+| Meta広告（静止画） | `?utm_source=facebook&utm_medium=paid&utm_campaign=td_en&utm_content=image_hero` |
+| Meta広告（動画） | `?utm_source=facebook&utm_medium=paid&utm_campaign=td_en&utm_content=video_overseas` |
+| Google広告 | `?utm_source=google&utm_medium=paid&utm_campaign=td_en` |
+| LINE広告 | `?utm_source=line&utm_medium=paid&utm_campaign=td_en` |
+| メルマガ（Std誘導） | `?utm_source=newsletter&utm_medium=email&utm_campaign=td_en&utm_content=2026_06` |
+| メルマガ（GAP誘導） | `?utm_source=newsletter&utm_medium=email&utm_campaign=td_gap&utm_content=2026_06` |
+| Insta自然投稿 | `?utm_source=instagram&utm_medium=organic&utm_campaign=td_en` |
+| YouTube概要欄 | `?utm_source=youtube&utm_medium=referral&utm_campaign=td_en` |
+
+### 旧値からの移行
+- `utm_lp=free_trial` は廃止（有償化に伴う）。今後 `utm_lp` フィールド自体を使わない。
+- 配信月を含む `utm_campaign` （例: `2026june_standard`）は禁止。次回配信から `utm_content=YYYY_MM` 形式に統一。

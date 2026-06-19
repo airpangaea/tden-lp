@@ -2174,6 +2174,13 @@
         document.head.appendChild(tag);
 
         var player, unmuted = false, inView = false, started = false;
+        var visibleSent = false, unmutedSent = false;
+
+        function trackOnce(eventName, flagKey) {
+            if (window[flagKey]) return;
+            window[flagKey] = true;
+            if (typeof gtag === 'function') gtag('event', eventName);
+        }
 
         // API 準備完了時に YouTube から呼ばれるグローバルコールバック
         window.onYouTubeIframeAPIReady = function () {
@@ -2222,6 +2229,7 @@
                 entries.forEach(function (en) {
                     if (en.isIntersecting) {
                         inView = true;
+                        trackOnce('video_visible', '__video_visible_sent');
                         if (player && player.playVideo) {
                             if (!started) { player.seekTo(0); started = true; } // 初回は冒頭から
                             player.playVideo();
@@ -2241,6 +2249,7 @@
             player.unMute();
             player.setVolume(100);
             unmuted = true;
+            trackOnce('video_unmuted', '__video_unmuted_sent');
             var ov = document.getElementById('hero-unmute');
             if (ov) ov.style.display = 'none';
             var cap = document.getElementById('hero-video-caption');

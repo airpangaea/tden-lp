@@ -23,8 +23,15 @@
     <meta name="twitter:image" content="https://tomodachi-english.airpangaea.com/images/tden-og.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- LCPヒーロー画像を最優先で先読み -->
+    <link rel="preload" as="image" href="images/GAP_hero.webp" type="image/webp" fetchpriority="high">
+    <!-- Google Fonts: レンダリングをブロックしないよう preload + print/onload で読み込む（全ウェイトは実使用のため維持） -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"></noscript>
+    <!-- Font Awesome: アイコンは非クリティカルなのでレンダリングをブロックしない -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 
     <!-- Google Analytics 4 + Google Ads -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4MCJE21MS4"></script>
@@ -860,7 +867,10 @@
             <h1 class="hero-logo">Global<br><span>Academic Pass</span></h1>
             <p class="hero-sub">海外の同世代と、論理的な英語で世界を語る</p>
         </div>
-        <img src="images/GAP_hero.jpg" alt="GAPコースのクラス風景" class="hero-img">
+        <picture style="display:contents">
+            <source srcset="images/GAP_hero.webp" type="image/webp">
+            <img src="images/GAP_hero.jpg" alt="GAPコースのクラス風景" class="hero-img" width="720" height="404" fetchpriority="high">
+        </picture>
     </div>
     <div class="hero-actions">
         <div class="hero-price">月額 11,800円（税込 12,980円）／入会月は25%OFF</div>

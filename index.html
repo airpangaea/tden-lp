@@ -355,6 +355,8 @@
                             <img src="/images/hero-video-poster.webp" alt="TOMODACHI留学 紹介動画" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" width="928" height="522" fetchpriority="high">
                         </picture>
                         <div id="yt-player" style="position:absolute;inset:0;width:100%;height:100%"></div>
+                        <!-- 透明ボタン：1タップで音声ON後に自動消滅 -->
+                        <button id="hero-unmute" type="button" aria-label="動画の音声をオンにする" style="position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;cursor:pointer;z-index:1"></button>
                     </div>
                     <p id="hero-video-caption" class="text-sm text-gray-500 text-center mt-2">🔊 タップで音声ON（約1分30秒）</p>
                 </div>
@@ -2225,6 +2227,16 @@
             }, { threshold: 0.3 });
             io.observe(box);
         }
+
+        // 透明オーバーレイ：1タップで音声ON→消滅（以降はネイティブコントロール）
+        var ov = document.getElementById('hero-unmute');
+        if (ov) ov.addEventListener('click', function () {
+            if (!player || typeof player.unMute !== 'function') return;
+            player.unMute();
+            player.setVolume(100);
+            trackOnce('video_unmuted', '__video_unmuted_sent');
+            ov.style.display = 'none';
+        });
 
         // ページロード完了後にAPI読み込み（LCP画像の表示を妨げないため）
         if (document.readyState === 'complete') {

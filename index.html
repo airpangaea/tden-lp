@@ -23,9 +23,9 @@
     <meta name="twitter:description" content="毎週海外の同世代と1対1で話して友達になるオンライン留学。入会月25%OFF・1ヶ月から始められます。">
     <meta name="twitter:image" content="https://tomodachi-english.airpangaea.com/images/tden-og.jpg">
 
-    <!-- Hero image preload for LCP -->
-    <link rel="preload" as="image" href="/images/tden-hero-750.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high">
-    <link rel="preload" as="image" href="/images/tden-hero.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high">
+    <!-- Hero video poster preload for LCP -->
+    <link rel="preload" as="image" href="/images/hero-video-poster-750.webp" type="image/webp" media="(max-width: 767px)" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/hero-video-poster.webp" type="image/webp" media="(min-width: 768px)" fetchpriority="high">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/images/AP_GSG_icon.png">
@@ -346,13 +346,17 @@
                     </h1>
                 </div>
 
-                <!-- 画像（モバイルでは見出し直下、PCでは右固定） -->
+                <!-- ヒーロー動画（ポスター→YouTubeに差し替え） -->
                 <div class="md:col-start-2 md:row-start-1 md:row-span-2 self-start -mt-7 md:mt-20">
-                    <picture>
-                        <source srcset="images/tden-hero-750.webp" media="(max-width: 767px)" type="image/webp">
-                        <source srcset="images/tden-hero.webp" type="image/webp">
-                        <img src="images/tden-hero.jpg" alt="海外の同世代と毎週1対1で話して友達になるオンライン留学" class="w-full rounded-2xl" width="928" height="506" fetchpriority="high">
-                    </picture>
+                    <div id="hero-video" data-yt-id="vS-6E8WakiU" style="position:relative;aspect-ratio:16/9;background:#000" class="rounded-2xl overflow-hidden shadow-lg">
+                        <picture id="hero-poster">
+                            <source srcset="/images/hero-video-poster-750.webp" media="(max-width: 767px)" type="image/webp">
+                            <source srcset="/images/hero-video-poster.webp" type="image/webp">
+                            <img src="/images/hero-video-poster.webp" alt="TOMODACHI留学 紹介動画" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" width="928" height="522" fetchpriority="high">
+                        </picture>
+                        <div id="yt-player" style="position:absolute;inset:0;width:100%;height:100%"></div>
+                    </div>
+                    <p id="hero-video-caption" class="text-sm text-gray-500 text-center mt-2">🔊 タップで音声ON（約1分30秒）</p>
                 </div>
 
                 <!-- 本文（説明→CTA） -->
@@ -398,23 +402,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 海外生 紹介動画（facade: クリックで初めてYouTubeを読み込む） -->
-    <section id="intro-video" class="py-6 md:py-8 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="max-w-2xl mx-auto">
-                <h2 class="text-xl md:text-2xl font-bold text-center mb-4 text-[#1e3a8a]">【動画】どんな海外の友達がいるの？ 🌏</h2>
-                <!-- ▼動画設定: data-yt-id にYouTube動画IDを入れる。ミュート自動再生ループ＋タップで音声ON -->
-                <div id="hero-video" data-yt-id="vS-6E8WakiU" style="position:relative;aspect-ratio:16/9;background:#1e3a8a" class="rounded-2xl overflow-hidden shadow-lg">
-                    <!-- YouTube IFrame API がこの要素を iframe に差し替える -->
-                    <div id="yt-player" style="position:absolute;inset:0;width:100%;height:100%"></div>
-                    <!-- 透明レイヤー：動画のどこをタップしても音声ON（誘導文は下のキャプション） -->
-                    <button id="hero-unmute" type="button" aria-label="動画の音声をオンにする" style="position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;cursor:pointer"></button>
-                </div>
-                <p id="hero-video-caption" class="text-lg font-bold text-[#ea580c] text-center mt-3">🔊 タップで音声ON（約1分30秒）</p>
             </div>
         </div>
     </section>
@@ -2163,18 +2150,16 @@
             .catch(function () { applyData(FALLBACK_SLOTS); });
     })();
 
-    // ===== ヒーロー直下の紹介動画（ミュート自動再生ループ＋タップで音声ON） =====
+    // ===== ヒーロー動画（ミュート自動再生・0:03開始・オフスクリーン停止） =====
     (function () {
         var box = document.getElementById('hero-video');
         if (!box) return;
         var id = box.getAttribute('data-yt-id');
-        if (!id || id === 'REPLACE_WITH_YOUTUBE_ID') return; // 動画ID未設定なら何もしない
+        if (!id) return;
 
-        var player, unmuted = false, inView = false, started = false;
-        var visibleSent = false, unmutedSent = false;
+        var player, inView = false, started = false;
         var apiRequested = false;
 
-        // YouTube IFrame Player API を読み込む（1回だけ・遅延ロード用）
         function loadYouTubeAPI() {
             if (apiRequested) return;
             apiRequested = true;
@@ -2189,7 +2174,6 @@
             if (typeof gtag === 'function') gtag('event', eventName);
         }
 
-        // API 準備完了時に YouTube から呼ばれるグローバルコールバック
         window.onYouTubeIframeAPIReady = function () {
             player = new YT.Player('yt-player', {
                 host: 'https://www.youtube-nocookie.com',
@@ -2197,35 +2181,27 @@
                 width: '100%',
                 height: '100%',
                 playerVars: {
-                    // autoplay は使わず、画面に入ったら IntersectionObserver で頭から再生する
                     autoplay: 0, mute: 1, controls: 1, rel: 0,
-                    playsinline: 1, modestbranding: 1, fs: 1
+                    playsinline: 1, modestbranding: 1, fs: 1,
+                    start: 3
                 },
                 events: {
                     onReady: function (e) {
                         e.target.mute();
-                        // 生成された iframe をコンテナいっぱいに広げる
                         var ifr = e.target.getIframe();
                         ifr.style.position = 'absolute';
                         ifr.style.top = '0';
                         ifr.style.left = '0';
                         ifr.style.width = '100%';
                         ifr.style.height = '100%';
+                        var poster = document.getElementById('hero-poster');
+                        if (poster) poster.style.display = 'none';
                         setupObserver();
-                    },
-                    onStateChange: function (e) {
-                        // 画面内・ミュート中は最後まで再生したら頭出しして再生＝ループ。
-                        // 音声ON後はループせず1回で終了。
-                        if (e.data === YT.PlayerState.ENDED && !unmuted && inView) {
-                            e.target.seekTo(0);
-                            e.target.playVideo();
-                        }
                     }
                 }
             });
         };
 
-        // 動画が画面に入ったら頭から再生、出たら一時停止
         function setupObserver() {
             if (!('IntersectionObserver' in window)) {
                 inView = true;
@@ -2238,7 +2214,7 @@
                         inView = true;
                         trackOnce('video_visible', '__video_visible_sent');
                         if (player && player.playVideo) {
-                            if (!started) { player.seekTo(0); started = true; } // 初回は冒頭から
+                            if (!started) { player.seekTo(3); started = true; }
                             player.playVideo();
                         }
                     } else {
@@ -2246,48 +2222,15 @@
                         if (player && player.pauseVideo) player.pauseVideo();
                     }
                 });
-            }, { threshold: 0.5 });
+            }, { threshold: 0.3 });
             io.observe(box);
         }
 
-        // オーバーレイをタップ＝音声ON（再生位置はそのまま）
-        function unmute() {
-            if (!player || typeof player.unMute !== 'function') return;
-            player.unMute();
-            player.setVolume(100);
-            unmuted = true;
-            trackOnce('video_unmuted', '__video_unmuted_sent');
-            var ov = document.getElementById('hero-unmute');
-            if (ov) ov.style.display = 'none';
-            var cap = document.getElementById('hero-video-caption');
-            if (cap) cap.textContent = '🔊 音声ON ／ 動画下のバーで一時停止・操作できます';
-        }
-
-        var ov = document.getElementById('hero-unmute');
-        if (ov) ov.addEventListener('click', unmute);
-
-        // 読み込みゲート（真の遅延ロード）:
-        // ① 初期描画(FCP/LCP)を約890KBのYouTube読み込みで妨げないよう、まず load まで待つ。
-        // ② その後、動画枠が実際にビューポートへ入った時点で初めてAPIを読み込む（スクロール時のみ）。
-        //    動画はファーストビュー直下なので、少しスクロールすればすぐ読み込まれ自動再生に入る。
-        //    rootMargin を 0 にしているのは、動画が折り返しの僅か下にあり、先読みマージンを取ると
-        //    初期表示に重なって即読み込み＝最適化が無効化されてしまうため。
-        function startVideoLazyLoad() {
-            if ('IntersectionObserver' in window) {
-                var loadIO = new IntersectionObserver(function (entries, obs) {
-                    entries.forEach(function (en) {
-                        if (en.isIntersecting) { loadYouTubeAPI(); obs.disconnect(); }
-                    });
-                }, { rootMargin: '0px' });
-                loadIO.observe(box);
-            } else {
-                loadYouTubeAPI(); // IntersectionObserver非対応ブラウザは即読み込み
-            }
-        }
+        // ページロード完了後にAPI読み込み（LCP画像の表示を妨げないため）
         if (document.readyState === 'complete') {
-            startVideoLazyLoad();
+            loadYouTubeAPI();
         } else {
-            window.addEventListener('load', startVideoLazyLoad);
+            window.addEventListener('load', loadYouTubeAPI);
         }
     })();
     </script>

@@ -293,7 +293,7 @@
 
     <!-- 募集バナー（毎月の更新はページ下部の CAMPAIGN 設定で） -->
     <div class="bg-[#1e3a8a] text-white text-center text-sm md:text-base py-2 px-4">
-        <span class="font-bold" data-month-label>7月開始クラス</span>　申込締切 <span class="font-bold text-[#FFD293]" data-deadline>6月25日（木）23:59</span>
+        <span class="font-bold" data-month-label>7月開始クラス</span>　申込締切 <span class="font-bold text-[#FFD293]" data-deadline>6月28日（日）23:59</span>
     </div>
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
@@ -1620,7 +1620,7 @@
             <div class="mx-auto mb-6 md:mb-8 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
             <p class="text-center text-gray-600 mb-6 md:mb-8 text-lg">ご希望のレッスン日時を選んでお申し込みください</p>
             
-            <p class="text-center mb-6 text-lg font-bold text-[#f97316]">📅 申込締切：<span data-deadline>6月25日（木）23:59</span></p>
+            <p class="text-center mb-6 text-lg font-bold text-[#f97316]">📅 申込締切：<span data-deadline>6月28日（日）23:59</span></p>
             <form action="/api/apply" method="POST" class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
                 <!-- ハニーポット（botが入力する非表示フィールド） -->
                 <div style="position:absolute;left:-9999px;" aria-hidden="true">
@@ -1989,7 +1989,7 @@
     const CAMPAIGN = {
         monthLabel: '7月開始クラス',           // バナー等の月ラベル
         ctaLabel:   '7月開始クラスに申し込む',  // 申込ボタンの文言
-        deadline:   '6月25日（木）23:59',      // 申込締切
+        deadline:   '6月28日（日）23:59',      // 申込締切
     };
     /* ======================================================== */
     document.querySelectorAll('[data-cta-apply]').forEach(function (el) { el.textContent = CAMPAIGN.ctaLabel; });

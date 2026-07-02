@@ -293,7 +293,7 @@
 
     <!-- 募集バナー（毎月の更新はページ下部の CAMPAIGN 設定で） -->
     <div class="bg-[#1e3a8a] text-white text-center text-sm md:text-base py-2 px-4">
-        <span class="font-bold" data-month-label>7月開始クラス</span>　申込締切 <span class="font-bold text-[#FFD293]" data-deadline>6月30日（火）23:59</span>
+        <span class="font-bold" data-month-label>8月開始クラス</span>　申込締切 <span class="font-bold text-[#FFD293]" data-deadline>7月20日（月）23:59</span>
     </div>
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
@@ -304,7 +304,7 @@
                 <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">講師紹介</a>
                 <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">料金</a>
                 <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">保護者の皆様へ</a>
-                <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg lg:text-xl">7月開始クラスに申し込む</a>
+                <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg lg:text-xl">8月開始クラスに申し込む</a>
             </div>
             <div class="md:hidden flex items-center gap-3">
                 <a href="#contact" class="bg-[#f97316] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg">
@@ -328,7 +328,7 @@
             <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">講師紹介</a>
             <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">料金</a>
             <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">保護者の皆様へ</a>
-            <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-center text-lg">7月開始クラスに申し込む</a>
+            <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-center text-lg">8月開始クラスに申し込む</a>
         </div>
     </header>
 
@@ -370,7 +370,7 @@
                         </p>
 
                         <a href="#contact" data-cta-apply class="inline-flex w-fit self-center md:self-start bg-[#f97316] text-white px-6 py-3 md:px-8 md:py-4 rounded-lg text-xl md:text-2xl font-bold hover:bg-[#ea580c] transition shadow-xl transform hover:scale-105 order-2">
-                            7月開始クラスに申し込む
+                            8月開始クラスに申し込む
                         </a>
                         <p class="text-sm text-gray-500 text-center md:text-left order-3">入会月<span class="font-bold text-[#ea580c]">25%〜50%OFF</span>・1ヶ月から始められます</p>
                     </div>
@@ -1620,7 +1620,7 @@
             <div class="mx-auto mb-6 md:mb-8 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
             <p class="text-center text-gray-600 mb-6 md:mb-8 text-lg">ご希望のレッスン日時を選んでお申し込みください</p>
             
-            <p class="text-center mb-6 text-lg font-bold text-[#f97316]">📅 申込締切：<span data-deadline>6月30日（火）23:59</span></p>
+            <p class="text-center mb-6 text-lg font-bold text-[#f97316]">📅 申込締切：<span data-deadline>7月20日（月）23:59</span></p>
             <form action="/api/apply" method="POST" class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
                 <!-- ハニーポット（botが入力する非表示フィールド） -->
                 <div style="position:absolute;left:-9999px;" aria-hidden="true">
@@ -1717,7 +1717,7 @@
                         にご同意頂いた上でお申し込みください。
                     </p>
                     <button type="submit" id="submitBtn" data-cta-apply class="w-full bg-[#f97316] text-white px-8 py-3 rounded-lg text-2xl font-bold hover:bg-[#ea580c] transition shadow-lg">
-                        7月開始クラスに申し込む
+                        8月開始クラスに申し込む
                     </button>
                 </div>
             </form>
@@ -1987,9 +1987,9 @@
     <script>
     /* ============ 毎月の更新はこのブロックだけでOK ============ */
     const CAMPAIGN = {
-        monthLabel: '7月開始クラス',           // バナー等の月ラベル
-        ctaLabel:   '7月開始クラスに申し込む',  // 申込ボタンの文言
-        deadline:   '6月30日（火）23:59',      // 申込締切
+        monthLabel: '8月開始クラス',           // バナー等の月ラベル
+        ctaLabel:   '8月開始クラスに申し込む',  // 申込ボタンの文言
+        deadline:   '7月20日（月）23:59',      // 申込締切
     };
     /* ======================================================== */
     document.querySelectorAll('[data-cta-apply]').forEach(function (el) { el.textContent = CAMPAIGN.ctaLabel; });

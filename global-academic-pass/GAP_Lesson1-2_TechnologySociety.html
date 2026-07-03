@@ -338,6 +338,13 @@
             padding: 5px 12px; font-size: 16px; font-weight: 600; color: var(--navy-blue);
         }
         .voca-chip span { font-weight: 400; color: #666; font-size: 14px; margin-left: 6px; }
+
+        /* ── Responsive: scale slides to fit narrower viewports ── */
+        @media (max-width: 1360px) {
+            body { align-items: stretch; padding: 16px 0; overflow-x: hidden; }
+            .slide-wrapper { width: 100%; overflow: hidden; }
+            .notes-panel { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -1082,6 +1089,24 @@
             toggleMasterNotes();
         }
     });
+
+    function scaleSlides() {
+        var vw = document.documentElement.clientWidth;
+        var scale = Math.min(1, vw / 1280);
+        document.querySelectorAll('.slide-container').forEach(function (sc) {
+            if (scale < 1) {
+                var h = sc.offsetHeight;
+                sc.style.transformOrigin = 'top left';
+                sc.style.transform = 'scale(' + scale + ')';
+                sc.style.marginBottom = (-(h * (1 - scale))) + 'px';
+            } else {
+                sc.style.transform = '';
+                sc.style.marginBottom = '';
+            }
+        });
+    }
+    window.addEventListener('load', scaleSlides);
+    window.addEventListener('resize', scaleSlides);
 </script>
 
 </body>

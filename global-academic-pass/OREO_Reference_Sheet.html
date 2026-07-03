@@ -220,6 +220,28 @@
             border-top: 1px solid #ddd;
             padding-top: 6px;
         }
+        .print-note {
+            color: #2e7d32;
+            font-weight: 700;
+        }
+
+        @media screen and (max-width: 800px) {
+            body { padding: 12px 0; }
+            .page {
+                width: 100%;
+                max-width: 210mm;
+                min-height: auto;
+                padding: 20px 16px;
+                box-shadow: none;
+            }
+            .steps { grid-template-columns: 1fr; }
+            .footer {
+                position: static;
+                margin-top: 20px;
+                left: auto;
+                right: auto;
+            }
+        }
 
         @media print {
             body { background: white; padding: 0; }
@@ -233,7 +255,7 @@
     <div class="header">
         <div>
             <h1>OREO Reference Sheet</h1>
-            <div style="font-size: 13px; color: #666; margin-top: 3px;">A 4-step template for clear, academic speaking</div>
+            <div style="font-size: 13px; color: #666; margin-top: 3px;">A 4-step template for clear, academic speaking <span class="print-note">(Print-friendly · A4)</span></div>
         </div>
         <div class="brand">
             <strong>AirPangaea</strong><br>

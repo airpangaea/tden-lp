@@ -249,6 +249,28 @@
             border-top: 1px solid #ddd;
             padding-top: 6px;
         }
+        .print-note {
+            color: #2e7d32;
+            font-weight: 700;
+        }
+
+        @media screen and (max-width: 800px) {
+            body { padding: 12px 0; }
+            .page {
+                width: 100%;
+                max-width: 210mm;
+                min-height: auto;
+                padding: 20px 16px;
+                box-shadow: none;
+            }
+            .steps { grid-template-columns: 1fr; }
+            .footer {
+                position: static;
+                margin-top: 20px;
+                left: auto;
+                right: auto;
+            }
+        }
 
         @media print {
             body { background: white; padding: 0; }
@@ -262,7 +284,7 @@
     <div class="header">
         <div>
             <h1>OREO リファレンスシート</h1>
-            <div class="subtitle">論理的でアカデミックなスピーキングのための4ステップ・テンプレート</div>
+            <div class="subtitle">論理的でアカデミックなスピーキングのための4ステップ・テンプレート <span class="print-note">（印刷用・A4対応）</span></div>
         </div>
         <div class="brand">
             <strong>AirPangaea</strong><br>

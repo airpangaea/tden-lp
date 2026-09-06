@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Global Academic Pass Course - Lesson 9: Media &amp; Information</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --pdf-bg: #FFF9E5;
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #333333;
+            --white: #ffffff;
+            --notes-bg: #1e1e2e;
+            --notes-text: #cdd6f4;
+            --notes-label: #89b4fa;
+            --notes-tip: #a6e3a1;
+            --notes-warn: #f38ba8;
+            /* OREO colors */
+            --oreo-o: #f9a825;
+            --oreo-r: #003366;
+            --oreo-e: #2e7d32;
+            --oreo-o2: #6a1b9a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .slide-wrapper { width: 1280px; margin-bottom: 0; }
+
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--pdf-bg);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* ── Notes Panel ── */
+        .notes-panel {
+            width: 1280px;
+            background-color: var(--notes-bg);
+            color: var(--notes-text);
+            font-size: 15px;
+            line-height: 1.7;
+            border-top: 3px solid var(--notes-label);
+            margin-bottom: 60px;
+            display: none;
+        }
+        body.show-notes .notes-panel { display: block; }
+
+        /* ── Master notes toggle (instructor-only) ── */
+        .notes-master-toggle {
+            position: fixed;
+            bottom: 14px;
+            right: 14px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.06);
+            color: rgba(0,0,0,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 999;
+            border: none;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .notes-master-toggle:hover {
+            background: rgba(0,51,102,0.12);
+            color: rgba(0,51,102,0.55);
+        }
+        body.show-notes .notes-master-toggle {
+            background: var(--navy-blue);
+            color: var(--accent-yellow);
+        }
+
+        .notes-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 28px;
+            cursor: pointer;
+            background: #2a2a3e;
+            border: none;
+            color: var(--notes-label);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            width: 100%;
+            text-align: left;
+            font-family: 'Roboto', sans-serif;
+        }
+        .notes-toggle:hover { background: #333350; }
+        .notes-toggle .arrow { margin-left: auto; transition: transform 0.2s; }
+        .notes-toggle.open .arrow { transform: rotate(180deg); }
+
+        .notes-body { display: none; padding: 24px 36px 28px 36px; }
+        .notes-body.open { display: block; }
+
+        .notes-section { margin-bottom: 18px; }
+        .notes-label {
+            color: var(--notes-label);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .notes-say {
+            background: #2a2a3e;
+            border-left: 4px solid var(--notes-label);
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 15px;
+            color: #e0e0ff;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .notes-tip {
+            background: #1e2e1e;
+            border-left: 4px solid var(--notes-tip);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--notes-tip);
+            margin-bottom: 6px;
+        }
+        .notes-warn {
+            background: #2e1e1e;
+            border-left: 4px solid var(--notes-warn);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--notes-warn);
+            margin-bottom: 6px;
+        }
+        .notes-time {
+            display: inline-block;
+            background: var(--notes-label);
+            color: #1e1e2e;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* ── Slide internals ── */
+        .meta-header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+        }
+        .meta-header .left-meta { font-size: 18px; color: #555; line-height: 1.4; }
+        .meta-header .right-logo { text-align: right; color: var(--navy-blue); }
+        .meta-header .logo-brand { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+
+        .slide-title-area { padding: 0 60px; margin-bottom: 18px; }
+        .slide-title {
+            font-size: 44px; font-weight: 700; margin: 0; color: #000;
+            border-bottom: 4px solid var(--navy-blue); display: inline-block; padding-bottom: 5px;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            padding: 0 60px 80px 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: var(--white); border-radius: 12px; padding: 22px 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;
+        }
+
+        .ui-footer {
+            position: absolute; bottom: 18px; left: 40px; right: 40px;
+            display: flex; align-items: center; justify-content: flex-start;
+            font-size: 15px; color: #555; font-style: italic;
+        }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+        .bullet-list { list-style: none; padding-left: 0; margin: 0; }
+        .bullet-list li {
+            font-size: 20px; margin-bottom: 10px; position: relative;
+            padding-left: 26px; line-height: 1.4;
+        }
+        .bullet-list li::before {
+            content: "•"; color: var(--navy-blue); font-weight: bold;
+            position: absolute; left: 6px; font-size: 22px; top: -2px;
+        }
+        .bullet-list li .voca-example {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+            margin-top: 3px;
+            padding-left: 2px;
+        }
+
+        .step-list { list-style: none; padding-left: 0; margin: 0; }
+        .step-list li {
+            font-size: 18px; margin-bottom: 8px; padding-left: 14px;
+            line-height: 1.4; border-left: 4px solid var(--accent-yellow);
+        }
+        .step-list li.dim { border-left-color: #ccc; color: #555; }
+
+        .role-a { color: var(--navy-blue); font-weight: 700; }
+        .role-b { color: #b8860b; font-weight: 700; }
+
+        .template-box { border-top: 4px solid var(--accent-yellow); padding-top: 7px; margin-bottom: 11px; }
+        .template-label { font-weight: 700; color: var(--accent-yellow); font-size: 18px; }
+
+        .title-slide { background-color: var(--navy-blue); color: var(--white); text-align: center; }
+        .title-slide h1 { font-size: 68px; margin: 0; }
+        .title-slide .subtitle { font-size: 30px; margin-top: 20px; opacity: 0.9; }
+
+        h3 { color: var(--navy-blue); font-size: 21px; margin-top: 0; margin-bottom: 10px; }
+
+        .note-box {
+            background: #eef2ff; border-left: 5px solid var(--navy-blue); border-radius: 6px;
+            padding: 9px 14px; font-size: 16px; color: #444; margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-block; background: var(--navy-blue); color: white;
+            font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-right: 4px;
+        }
+        .tag-yellow { background: var(--accent-yellow); color: #333; }
+
+        /* OREO Model Response */
+        .oreo-block {
+            border-radius: 6px;
+            padding: 9px 14px;
+            margin-bottom: 8px;
+            font-size: 17px;
+            line-height: 1.5;
+        }
+        .oreo-block .oreo-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-right: 7px;
+            vertical-align: middle;
+            color: white;
+        }
+        .oreo-o-block { background: #fff8e1; border-left: 4px solid var(--oreo-o); }
+        .oreo-o-block .oreo-tag { background: var(--oreo-o); color: #333; }
+        .oreo-r-block { background: #e8eef6; border-left: 4px solid var(--oreo-r); }
+        .oreo-r-block .oreo-tag { background: var(--oreo-r); }
+        .oreo-e-block { background: #e8f5e9; border-left: 4px solid var(--oreo-e); }
+        .oreo-e-block .oreo-tag { background: var(--oreo-e); }
+        .oreo-o2-block { background: #f3e5f5; border-left: 4px solid var(--oreo-o2); }
+        .oreo-o2-block .oreo-tag { background: var(--oreo-o2); }
+
+        /* Vocab reminder list */
+        .voca-reminder {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .voca-chip {
+            background: #eef2ff;
+            border: 1px solid #c5cae9;
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--navy-blue);
+        }
+        .voca-chip span {
+            font-weight: 400;
+            color: #666;
+            font-size: 14px;
+            margin-left: 6px;
+        }
+
+        .oreo-recap { display: flex; flex-direction: column; gap: 10px; }
+        .oreo-recap-row { display: flex; gap: 16px; align-items: center; }
+        .oreo-chip {
+            width: 90px; flex-shrink: 0; text-align: center;
+            font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px;
+        }
+        .chip-o { background: #fff8e1; color: #b8860b; border: 2px solid var(--oreo-o); }
+        .chip-r { background: #e8eef6; color: var(--navy-blue); border: 2px solid var(--navy-blue); }
+        .chip-e { background: #e8f5e9; color: #2e7d32; border: 2px solid var(--oreo-e); }
+        .chip-o2 { background: #f3e5f5; color: #6a1b9a; border: 2px solid var(--oreo-o2); }
+        .oreo-recap-row p { font-size: 18px; margin: 0; color: #444; }
+        .oreo-recap-row p em { color: var(--navy-blue); font-style: normal; font-weight: 600; }
+
+        /* Specific-example highlight */
+        .spec-detail { background: #fff3cd; padding: 0 3px; border-radius: 3px; font-weight: 600; }
+        .spec-tags { list-style: none; padding-left: 0; margin: 12px 0 0 0; }
+        .spec-tags li { font-size: 14px; margin-bottom: 4px; padding-left: 0; color: #555; }
+        .spec-tags li strong { color: var(--navy-blue); }
+
+        /* ── Responsive: scale slides to fit narrower viewports ── */
+        @media (max-width: 1360px) {
+            body { align-items: stretch; padding: 16px 0; overflow-x: hidden; }
+            .slide-wrapper { width: 100%; overflow: hidden; }
+            .notes-panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ SLIDE 1: Title -->
+<div class="slide-wrapper">
+<div class="slide-container title-slide">
+    <div class="meta-header" style="position: absolute; top: 0; width: 100%;">
+        <div class="left-meta" style="color: white;">Lesson 1-9<br>Term 1: Life &amp; Society<br>Week 9: Speaking</div>
+        <div class="right-logo" style="color: white;">
+            <div class="logo-brand">AirPangaea</div>
+            <div style="font-size: 14px;">TOMODACHI English</div>
+        </div>
+    </div>
+    <div class="content-area" style="justify-content: center; padding-top: 70px;">
+        <p style="font-size: 22px; letter-spacing: 4px; margin-bottom: 10px;">Global Academic Pass Course</p>
+        <h1>Lesson 1-9: Media &amp; Information</h1>
+        <div style="width: 150px; height: 4px; background: var(--accent-yellow); margin: 28px auto;"></div>
+        <p class="subtitle">(Speaking Focus)</p>
+    </div>
+    <div class="ui-footer" style="color: white; opacity: 0.35; font-style: normal; font-size: 13px; justify-content: center;">&copy; AirPangaea, Inc.</div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 1: Opening
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">Before class</span> Preparation</div>
+            <div class="notes-tip">✓ Share the OREO reference sheet in the chat before students join. New joiners will need this.</div>
+            <div class="notes-tip">✓ Confirm that the Assistant and Instructor are ready and know their role for today's Reflection.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">0:00</span> Opening</div>
+            <div class="notes-say">"Welcome back, everyone. Last week we wrote — we practised explaining what our examples actually show. Today we return to Speaking, and our topic is media and information: where we find things out, and whether we believe them. Our skill focus is paraphrasing the question — putting the question into your own words before you answer, so that you answer what was actually asked. By the end of class you will have done that twice. Let's begin."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Tone note</div>
+            <div class="notes-tip">Keep this topic observational, not political. Students should talk about how they find things out and whether they believe them — not about specific news events, parties or controversies. If a student raises a political topic, acknowledge it briefly and steer back to the habit rather than the content.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 2: Learning Objectives -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">1. Learning Objectives</h2></div>
+    <div class="content-area">
+        <div class="card">
+            <p style="font-size: 22px; font-weight: 500; margin-top: 0; margin-bottom: 16px;">By the end of this lesson, students will be able to:</p>
+            <ul class="bullet-list">
+                <li>Use the <strong>OREO</strong> structure to give a clear spoken opinion about information and what we believe.</li>
+                <li><strong>Paraphrase a question</strong> before answering — narrow it, and answer what was actually asked.</li>
+                <li>Compare <strong>where young people find information in different countries</strong> with a partner.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 2: Learning Objectives
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"Three goals today. First, keep using OREO. Second, the new skill: paraphrasing the question. Big questions are often too broad to answer well, so before you answer, you say the question back in your own words and make it smaller. Third, use each other — where people find information differs between countries, so expect surprises."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Note</div>
+            <div class="notes-tip">Do not spend more than 60 seconds here. Point, read, move on. Save energy for the Key Concept demo.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 3: OREO Quick Recap -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">2. OREO Quick Recap (3 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 20px; color: #555;">A fast reminder — and a welcome for anyone joining this week. Today we focus on what happens <strong>before</strong> your OREO, in the seconds after you hear the question.</p>
+        <div class="card">
+            <div class="oreo-recap">
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-o">Opinion</div>
+                    <p><em>"In my view…"</em> — What you believe. Today, one sentence comes <em>before</em> this. <strong>&larr; today's focus</strong></p>
+                </div>
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-r">Reason</div>
+                    <p><em>"The main reason is…"</em> — Why you believe it.</p>
+                </div>
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-e">Example</div>
+                    <p><em>"For instance…"</em> — A real situation that supports it.</p>
+                </div>
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-o2">Opinion Restated</div>
+                    <p><em>"That is why…"</em> — One sentence to close.</p>
+                </div>
+            </div>
+            <div class="note-box" style="margin-top: 20px;">
+                <i class="fa-solid fa-circle-info"></i> Full reference: see the OREO &amp; Logic Map sheet.
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 3: OREO Recap
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">3 mins</span> For new joiners</div>
+            <div class="notes-say">"If this is your first Global Academic Pass class, welcome. OREO is the structure we use every time we give an opinion: Opinion, Reason, Example, Opinion Restated. The full reference is in the sheet — keep it open in another tab. You will pick it up quickly today."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">For returning students</div>
+            <div class="notes-say">"If you were here last week, you know OREO well by now. Here is today's focus: the moment before you start. A question like 'how can we tell what is true?' is enormous. If you answer it as it is, you drift. Today we learn to shrink the question first, then answer the smaller version."</div>
+        </div>
+        <div class="notes-warn">⚠ Keep this to 3 minutes maximum. Do not re-teach the whole template. Establish it exists, point to the sheet, and move to the warm-up.</div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 4: Warm-up -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">3. Warm-up (5 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column" style="align-items: center;">
+            <div style="text-align: center;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 150px; color: var(--accent-yellow);"></i>
+            </div>
+            <div>
+                <h3>Quick Choice &amp; Why</h3>
+                <p style="font-size: 19px; margin-bottom: 12px;">Choose one and answer in 30 seconds:</p>
+                <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 9px;">
+                    <p style="font-size: 19px; font-weight: 700; margin: 0;"><span style="color: var(--accent-yellow);">A.</span> "Where did you last look something up? What was it?"</p>
+                </div>
+                <div class="card" style="border-left: 8px solid var(--navy-blue); margin-bottom: 9px;">
+                    <p style="font-size: 19px; font-weight: 700; margin: 0;"><span style="color: var(--navy-blue);">B.</span> "How do you usually hear about things happening at your school?"</p>
+                </div>
+                <div class="card" style="border-left: 8px solid #888; margin-bottom: 9px;">
+                    <p style="font-size: 19px; font-weight: 700; margin: 0;"><span style="color: #888;">C.</span> "Have you ever seen something online that turned out not to be true?"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 4: Warm-up
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">5 mins</span> Setup</div>
+            <div class="notes-say">"Let's warm up. Three questions on the screen — choose the one that feels most natural, and take about 30 seconds. I will call on each of you. No right or wrong answer — just speak."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Calling on students</div>
+            <div class="notes-say">"[Student name], which did you choose? Go ahead." — After each: "Thank you. Anyone who chose the same one — did you feel differently?"</div>
+            <div class="notes-tip">Aim to hear from every student briefly. If an answer is very short, gently prompt: "Can you tell us a bit more about why?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition</div>
+            <div class="notes-say">"Good. Notice how many different places came up — a search engine, a friend, a teacher, a video, a group chat. Today's question is what happens after you find something: do you believe it, and how would you know? Let's look at how to handle a question that big."</div>
+        </div>
+        <div class="notes-warn">⚠ Do not let this run over 5 minutes. If students are chatty: "Great energy — save it for the discussion later."</div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5a: Key Concept (Explanation) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Key Concept: Paraphrasing the Question (10 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Big questions are usually too broad to answer well. <strong>Paraphrasing</strong> means saying the question back in your own words, smaller, before you answer it. Four moves, in order:</p>
+        <div class="two-column">
+            <div class="card">
+                <div class="template-box"><div class="template-label">1. Say it back</div><p style="margin: 4px 0; font-size: 18px;">"So the question is whether..." / "If I understand correctly, you are asking..."</p></div>
+                <div class="template-box"><div class="template-label">2. Make it smaller</div><p style="margin: 4px 0; font-size: 18px;">"I will focus on [one part]..." — choose one angle you can actually support.</p></div>
+                <div class="template-box"><div class="template-label">3. Check the meaning</div><p style="margin: 4px 0; font-size: 18px;">"By [word], I mean..." — define the vague word before you use it.</p></div>
+                <div class="template-box"><div class="template-label">4. Then answer it</div><p style="margin: 4px 0; font-size: 18px;">Give your OREO — but answer the smaller question, not the huge one.</p></div>
+            </div>
+            <div class="card" style="background: #eef2ff; border: 2px dashed var(--navy-blue);">
+                <h4 style="margin-top:0; color: var(--navy-blue); font-size: 20px;"><i class="fa-solid fa-play-circle"></i> Demo</h4>
+                <p style="font-size: 18px;">Instructor &amp; Assistant: <strong>"Drifting"</strong> vs. <strong>"Narrowing"</strong></p>
+                <div style="background: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 12px;">
+                    <p style="margin: 0; font-size: 17px; color: #888; font-style: italic;"><strong>Q:</strong> "In a world full of information, how can we tell what is true?"<br><strong>A:</strong> "Information is very important. There is a lot of information now. We should be careful."</p>
+                </div>
+                <p style="font-size: 17px; color: var(--accent-yellow); font-weight: 700; margin: 0 0 10px 0;">→ Did that answer the question?</p>
+                <div class="note-box">
+                    <i class="fa-solid fa-circle-info"></i> <strong>Note:</strong> Use the four moves in order — say it back, make it smaller, check the meaning, then answer.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5a: Key Concept (before demo)
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">10 mins</span> Explaining the skill</div>
+            <div class="notes-say">"Two weeks ago we practised buying a moment when someone challenges you. Today is different — this is about accuracy, not composure. A question like 'how can we tell what is true?' is too big to answer directly, so people drift into vague sentences. The fix is to shrink it first. Say the question back in your own words. Choose one part you can actually support. Define any vague word. Then give your OREO on that smaller question. You will sound focused instead of lost."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Demo — the drifting version first</div>
+            <div class="notes-say">"Watch. [Assistant], ask me: 'In a world full of information, how can we tell what is true?'"</div>
+            <div class="notes-say">Assistant asks. You reply vaguely: "Information is very important. There is a lot of information now. We should be careful." — Then pause. "So — did I answer the question, or did I just talk about the topic?"</div>
+            <div class="notes-tip">Let students answer. Guide them toward what is missing — no position, nothing specific, and the question itself was never narrowed. Then move to the next slide for the narrowed version.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5b: Key Concept (Vague to Specific) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Key Concept: From Drifting to Narrowing</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="card">
+                <h4 style="margin-top:0; color: #888; font-size: 19px;"><i class="fa-solid fa-circle-xmark" style="color:#c62828;"></i> Drifting</h4>
+                <div style="background: #f8f8f8; padding: 12px 16px; border-radius: 8px; font-size: 18px; color: #666; font-style: italic; margin-bottom: 10px;">
+                    "Information is very important. There is a lot of information now. We should be careful."
+                </div>
+                <p style="font-size: 16px; color: #888; margin: 0;">True, but it answers nothing. The question was never narrowed, so there is nothing specific to say.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0; color: var(--navy-blue); font-size: 19px;"><i class="fa-solid fa-circle-check" style="color: var(--oreo-e);"></i> Narrowing</h4>
+                <p style="font-size: 18px; line-height: 1.5; margin: 0;">"<span class="spec-detail">So the question is whether</span> ordinary people can check information themselves. <span class="spec-detail">I will focus on</span> what students like me can realistically do. <span class="spec-detail">By 'true', I mean</span> something you can trace back to its original source. In my view, checking where a claim came from is the most practical test we have..."</p>
+                <ul class="spec-tags">
+                    <li><strong>1. Say it back:</strong> "So the question is whether..."</li>
+                    <li><strong>2. Make it smaller:</strong> "I will focus on what students can do."</li>
+                    <li><strong>3. Check the meaning:</strong> "By 'true', I mean..."</li>
+                    <li><strong>4. Then answer:</strong> OREO on the smaller question</li>
+                </ul>
+            </div>
+        </div>
+        <div class="note-box" style="margin-top: 14px;">
+            <i class="fa-solid fa-lightbulb"></i>&nbsp; Same question — but now it is small enough to answer with something real.
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5b: From Drifting to Narrowing
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Delivering the narrowed version</div>
+            <div class="notes-say">"Now watch the same question, narrowed first." — Deliver it at a natural speed, then point to the four tags. "Notice I did not answer the huge question. I made it smaller, said what I meant by 'true', and then answered the version I could actually support."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Narrowing a question is not avoiding it. Nobody can answer 'how do we know what is true' in thirty seconds — but everybody can answer a smaller version of it. Today, before every answer, use at least the first two moves."</div>
+            <div class="notes-warn">⚠ Do not ask students to practise here. Practice happens in Sessions 1 and 2. Keep this to explanation and demo only.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6: Academic Vocabulary -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">5. Academic Vocabulary</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Small changes make a big difference in how academic you sound:</p>
+        <div class="two-column" style="margin-bottom: 16px;">
+            <div class="card">
+                <h4 style="color: #2e7d32; margin-top: 0; font-size: 18px;">Instead of "good"</h4>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>Reliable</strong> — "a reliable source"
+                        <span class="voca-example">"A school website is usually a reliable source for school events."</span>
+                    </li>
+                    <li><strong>Credible</strong> — "...sounds credible."
+                        <span class="voca-example">"A report is more credible when it names the people involved."</span>
+                    </li>
+                    <li><strong>Valuable</strong> — "...is valuable when..."
+                        <span class="voca-example">"A second source is valuable when a story sounds surprising."</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4 style="color: #c62828; margin-top: 0; font-size: 18px;">Instead of "bad"</h4>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>Misleading</strong> — "...can be misleading."
+                        <span class="voca-example">"A headline can be misleading even when the article is accurate."</span>
+                    </li>
+                    <li><strong>Biased</strong> — "...may be biased."
+                        <span class="voca-example">"A review written by the seller may be biased."</span>
+                    </li>
+                    <li><strong>Challenging</strong> — "It can be challenging to..."
+                        <span class="voca-example">"It can be challenging to find where a claim originally came from."</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue);">
+            <p style="font-size: 20px; margin: 0;"><strong>Instead of "I think":</strong>&nbsp;&nbsp;"From what I have seen..." &nbsp;/&nbsp; "As far as I can tell..."</p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 6: Academic Vocabulary
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~4 mins</span> Introduction</div>
+            <div class="notes-say">"One more tool before the discussions: Academic Vocabulary. Two of these — valuable and challenging — you met in Lesson 1-5, so this is a quick refresher. The other four are new, and they are the words people actually use when talking about information."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Walking through the vocabulary</div>
+            <div class="notes-say">"Instead of 'good,' try 'reliable' — a school website is a reliable source for school events. Or 'credible' — a report is more credible when it names people. Instead of 'bad,' try 'misleading' — a headline can be misleading even when the article is accurate. Or 'biased.' And instead of 'I think,' try 'From what I have seen' or 'As far as I can tell.'"</div>
+            <div class="notes-tip">Read two or three aloud — you do not need all of them. Students pick up the rest through use in Sessions 1 and 2.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition into Session 1</div>
+            <div class="notes-say">"In Session 2, your challenge will be to use at least two of these words while still narrowing the question first. For now, let's move into the first discussion."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7: Session 1 -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. 1-on-1 Exchange — Session 1 (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="card" style="background: var(--navy-blue); color: white; margin-bottom: 16px; padding: 18px 28px;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent-yellow); margin-bottom: 10px;">PROMPT</div>
+            <p style="font-size: 22px; font-weight: 700; margin: 0; line-height: 1.4;">"Where do you usually find out about things — school news, world events, or things you are interested in? Do you believe what you see?"</p>
+        </div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Steps</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">A:</span> Share opinion using OREO</li>
+                    <li><span class="role-b">B:</span> Ask one follow-up question</li>
+                    <li><span class="role-a">A:</span> Respond &rarr; <em>"How about you?"</em></li>
+                    <li><span class="role-b">B:</span> Paraphrase the prompt, then share opinion using OREO</li>
+                    <li><span class="role-a">A:</span> Ask one follow-up question</li>
+                    <li class="dim">Open discussion — agree, disagree, cultural differences</li>
+                    <li class="dim">Tell your partner one thing they did well</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Follow-up question ideas</h3>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"How did you first come across it?"</li>
+                    <li>"Would you check it anywhere else?"</li>
+                    <li>"What would make you doubt it?"</li>
+                    <li>"Is that where people in your country usually look?"</li>
+                </ul>
+            </div>
+        </div>
+        <div style="margin-top: 14px; background: var(--navy-blue); color: white; border-radius: 6px; padding: 12px 18px; font-size: 17px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--accent-yellow); font-size: 20px;"></i>
+            <span><strong style="color: var(--accent-yellow);">Today's focus:</strong> Before you answer, say the question back in your own words and make it smaller.</span>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor highlights 1-2 good paraphrases (1-2 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7: Session 1
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">15 mins</span> Setup</div>
+            <div class="notes-say">"Into breakout rooms. Today's first prompt is on the screen. Before you answer it, do today's new move: say the question back in your own words, and choose one part to focus on. Then give your OREO on that smaller version. Person B listens, asks one follow-up question, then it is your turn — and you paraphrase first too. Before you return, tell your partner one thing they did well. I'll move between rooms."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Pairing</div>
+            <div class="notes-tip">Pair students from different countries where possible — where people look for information differs a lot, and the contrast is the value. If numbers are uneven, the Assistant or Instructor steps in to keep pairs 1-on-1.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Does the speaker paraphrase at all, or jump straight into answering? Jumping in is the main failure mode.</div>
+            <div class="notes-tip">✓ Is the paraphrase actually smaller than the original, or just the same question repeated?</div>
+            <div class="notes-warn">⚠ If a student says "I do not really follow the news," redirect: "That is fine — where do you hear about things at school, or about something you like?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Session 1 — feedback (1-2 mins)</div>
+            <div class="notes-say">"Welcome back. I heard a good paraphrase: [quote it]. Notice how much easier the answer became once the question got smaller. Let's carry that into Session 2."</div>
+            <div class="notes-tip">One or two observations only. Save detailed feedback for after Session 2.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8: Session 2 -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. 1-on-1 Exchange — Session 2 (15 mins)</h2></div>
+    <div class="content-area">
+        <div class="card" style="background: var(--accent-yellow); margin-bottom: 16px; padding: 18px 28px;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--navy-blue); margin-bottom: 10px;">PROMPT</div>
+            <p style="font-size: 22px; font-weight: 700; margin: 0; line-height: 1.4; color: #222;">"If a friend sends you surprising news, what would you do before sharing it with others?"</p>
+        </div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Steps — same format as Session 1</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">A:</span> Share opinion using OREO</li>
+                    <li><span class="role-b">B:</span> Ask one follow-up question</li>
+                    <li><span class="role-a">A:</span> Respond &rarr; <em>"How about you?"</em></li>
+                    <li><span class="role-b">B:</span> Share opinion using OREO</li>
+                    <li><span class="role-a">A:</span> Ask one follow-up question</li>
+                    <li class="dim">Open discussion — agree, disagree, cultural differences</li>
+                    <li class="dim">Tell your partner one thing they did well</li>
+                </ul>
+            </div>
+            <div class="card" style="border: 3px solid var(--accent-yellow);">
+                <h4 style="color: var(--accent-yellow); margin-top: 0; font-size: 19px;"><i class="fa-solid fa-fire"></i> Session 2 Challenge</h4>
+                <p style="font-size: 17px; margin-bottom: 12px;">Use at least <strong>two of these words</strong> in your OREO response:</p>
+                <div class="voca-reminder">
+                    <div class="voca-chip">Reliable <span>— "a reliable source"</span></div>
+                    <div class="voca-chip">Credible <span>— "...sounds credible."</span></div>
+                    <div class="voca-chip">Valuable <span>— "...is valuable when..."</span></div>
+                    <div class="voca-chip">Misleading <span>— "...can be misleading."</span></div>
+                    <div class="voca-chip">Biased <span>— "...may be biased."</span></div>
+                    <div class="voca-chip">From what I have seen... <span>— instead of "I think"</span></div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 14px; background: var(--navy-blue); color: white; border-radius: 6px; padding: 12px 18px; font-size: 17px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--accent-yellow); font-size: 20px;"></i>
+            <span><strong style="color: var(--accent-yellow);">Today's focus:</strong> Keep paraphrasing before you answer — say it back, then make it smaller.</span>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor feedback &amp; group discussion (3 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8: Session 2
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">15 mins</span> Setup</div>
+            <div class="notes-say">"Same steps, new prompt, one challenge. This time, try to use at least two of the Academic Vocabulary words on the right in your OREO response — do not force them, find a natural moment. And keep paraphrasing before you answer. Into breakout rooms."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Are students attempting the Academic Vocabulary? Even one word used naturally is worth highlighting.</div>
+            <div class="notes-tip">✓ Are students still paraphrasing, or skipping straight to the answer now that the prompt feels easier?</div>
+            <div class="notes-warn">⚠ If a student skips it, model it once: "Try starting with — so the question is what I would do before believing it."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Session 2 — group feedback (3 mins)</div>
+            <div class="notes-say">"Good work. First, a strong moment: [positive observation — e.g., 'someone said by surprising, I mean something I would want to check — defining the word made the whole answer sharper.']. Second, one thing to keep working on: [common issue — e.g., 'several paraphrases were just the question repeated. Make it smaller, not the same size.']."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Experience corner — asking the Assistant / Instructor</div>
+            <div class="notes-say">"Assistant / Instructor — at university, how do you check whether a source is worth using? Has anything ever turned out to be wrong after you had already used it?"</div>
+            <div class="notes-tip">Keep it practical. This is one of the clearest links between today's lesson and real university work, so let the Assistant speak concretely about what checking a source actually looks like.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 9: Reflection -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-9 | Week 9: Speaking</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">8. Reflection (8 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="card">
+                <h3><i class="fa-solid fa-users"></i> Task 1 — Breakout Rooms (5 mins)</h3>
+                <p style="font-size: 17px; margin-bottom: 12px;">
+                    <span class="tag">Room 1</span> Japanese students &nbsp;|&nbsp;
+                    <span class="tag tag-yellow">Room 2</span> Indonesian students
+                </p>
+                <p style="font-size: 18px; margin-bottom: 10px;">In your own language, discuss:</p>
+                <div style="background: #f8f8f8; border-left: 5px solid var(--accent-yellow); padding: 13px 16px; border-radius: 6px; font-size: 19px; font-weight: 600;">
+                    "Which was harder today — saying the question back in your own words, or deciding which smaller part to answer? Why?"
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-microphone"></i> Task 2 — Main Room (3 mins)</h3>
+                <p style="font-size: 18px;">Share one reflection with everyone:</p>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"Today I found it difficult to..."</li>
+                    <li>"One paraphrasing phrase I want to use more is..."</li>
+                    <li>"Something my partner said that surprised me was..."</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 9: Reflection
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">8 mins</span> Setup</div>
+            <div class="notes-say">"Last activity. Japanese students in Room 1, Indonesian students in Room 2. In your own language, discuss: which was harder today — saying the question back in your own words, or deciding which smaller part to answer? Why? The Assistant joins Room 1, the Instructor joins Room 2 to give one piece of advice each. Five minutes, then we share."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Brief for the Assistant / Instructor</div>
+            <div class="notes-tip">Listen for what students find hard, and offer one practical tip each. For example: "If choosing a part is hard, pick the one where you already have a real example. That is always the right part to answer."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Task 2 — Main room (3 mins)</div>
+            <div class="notes-say">"Welcome back. Can one person from each group share — what was harder, and what advice did you get?"</div>
+            <div class="notes-tip">Hear from 2-3 students. Do not go around the whole group — time is short.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Great work today. Your answers got sharper as soon as the questions got smaller — that is exactly the technique. Next week is Logic &amp; Writing, where we look at how to give feedback that actually helps someone improve their writing. See you then."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 10: Homework -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header" style="background-color: var(--navy-blue); padding: 15px 40px;">
+        <div class="left-meta" style="color: white;">Homework | Week 9</div>
+        <div class="right-logo" style="color: white;"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="content-area" style="padding-top: 36px;">
+        <div class="card">
+            <h2 style="color: var(--navy-blue); margin-top: 0;">Logic Map for Next Week</h2>
+            <p style="font-size: 19px; margin-top: 10px;">Next week's class is <strong>Logic &amp; Writing</strong> — we will write about information and truth, and then review each other's writing. To prepare, fill in the <strong>Logic Map Reference Sheet</strong> (shared as a PDF) for the prompt below.</p>
+            <div style="background: var(--navy-blue); color: white; padding: 18px 28px; border-radius: 8px; margin: 18px 0;">
+                <div style="font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent-yellow); margin-bottom: 10px;">PROMPT</div>
+                <p style="font-size: 23px; font-weight: 700; margin: 0; line-height: 1.4;">"In a world full of information, how can we tell what is true?"</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px;">
+                <div style="background: #fff8e1; border-left: 5px solid var(--accent-yellow); padding: 11px 16px; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--navy-blue); letter-spacing: 1.5px; margin-bottom: 5px;">WHAT TO DO <span style="color: #b8860b;">(required)</span></div>
+                    <div style="font-size: 15px; line-height: 1.5;">Complete the four parts of the map: <strong>Thesis</strong>, one <strong>Reason</strong>, one <strong>Example</strong> (keep it specific), and one <strong>Counter-argument with your response</strong>. Keep each line short and specific.</div>
+                </div>
+                <div style="background: #f4f4f4; border-left: 5px solid #aaa; padding: 11px 16px; border-radius: 4px;">
+                    <div style="font-size: 12px; font-weight: 700; color: #666; letter-spacing: 1.5px; margin-bottom: 5px;">IF POSSIBLE <span style="font-weight: 400;">(optional)</span></div>
+                    <div style="font-size: 15px; line-height: 1.5;">If you have time, turn your Logic Map into a short paragraph (about 80–100 words) using OREO. This step is optional — next week's class works well either way.</div>
+                </div>
+            </div>
+            <p style="font-size: 15px; color: #666; margin-top: 16px; margin-bottom: 0;"><i class="fa-solid fa-calendar-check"></i>&nbsp; Bring your completed map to next week's class — and your short paragraph too, if you wrote one.</p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 10: Homework
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"Your homework for next week. Next class is Logic &amp; Writing, where we turn today's thinking into written paragraphs. I've shared the Logic Map Reference Sheet as a PDF. On page 2, fill in a Logic Map for the prompt on screen — how we can tell what is true. Completing the four parts is required. If you have extra time, you may also turn it into a short paragraph using OREO — that part is optional. Bring whatever you have."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why the optional paragraph</div>
+            <div class="notes-tip">Attempting a short paragraph at home — optionally — means next week's Writing class can focus on revising with a partner's feedback rather than drafting from zero. The Logic Map alone remains fully sufficient; the paragraph is a bonus for students who have time.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Connecting to today's skill</div>
+            <div class="notes-tip">Remind them to use today's skill on the Thesis line: the prompt is deliberately huge, so narrow it first. "We can never be certain, but checking the original source is the most practical test" is far more workable than trying to answer the whole question.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"That's it for today. Thank you — see you next week for Logic &amp; Writing."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<button class="notes-master-toggle" onclick="toggleMasterNotes()" title="Toggle instructor notes (Shift+N)">
+    <i class="fa-solid fa-arrow-up-short-wide"></i>
+</button>
+
+<script>
+    function toggleNotes(btn) {
+        btn.classList.toggle('open');
+        btn.nextElementSibling.classList.toggle('open');
+    }
+    function toggleMasterNotes() {
+        document.body.classList.toggle('show-notes');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.shiftKey && (e.key === 'N' || e.key === 'n')) {
+            toggleMasterNotes();
+        }
+    });
+
+    function scaleSlides() {
+        var vw = document.documentElement.clientWidth;
+        var scale = Math.min(1, vw / 1280);
+        document.querySelectorAll('.slide-container').forEach(function (sc) {
+            if (scale < 1) {
+                var h = sc.offsetHeight;
+                sc.style.transformOrigin = 'top left';
+                sc.style.transform = 'scale(' + scale + ')';
+                sc.style.marginBottom = (-(h * (1 - scale))) + 'px';
+            } else {
+                sc.style.transform = '';
+                sc.style.marginBottom = '';
+            }
+        });
+    }
+    window.addEventListener('load', scaleSlides);
+    window.addEventListener('resize', scaleSlides);
+</script>
+
+</body>
+</html>

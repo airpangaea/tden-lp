@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Global Academic Pass - Lesson 12: Work &amp; the Future</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --pdf-bg: #FFF9E5;
+            --navy-blue: #003366;
+            --accent-yellow: #f9a825;
+            --text-main: #333333;
+            --white: #ffffff;
+            --notes-bg: #1e1e2e;
+            --notes-text: #cdd6f4;
+            --notes-label: #89b4fa;
+            --notes-tip: #a6e3a1;
+            --notes-warn: #f38ba8;
+            --oreo-o: #f9a825;
+            --oreo-r: #003366;
+            --oreo-e: #2e7d32;
+            --oreo-o2: #6a1b9a;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .slide-wrapper { width: 1280px; margin-bottom: 0; }
+
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--pdf-bg);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* ── Notes Panel ── */
+        .notes-panel {
+            width: 1280px;
+            background-color: var(--notes-bg);
+            color: var(--notes-text);
+            font-size: 15px;
+            line-height: 1.7;
+            border-top: 3px solid var(--notes-label);
+            margin-bottom: 60px;
+            display: none;
+        }
+        body.show-notes .notes-panel { display: block; }
+
+        /* ── Master notes toggle (instructor-only) ── */
+        .notes-master-toggle {
+            position: fixed;
+            bottom: 14px;
+            right: 14px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.06);
+            color: rgba(0,0,0,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 999;
+            border: none;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .notes-master-toggle:hover {
+            background: rgba(0,51,102,0.12);
+            color: rgba(0,51,102,0.55);
+        }
+        body.show-notes .notes-master-toggle {
+            background: var(--navy-blue);
+            color: var(--accent-yellow);
+        }
+        .notes-toggle {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 28px; cursor: pointer; background: #2a2a3e;
+            border: none; color: var(--notes-label); font-size: 13px;
+            font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+            width: 100%; text-align: left; font-family: 'Roboto', sans-serif;
+        }
+        .notes-toggle:hover { background: #333350; }
+        .notes-toggle .arrow { margin-left: auto; transition: transform 0.2s; }
+        .notes-toggle.open .arrow { transform: rotate(180deg); }
+        .notes-body { display: none; padding: 24px 36px 28px 36px; }
+        .notes-body.open { display: block; }
+        .notes-section { margin-bottom: 18px; }
+        .notes-label {
+            color: var(--notes-label); font-weight: 700; font-size: 13px;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .notes-say {
+            background: #2a2a3e; border-left: 4px solid var(--notes-label);
+            padding: 10px 16px; border-radius: 4px; font-size: 15px;
+            color: #e0e0ff; margin-bottom: 8px; font-style: italic;
+        }
+        .notes-tip {
+            background: #1e2e1e; border-left: 4px solid var(--notes-tip);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-tip); margin-bottom: 6px;
+        }
+        .notes-warn {
+            background: #2e1e1e; border-left: 4px solid var(--notes-warn);
+            padding: 8px 14px; border-radius: 4px; font-size: 14px;
+            color: var(--notes-warn); margin-bottom: 6px;
+        }
+        .notes-time {
+            display: inline-block; background: var(--notes-label); color: #1e1e2e;
+            font-size: 12px; font-weight: 700; padding: 2px 10px;
+            border-radius: 20px; margin-right: 8px; vertical-align: middle;
+        }
+
+        /* ── Slide internals ── */
+        .meta-header {
+            padding: 20px 40px; display: flex;
+            justify-content: space-between; align-items: flex-start; z-index: 10;
+        }
+        .meta-header .left-meta { font-size: 18px; color: #555; line-height: 1.4; }
+        .meta-header .right-logo { text-align: right; color: var(--navy-blue); }
+        .meta-header .logo-brand { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+
+        .slide-title-area { padding: 0 60px; margin-bottom: 18px; }
+        .slide-title {
+            font-size: 44px; font-weight: 700; margin: 0; color: #000;
+            border-bottom: 4px solid var(--navy-blue); display: inline-block; padding-bottom: 5px;
+        }
+
+        .content-area {
+            flex-grow: 1; padding: 0 60px 80px 60px; display: flex; flex-direction: column;
+        }
+
+        .card {
+            background: var(--white); border-radius: 12px; padding: 22px 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%;
+        }
+
+        .ui-footer {
+            position: absolute; bottom: 18px; left: 40px; right: 40px;
+            display: flex; align-items: center; justify-content: flex-start;
+            font-size: 15px; color: #555; font-style: italic;
+        }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+        .bullet-list { list-style: none; padding-left: 0; margin: 0; }
+        .bullet-list li {
+            font-size: 20px; margin-bottom: 10px; position: relative;
+            padding-left: 26px; line-height: 1.4;
+        }
+        .bullet-list li::before {
+            content: "•"; color: var(--navy-blue); font-weight: bold;
+            position: absolute; left: 6px; font-size: 22px; top: -2px;
+        }
+
+        .numbered-list { list-style: none; padding-left: 0; margin: 0; counter-reset: num; }
+        .numbered-list li {
+            font-size: 18px; margin-bottom: 10px; position: relative;
+            padding-left: 32px; line-height: 1.5; counter-increment: num;
+        }
+        .numbered-list li::before {
+            content: counter(num); position: absolute; left: 0; top: 1px;
+            width: 22px; height: 22px; background: var(--navy-blue); color: white;
+            border-radius: 50%; font-size: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .step-list { list-style: none; padding-left: 0; margin: 0; }
+        .step-list li {
+            font-size: 18px; margin-bottom: 8px; padding-left: 14px;
+            line-height: 1.4; border-left: 4px solid var(--accent-yellow);
+        }
+        .step-list li.dim { border-left-color: #ccc; color: #555; }
+
+        .role-a { color: var(--navy-blue); font-weight: 700; }
+        .role-b { color: #b8860b; font-weight: 700; }
+
+        .title-slide { background-color: var(--navy-blue); color: var(--white); text-align: center; }
+        .title-slide h1 { font-size: 68px; margin: 0; }
+        .title-slide .subtitle { font-size: 30px; margin-top: 20px; opacity: 0.9; }
+
+        h3 { color: var(--navy-blue); font-size: 21px; margin-top: 0; margin-bottom: 10px; }
+
+        .note-box {
+            background: #eef2ff; border-left: 5px solid var(--navy-blue); border-radius: 6px;
+            padding: 9px 14px; font-size: 16px; color: #444; margin-top: 10px;
+        }
+
+        /* OREO blocks */
+        .oreo-block {
+            border-radius: 6px; padding: 9px 14px; margin-bottom: 8px;
+            font-size: 17px; line-height: 1.5;
+        }
+        .oreo-block .oreo-tag {
+            display: inline-block; font-size: 12px; font-weight: 700;
+            padding: 1px 8px; border-radius: 10px; margin-right: 7px;
+            vertical-align: middle; color: white;
+        }
+        .oreo-o-block { background: #fff8e1; border-left: 4px solid var(--oreo-o); }
+        .oreo-o-block .oreo-tag { background: var(--oreo-o); color: #333; }
+        .oreo-r-block { background: #e8eef6; border-left: 4px solid var(--oreo-r); }
+        .oreo-r-block .oreo-tag { background: var(--oreo-r); }
+        .oreo-e-block { background: #e8f5e9; border-left: 4px solid var(--oreo-e); }
+        .oreo-e-block .oreo-tag { background: var(--oreo-e); }
+        .oreo-o2-block { background: #f3e5f5; border-left: 4px solid var(--oreo-o2); }
+        .oreo-o2-block .oreo-tag { background: var(--oreo-o2); }
+
+        /* Inline OREO tag (used within flowing text) */
+        .it {
+            display: inline-block; font-size: 11px; font-weight: 700;
+            padding: 1px 7px; border-radius: 8px; margin: 0 3px;
+            vertical-align: middle; color: white; line-height: 1.6;
+        }
+        .it-o { background: var(--oreo-o); color: #333; }
+        .it-r { background: var(--oreo-r); }
+        .it-e { background: var(--oreo-e); }
+        .it-o2 { background: var(--oreo-o2); }
+
+        /* OREO recap chips */
+        .oreo-recap { display: flex; flex-direction: column; gap: 10px; }
+        .oreo-recap-row { display: flex; gap: 16px; align-items: center; }
+        .oreo-chip {
+            width: 90px; flex-shrink: 0; text-align: center;
+            font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px;
+        }
+        .chip-o { background: #fff8e1; color: #b8860b; border: 2px solid var(--oreo-o); }
+        .chip-r { background: #e8eef6; color: var(--navy-blue); border: 2px solid var(--navy-blue); }
+        .chip-e { background: #e8f5e9; color: #2e7d32; border: 2px solid var(--oreo-e); }
+        .chip-o2 { background: #f3e5f5; color: #6a1b9a; border: 2px solid var(--oreo-o2); }
+        .oreo-recap-row p { font-size: 18px; margin: 0; color: #444; }
+        .oreo-recap-row p em { color: var(--navy-blue); font-style: normal; font-weight: 600; }
+
+        /* Phrase box */
+        .phrase-box {
+            background: #f8f8ff; border: 1px solid #c5cae9; border-radius: 10px;
+            padding: 18px 22px; margin: 12px 0;
+        }
+        .phrase-box h4 {
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--navy-blue); margin: 14px 0 6px;
+        }
+        .phrase-box h4:first-child { margin-top: 0; }
+        .phrase-box p { font-size: 17px; margin: 4px 0; color: #333; }
+
+        /* Logic Map */
+        .logic-map {
+            background: #f8f9fa; border: 1px dashed #aaa; border-radius: 8px;
+            padding: 16px 20px; font-family: "SF Mono", Consolas, Monaco, monospace;
+            font-size: 14px; line-height: 1.8; white-space: pre; overflow-x: auto;
+            margin: 12px 0; color: #333;
+        }
+
+        /* Dialogue */
+        .dialogue {
+            background: var(--white); border: 1px solid #dde; border-radius: 10px;
+            padding: 16px 20px; margin: 12px 0;
+        }
+        .dialogue p { font-size: 17px; margin: 6px 0; line-height: 1.5; }
+
+        /* Weak / Strong boxes */
+        .weak-box {
+            background: #fff0f0; border-left: 4px solid #c62828;
+            border-radius: 8px; padding: 14px 18px; margin: 10px 0;
+        }
+        .strong-box {
+            background: #f0fff0; border-left: 4px solid #2e7d32;
+            border-radius: 8px; padding: 14px 18px; margin: 10px 0;
+        }
+        .box-label {
+            display: inline-block; font-size: 11px; font-weight: 700;
+            padding: 2px 10px; border-radius: 10px; margin-bottom: 8px;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .label-weak { background: #c62828; color: white; }
+        .label-strong { background: #2e7d32; color: white; }
+        .weak-box p, .strong-box p { font-size: 17px; margin: 0; line-height: 1.7; color: #333; }
+
+        /* Highlighted key sentences */
+        .spec-detail { background: #fff3cd; padding: 1px 3px; border-radius: 3px; font-weight: 600; }
+
+        /* Checklist */
+        .checklist {
+            background: var(--white); border: 1px solid #dde; border-radius: 10px;
+            padding: 16px 20px; margin: 10px 0;
+        }
+        .checklist ul { list-style: none; padding-left: 0; margin: 0; }
+        .checklist li {
+            font-size: 18px; padding-left: 28px; margin-bottom: 8px;
+            position: relative; line-height: 1.4;
+        }
+        .checklist li::before {
+            content: "☐"; position: absolute; left: 0;
+            color: var(--navy-blue); font-size: 17px; top: 1px;
+        }
+
+        /* Blockquote */
+        .bq {
+            border-left: 4px solid var(--accent-yellow); background: #fff8e1;
+            padding: 12px 18px; border-radius: 0 8px 8px 0;
+            font-size: 19px; font-style: italic; color: #444; margin: 12px 0;
+        }
+
+        /* Paragraph frame */
+        .para-frame {
+            background: #f8f8ff; border: 1px solid #c5cae9;
+            border-radius: 10px; padding: 18px 22px; margin: 12px 0;
+        }
+        .para-frame h4 {
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--navy-blue); margin: 12px 0 6px;
+        }
+        .para-frame h4:first-child { margin-top: 0; }
+        .para-frame p { font-size: 16px; margin: 4px 0; color: #444; padding-left: 10px; }
+
+        /* Voca chip */
+        .voca-reminder { display: flex; flex-direction: column; gap: 5px; }
+        .voca-chip {
+            background: #eef2ff; border: 1px solid #c5cae9; border-radius: 6px;
+            padding: 5px 12px; font-size: 16px; font-weight: 600; color: var(--navy-blue);
+        }
+        .voca-chip span { font-weight: 400; color: #666; font-size: 14px; margin-left: 6px; }
+
+        /* ── Responsive: scale slides to fit narrower viewports ── */
+        @media (max-width: 1360px) {
+            body { align-items: stretch; padding: 16px 0; overflow-x: hidden; }
+            .slide-wrapper { width: 100%; overflow: hidden; }
+            .notes-panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ SLIDE 1: Title -->
+<div class="slide-wrapper">
+<div class="slide-container title-slide">
+    <div class="meta-header" style="position: absolute; top: 0; width: 100%;">
+        <div class="left-meta" style="color: white;">Lesson 1-12<br>Term 1: Life &amp; Society<br>Week 12: Logic &amp; Writing</div>
+        <div class="right-logo" style="color: white;">
+            <div class="logo-brand">AirPangaea</div>
+            <div style="font-size: 14px;">TOMODACHI English</div>
+        </div>
+    </div>
+    <div class="content-area" style="justify-content: center; padding-top: 70px;">
+        <p style="font-size: 22px; letter-spacing: 4px; margin-bottom: 10px;">Global Academic Pass Course</p>
+        <h1>Lesson 1-12: Work &amp; the Future</h1>
+        <p style="font-size: 24px; font-style: italic; margin-top: 8px; opacity: 0.8;">Should schools do more to prepare students for work?</p>
+        <div style="width: 150px; height: 4px; background: var(--accent-yellow); margin: 28px auto;"></div>
+        <p class="subtitle">(Logic &amp; Writing Focus)</p>
+    </div>
+    <div class="ui-footer" style="color: white; opacity: 0.35; font-style: normal; font-size: 13px; justify-content: center;">&copy; AirPangaea, Inc.</div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 1: Opening
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">Before class</span> Preparation</div>
+            <div class="notes-tip">✓ Open the shared Google Doc and confirm every student can edit it.</div>
+            <div class="notes-tip">✓ Have the OREO &amp; Logic Map sheet ready to paste into the chat, and the AirPangaea social media links for the final slide.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">0:00</span> Opening</div>
+            <div class="notes-say">"Welcome back, everyone. This is the final lesson of Term 1. Today we look at how a real writing test is actually timed, and at two sentences worth protecting when you are writing against the clock. And at the end, everyone will say a few words about this term. Let's begin."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 2: Learning Objectives -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">1. Learning Objectives</h2></div>
+    <div class="content-area">
+        <div class="card">
+            <p style="font-size: 22px; font-weight: 500; margin-top: 0; margin-bottom: 16px;">By the end of this lesson, students will be able to:</p>
+            <ul class="bullet-list">
+                <li>Understand how the <strong>40 minutes</strong> of a real writing test are used, and what that means for their writing.</li>
+                <li>Protect the <strong>two highest-value skills</strong> — a clear Topic Sentence, and an explanation after the example.</li>
+                <li>Reflect on <strong>how their own writing and confidence have changed</strong> across Term 1.</li>
+            </ul>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 2: Learning Objectives
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"Three goals. First, see how the forty minutes of a real test are actually used. Second, focus on the two skills that matter most when you are writing under time pressure. Third, look back on the term. Point, read, and we move on."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 3: OREO Recap -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">2. OREO Quick Recap (3 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 20px; color: #555;">A fast reminder — and a welcome for anyone joining this week. OREO has been the structure behind every lesson this term, spoken and written.</p>
+        <div class="card">
+            <div class="oreo-recap">
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-o">Opinion</div>
+                    <p><em>"In my view…"</em> — Your position. In writing, this becomes your <strong>Topic Sentence</strong>.</p>
+                </div>
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-r">Reason</div>
+                    <p><em>"The main reason is…"</em> — Why you believe it.</p>
+                </div>
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-e">Example</div>
+                    <p><em>"For instance…"</em> — A real, specific situation. Then one sentence saying what it <strong>shows</strong>.</p>
+                </div>
+                <div class="oreo-recap-row">
+                    <div class="oreo-chip chip-o2">Opinion Restated</div>
+                    <p><em>"That is why…"</em> — One sentence to close. Your <strong>concession</strong> from last week lives here.</p>
+                </div>
+            </div>
+            <div class="note-box" style="margin-top: 20px;">
+                <i class="fa-solid fa-circle-info"></i> Full reference: see the OREO &amp; Logic Map sheet.
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 3: OREO Recap
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">3 mins</span> For new joiners</div>
+            <div class="notes-say">"If this is your first class, welcome. OREO — Opinion, Reason, Example, Opinion Restated — is the structure we use for every argument, spoken or written. The full reference is in the sheet."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">For returning students</div>
+            <div class="notes-say">"You know OREO well by now. Today is the last time we review it in Term 1. Keep it in mind while you write — two of its four parts are what we are going to focus on shortly."</div>
+        </div>
+        <div class="notes-warn">⚠ Keep to 3 minutes. Establish it exists, point to the sheet, move on.</div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 4: Warm-up -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">3. Warm-up — Global Check-in (5 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 20px; margin-bottom: 16px;">Choose one and answer in 30 seconds:</p>
+        <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 12px;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: var(--accent-yellow);">A.</span> "What is one job you have learned something about outside of school?"</p>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue); margin-bottom: 12px;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: var(--navy-blue);">B.</span> "Has your school ever taught you anything about jobs or working? What was it?"</p>
+        </div>
+        <div class="card" style="border-left: 8px solid #888;">
+            <p style="font-size: 20px; font-weight: 700; margin: 0;"><span style="color: #888;">C.</span> "Do you think young people today have more choices than before, or more pressure?"</p>
+        </div>
+        <div class="note-box" style="margin-top: 14px;">
+            <i class="fa-solid fa-circle-info"></i>&nbsp; Any of these can become the real example in your paragraph today.
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 4: Warm-up
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">5 mins</span> Setup</div>
+            <div class="notes-say">"Quick warm-up. Choose one question, about 30 seconds each. I will call on each of you."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Transition</div>
+            <div class="notes-say">"Notice how much the answers differ between schools and between countries. That difference is useful — today's prompt asks whether schools should do more, and you are the people who actually know. Before we start, one piece of practical information about the real test."</div>
+        </div>
+        <div class="notes-warn">⚠ Keep to 5 minutes. This is a quick check-in, not a discussion.</div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 5: Key Concept (How the exam actually works) -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">4. Key Concept: How the Test Is Timed (3 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 16px;">In IELTS Writing Task 2 you are given one question and asked to write an essay of <strong>at least 250 words</strong>, in <strong>40 minutes</strong>. This is how that time is normally used:</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div class="card" style="text-align: center; border-top: 6px solid var(--accent-yellow);">
+                <div style="font-size: 34px; font-weight: 700; color: var(--navy-blue);">5 min</div>
+                <p style="font-size: 17px; margin: 6px 0 0 0;"><strong>Plan</strong><br>Read the question. Decide your position and your reasons.</p>
+            </div>
+            <div class="card" style="text-align: center; border-top: 6px solid var(--navy-blue);">
+                <div style="font-size: 34px; font-weight: 700; color: var(--navy-blue);">30 min</div>
+                <p style="font-size: 17px; margin: 6px 0 0 0;"><strong>Write</strong><br>Everything you have learned has to happen here.</p>
+            </div>
+            <div class="card" style="text-align: center; border-top: 6px solid #aaa;">
+                <div style="font-size: 34px; font-weight: 700; color: #777;">5 min</div>
+                <p style="font-size: 17px; margin: 6px 0 0 0;"><strong>Check</strong><br>Spelling, articles, verb endings. That is all it is time for.</p>
+            </div>
+        </div>
+        <div class="bq">Nobody rebuilds a paragraph in the last five minutes. Everything you have learned has to go in <strong>while you write</strong> — and you cannot hold all of it in your head at once.</div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 5: How the Writing Test Works
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">3 mins</span> Delivery</div>
+            <div class="notes-say">"One piece of practical information before we finish Term 1. In the real test you get one question, and you write an essay of at least 250 words in forty minutes. Five minutes to plan, thirty to write, five to check. That last five minutes is only enough for spelling, articles, verb endings — nobody rebuilds a paragraph in five minutes. So everything you have learned this term has to go in while you are writing, and you cannot hold all of it in your head at once. Today we look at the two sentences worth protecting above everything else."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Keep it short</div>
+            <div class="notes-warn">⚠ This slide is information, not a technique. Three minutes maximum — the next slide is the useful part.</div>
+            <div class="notes-tip">If a student asks whether they should write more than 250 words: most high scorers write 270–300. Writing much more leaves no time to check.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 6: The Two That Matter Most -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">5. Two Sentences Worth Protecting (7 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 18px; margin-bottom: 12px;">Of everything from Term 1, these are the two sentences that do the most to show an examiner you are answering the question and supporting it:</p>
+        <div style="display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 18px; align-items: start;">
+            <div>
+                <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 12px; min-height: 108px;">
+                    <h4 style="margin-top: 0; font-size: 19px; color: var(--navy-blue);">1. The first sentence <span style="font-weight: 400; font-size: 14px; color:#777;">— Topic Sentence (1-4)</span></h4>
+                    <p style="font-size: 16px; margin: 0;">Your position, plus a hint of your reason. Without it, the examiner cannot tell whether you answered the question.</p>
+                </div>
+                <div class="card" style="border-left: 8px solid var(--oreo-e);">
+                    <h4 style="margin-top: 0; font-size: 19px; color: var(--navy-blue);">2. The sentence after your example <span style="font-weight: 400; font-size: 14px; color:#777;">— Explaining Your Evidence (1-8)</span></h4>
+                    <p style="font-size: 16px; margin: 0;">What the example shows. Without it, the example is a story, not support.</p>
+                </div>
+            </div>
+            <div>
+                <div class="weak-box" style="margin: 0 0 12px 0;">
+                    <span class="box-label label-weak">Both missing</span>
+                    <p style="margin:0; font-size: 16px;">"Schools are important for students. Many students do not know about jobs. My brother did not know what to do after school. So schools should help."</p>
+                </div>
+                <div class="strong-box" style="margin: 0;">
+                    <span class="box-label label-strong">Both in place</span>
+                    <p style="margin:0; font-size: 16px;"><span class="spec-detail">Schools should do more to prepare students for work, because most students leave with no idea what any job actually involves.</span> To begin with, the school timetable rarely includes contact with working adults. For instance, my brother finished high school last year without ever having spoken to anyone about their job. <span class="spec-detail">This shows that students are being asked to choose a direction with almost no information to base it on.</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="note-box" style="margin-top: 12px;">
+            <i class="fa-solid fa-lightbulb"></i>&nbsp; Same idea, same example. Two sentences — the first one and the one after the example — carry most of the difference.
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 6: Two Sentences Worth Protecting
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">7 mins</span> Why these two</div>
+            <div class="notes-say">"When you are writing against the clock, you cannot think about everything at once. So here are two sentences to protect. The first sentence of your paragraph tells the examiner you are answering the question. The sentence after your example tells them the example is doing a job. Everything else you have learned is useful — but if these two are missing, the rest does not rescue the paragraph."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Working the example (about 4 mins)</div>
+            <div class="notes-say">Read the left box aloud in a flat voice. Pause. "There is an opinion in there somewhere, and there is a real example. So what is missing?"</div>
+            <div class="notes-tip">Let students answer before you reveal anything. Expected: the first sentence says nothing anyone would disagree with; the brother appears but we are never told what he proves.</div>
+            <div class="notes-say">Then read the right box and point at the two highlighted sentences. "Same idea. Same brother. The first sentence now states a position and a reason. The last sentence says what the brother proves. Nothing else changed."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"When you write today, get those two sentences right first. If you have room for hedging, concession and linking words as well, use them — but never at the cost of these two."</div>
+            <div class="notes-warn">⚠ Do not review other skills here. Students already have those phrases from previous lessons — this slide is about what to protect first.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7a: Practice 1 Setup -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. Practice 1 — Logic Co-Construction (10 mins)</h2></div>
+    <div class="content-area">
+        <div class="bq" style="margin-bottom: 16px;">"Should schools do more to prepare students for work?"<br><span style="font-size: 14px; font-style: normal; color: #888;">Same prompt as your homework Logic Map. Students with a draft may use it as a starting point.</span></div>
+        <div class="two-column">
+            <div class="card">
+                <h3>Mode: Challenger Pair — this is NOT brainstorming</h3>
+                <ul class="step-list">
+                    <li><span class="role-a">Presenter (A)</span> — Share your opinion using your Logic Map. If you did not do the homework, build your map as you speak.</li>
+                    <li><span class="role-b">Challenger (B)</span> — Your job is <em>not</em> to agree. Ask "Why?", "Can you give a real example?", "What about the other side?" Push until your partner can say their point in one clear sentence.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Steps</h3>
+                <ul class="step-list">
+                    <li><strong>Round 1 (4 min)</strong> — A presents, B challenges. Refine the Logic Map together in the shared doc.</li>
+                    <li><strong>Round 2 (4 min)</strong> — Switch roles.</li>
+                    <li class="dim">Return to main room (2 min) — Instructor shows 1–2 Logic Maps.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right" style="margin-right: 8px;"></i>
+        See next slide for Challenger Questions, Logic Map, and Dialogue example — show this before releasing to breakout rooms.
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7a: Practice 1 Setup
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Setup — the key instruction</div>
+            <div class="notes-say">"For the next 10 minutes you are not brainstorming and not agreeing. One of you is Presenter — share your Logic Map. The other is Challenger — make your partner's argument stronger by questioning it. This is shorter than usual because we need time at the end to look back on the term, so keep it moving."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Pairing</div>
+            <div class="notes-tip">Pair students from different countries wherever possible — each side asks questions the other would not. If numbers are uneven, the Assistant joins as Challenger (never Presenter).</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">About homework</div>
+            <div class="notes-tip">Students who did the homework present their Logic Map. Students who did not can build one while speaking — the Challenger questions guide them.</div>
+            <div class="notes-warn">⚠ Before releasing to breakout rooms, show Slide 7b. Watch the clock closely today — the term reflection at the end must not be cut short.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 7b: Challenger Q & Dialogue -->
+<div class="slide-wrapper">
+<div class="slide-container" style="height: 860px;">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">6. Practice 1 — Challenger Questions &amp; Example</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <h3>Challenger Question Sequence — ask in this order</h3>
+                <div class="phrase-box">
+                    <ol class="numbered-list" style="margin: 0;">
+                        <li><strong>"Why do you think so? Is it always true?"</strong><br><span style="font-size: 13px; color: #888;">→ fills <em>Reason</em> in the Logic Map</span></li>
+                        <li><strong>"Can you give me a real example — from your own life?"</strong><br><span style="font-size: 13px; color: #888;">→ fills <em>Example</em></span></li>
+                        <li><strong>"What is the strongest argument against you?"</strong><br><span style="font-size: 13px; color: #888;">→ fills <em>Counter-argument</em></span></li>
+                        <li><strong>"Say your position in one sentence — and add why."</strong><br><span style="font-size: 13px; color: #888;">→ becomes your <em>Topic Sentence</em></span></li>
+                    </ol>
+                    <div class="note-box" style="margin-top: 10px; background: #f8f8f0;">
+                        <i class="fa-solid fa-circle-info"></i>&nbsp; Question 4 produces one of today's two protected sentences — get it right here and the paragraph starts well.
+                    </div>
+                </div>
+                <h3 style="margin-top: 10px;">Logic Map Template</h3>
+                <div class="logic-map" style="font-size: 13px; line-height: 1.55; padding: 12px 16px; margin: 8px 0;">THESIS: ____________________________
+
+ ├─ Reason 1: ______________________
+ │   └─ Example: ___________________
+ │
+ └─ Counter-argument: _______________
+     └─ My response: ________________</div>
+            </div>
+            <div>
+                <h3>Example Challenger Exchange</h3>
+                <div class="dialogue">
+                    <p><span class="role-a">A:</span> "My opinion is that schools should do more to prepare students for work."</p>
+                    <p><span class="role-b">B (Q1):</span> "Why do you think so? Is it always true?"</p>
+                    <p><span class="role-a">A:</span> "Because most students leave school without ever talking to anyone about their job."</p>
+                    <p><span class="role-b">B (Q2):</span> "Can you give me a real example from your life?"</p>
+                    <p><span class="role-a">A:</span> "My brother finished high school last year, and the only careers class he had was one afternoon."</p>
+                    <p><span class="role-b">B (Q3):</span> "What is the strongest argument against you?"</p>
+                    <p><span class="role-a">A:</span> "That school time is limited, and adding careers lessons means removing something else."</p>
+                    <p><span class="role-b">B (Q4):</span> "Say your position in one sentence — and add why."</p>
+                    <p><span class="role-a">A:</span> "Schools should do more to prepare students for work, because most students leave with no idea what any job actually involves."</p>
+                    <p><span class="role-b">B:</span> "That is your Topic Sentence. Write it down."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 7b: During Breakout
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Demo before breakout (~1 min)</div>
+            <div class="notes-say">Read the dialogue with the Assistant playing A. Emphasize the sequence: "Q1 to Q3 fill the Logic Map. Q4 turns it into the first sentence of the paragraph — the Topic Sentence we just said to protect."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why a fixed sequence?</div>
+            <div class="notes-tip">The sequence prevents polite agreement and keeps pacing on time. With only 4 minutes per round today, tell pairs to move to Q2 quickly — the example is what makes the paragraph work.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During breakout — what to listen for</div>
+            <div class="notes-tip">✓ Is the Challenger actually challenging, or just agreeing?</div>
+            <div class="notes-tip">✓ At Q4, does the Topic Sentence contain both a position and a reason — or just a position?</div>
+            <div class="notes-warn">⚠ If a pair collapses into agreement, jump in: "B, I haven't heard you push. Ask A — if schools added careers lessons, what would they have to remove?"</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After Practice 1 — main room (~2 mins)</div>
+            <div class="notes-say">"Show 1–2 Topic Sentences that came out of Q4. 'A started with schools should do more. After Q4 it became schools should do more because most students leave with no idea what any job involves. Position plus reason — that is the sentence to protect.'"</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8a: Practice 2 Drafting -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. Practice 2 — Micro-Drafting (8 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">Your last paragraph of Term 1. Use your refined Logic Map to write your <strong>Introduction + Body 1</strong> in the shared Google Doc. Protect the two sentences from the last slide. Target: about <strong>100 words</strong>.</p>
+        <div class="note-box" style="margin-bottom: 12px; background: #fff8e1; border-left: 5px solid var(--accent-yellow);">
+            <i class="fa-solid fa-circle-info"></i>&nbsp; <strong>Brought a paragraph from homework?</strong> Paste it in and check those two sentences first. <strong>Did not write one?</strong> Draft it now from your refined Logic Map — the frame below will help either way.
+        </div>
+        <div class="para-frame">
+            <h4>Paragraph Frame</h4>
+            <p><strong>Introduction — your Topic Sentence:</strong></p>
+            <p><span class="it it-o">O</span> "[Subject] may / may not ______, because ______."</p>
+            <p style="margin-top: 10px;"><strong>Body 1 (4–5 sentences), with an explanation after the example:</strong></p>
+            <p><span class="it it-r">R</span> "To begin with, ______. <span class="it it-e">E</span> For instance, ______. <span class="spec-detail">This shows that ______.</span> <span class="it it-o2">O</span> That is why I would argue that ______."</p>
+        </div>
+        <div class="note-box" style="margin-top: 12px;">
+            <i class="fa-solid fa-file-pen"></i>&nbsp; Write in the shared doc — in the next activity, a <strong>new partner</strong> will read your draft.
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-circle-info" style="margin-right: 8px;"></i>
+        Introduction + Body 1 only — with one explanation sentence after your Example.
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8a: Drafting Phase
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~30 sec</span> Setup</div>
+            <div class="notes-say">"Now, two groups. If you wrote a paragraph for homework, paste it in and check your first sentence and the sentence after your example. If you did not, draft now from your refined Logic Map. Introduction and Body 1 only, about 100 words, 8 minutes. Protect those two sentences above everything else."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Why two groups</div>
+            <div class="notes-tip">Feedback from a previous run showed many students could not draft from zero within 8 minutes. The optional homework paragraph lets prepared students revise instead of draft. Students without a draft still write from the Logic Map.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Stay in main room during drafting</div>
+            <div class="notes-tip">Students write silently in the shared doc (muted). Keep them in the main room so you can announce "2 minutes left" and make the partner switch fast.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During drafting — what to do</div>
+            <div class="notes-tip">✓ Monitor Google Docs. Do NOT correct.</div>
+            <div class="notes-tip">✓ Check that each student picked one half of the prompt. Trying to cover both produces a vague paragraph.</div>
+            <div class="notes-tip">✓ If finished early: "Go through the checklist. How many of the six can you find in your own paragraph?"</div>
+            <div class="notes-warn">⚠ 8 minutes is the target. If all finish early, move to Peer Review — no need to wait out the clock.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 8b: Peer Review -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">7. Practice 2 — Peer Review with a New Partner (5 mins)</h2></div>
+    <div class="content-area">
+        <p style="font-size: 19px; margin-bottom: 14px;">You will be paired with a <strong>different partner</strong> from Practice 1. Read their draft, then give <strong>one strength and one improvement</strong> using Point + Problem + Suggestion, as you learned in Lesson 1-10.</p>
+        <div class="two-column">
+            <div>
+                <div class="checklist">
+                    <ul>
+                        <li>Does it open with a clear <strong>Topic Sentence</strong> — and is the question <em>narrowed</em>?</li>
+                        <li>Is the <strong>Example</strong> specific, or just general? ("a friend told me" alone is not specific.)</li>
+                        <li>Is there an <strong>explanation</strong> after the example — does the writer say what it shows?</li>
+                        <li>Is there a <strong>concession</strong>, or at least an acknowledgement of the other side?</li>
+                        <li>Is the claim <strong>hedged</strong>, or too absolute? (<em>always, never, everyone</em> are warning signs.)</li>
+                    </ul>
+                </div>
+                <h3 style="margin-top: 12px;">Feedback Phrases</h3>
+                <div class="voca-reminder">
+                    <div class="voca-chip" style="background:#e8f5e9; border-color:#a5d6a7; color:#2e7d32;">Strength <span style="color:#555;">— "Your ____ sentence worked well: '____'. It was clear because…"</span></div>
+                    <div class="voca-chip" style="background:#e8eef6; border-color:#90caf9; color:#003366;">Suggestion <span style="color:#555;">— "One thing that could be stronger is… — maybe you could add…"</span></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-clock"></i> Suggested Process</h3>
+                <ol class="numbered-list" style="margin: 0;">
+                    <li><strong>Silent reading (1 min)</strong><br>Read your partner's draft. Use the checklist to prepare one strength and one suggestion.</li>
+                    <li><strong>A gives oral feedback (2 min)</strong><br>A shares feedback with B. You may also type comments into B's Google Doc.</li>
+                    <li><strong>B gives oral feedback (2 min)</strong><br>B shares feedback with A. Same format.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 8px;"></i>
+        When finished: Return to main room — instructor highlights (2 mins)
+    </div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 8b: Peer Review &amp; Highlights
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Setup — announce the partner switch</div>
+            <div class="notes-say">"Drafting time is over, even if you are not finished. Now switch to a new partner — fresh eyes. One minute reading silently: find one sentence that worked and one you had to read twice. Then take turns — 2 minutes each: one strength with the sentence quoted, then Point, Problem, Suggestion. Keep it tight today."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">During peer review — what to listen for</div>
+            <div class="notes-tip">✓ Is feedback naming an actual sentence, or staying general? "Which sentence?" is the single most useful thing you can ask a room.</div>
+            <div class="notes-tip">✓ Are students giving specific feedback, or vague praise? Model it if a room is stuck.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">After — main room highlights (~2 mins)</div>
+            <div class="notes-say">"Keep this to one minute today. Quote one piece of feedback that was genuinely usable, then move straight into the reflection — that is the part that matters most in this lesson."</div>
+            <div class="notes-warn">⚠ Watch for students softening feedback into nothing. If a room is only exchanging compliments, join and ask: "Which sentence did you have to read twice?" That question restarts real review.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 9: Reflection -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | Week 12: Logic &amp; Writing</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">8. Looking Back on Term 1 (10 mins)</h2></div>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="card" style="border-left: 8px solid var(--accent-yellow);">
+                <h3><i class="fa-solid fa-microphone"></i> Everyone shares — in the main room</h3>
+                <p style="font-size: 18px; margin-bottom: 12px;">This is the end of Term 1. One by one, everyone says a few words. Choose <strong>one</strong> of these:</p>
+                <ul class="bullet-list" style="font-size: 19px;">
+                    <li><strong>Something you can do now</strong> that you could not do at the start of this term</li>
+                    <li><strong>How your feelings have changed</strong> about speaking or writing in English</li>
+                    <li><strong>One thing you want to improve</strong> in the next term</li>
+                </ul>
+                <div class="note-box" style="margin-top: 14px;">
+                    <i class="fa-solid fa-comment-dots"></i>&nbsp; Nothing to prepare. A few sentences is enough — it does not need to be perfect.
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fa-solid fa-quote-left"></i> If you are not sure how to start</h3>
+                <ul class="bullet-list" style="font-size: 18px;">
+                    <li>"At the start of this term, I could not ______. Now I can ______."</li>
+                    <li>"Before, speaking in English felt ______. Now it feels ______."</li>
+                    <li>"Next term, I want to get better at ______."</li>
+                </ul>
+                <p style="font-size: 16px; color: #666; margin-top: 14px; margin-bottom: 0;">Listen to the others — you will find your own words while they speak.</p>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 9: Looking Back on Term 1
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">10 mins</span> Setup</div>
+            <div class="notes-say">"This is the last activity of Term 1, and we stay together in the main room for it. One by one, everyone is going to say a few words about this term. Choose one of the three on screen — something you can do now that you could not do before, how your feelings about English have changed, or one thing you want to improve next term. Nothing to prepare, a few sentences is plenty, and it does not need to be perfect. I will call on you one at a time."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Running it</div>
+            <div class="notes-tip">✓ Do NOT use breakout rooms today. The value is in everyone hearing everyone.</div>
+            <div class="notes-tip">✓ Go around in a fixed order and say so, so nobody is anxious about when their turn comes.</div>
+            <div class="notes-tip">✓ Start with a student likely to speak comfortably — it sets the length for everyone else.</div>
+            <div class="notes-tip">✓ Respond briefly to each one, naming something specific you saw them do this term. Then move on.</div>
+            <div class="notes-warn">⚠ If a student struggles, offer a sentence starter from the right-hand card and wait. Do not skip them — being heard is the point. Halting English is fine here.</div>
+            <div class="notes-warn">⚠ The Assistant and Instructor should each share one too, at the end. Keep both short.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Timing</div>
+            <div class="notes-tip">With 8 students, roughly 45 seconds each plus your short responses fills 10 minutes. If the group is smaller, let them speak longer rather than finishing early.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Closing</div>
+            <div class="notes-say">"Thank you, everyone. Twelve weeks ago, most of you had never given an opinion in English with a reason and an example attached. Today you did it in writing, under time pressure, and then reviewed someone else's. That is real progress, and it is yours."</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 10: Announcement -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | End of Term 1</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">9. Announcements</h2></div>
+    <div class="content-area">
+        <div class="card" style="border-left: 8px solid var(--accent-yellow); margin-bottom: 16px;">
+            <h3 style="margin-top: 0;"><i class="fa-solid fa-clipboard-check" style="color: var(--accent-yellow);"></i>&nbsp; Survey</h3>
+            <p style="font-size: 19px; margin: 0;">If you have not completed the end-of-term survey yet, please do so. Your Certificate will be sent to you afterwards.</p>
+        </div>
+        <div class="card" style="border-left: 8px solid var(--navy-blue);">
+            <h3 style="margin-top: 0;"><i class="fa-solid fa-camera" style="color: var(--navy-blue);"></i>&nbsp; Group photo</h3>
+            <p style="font-size: 19px; margin: 0;">Let's take a group photo now. We will send it to you together with your Certificate.</p>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 10: Announcements
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~2 mins</span> Delivery</div>
+            <div class="notes-say">"Two quick announcements. First, if you have not filled in the end-of-term survey yet, please do — your Certificate goes out after that. Second, let's take a group photo right now. We will send it to you along with your Certificate."</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Taking the photo</div>
+            <div class="notes-tip">✓ Ask everyone to turn their camera on and switch to gallery view before you capture.</div>
+            <div class="notes-tip">✓ Take two or three shots — someone always blinks.</div>
+            <div class="notes-tip">✓ There is no Group Board in this course, so the photo is sent with the Certificate — by email for Japanese students, by WhatsApp for Indonesian students. Do not tell students it will be posted anywhere.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 11: To Stay Connected -->
+<div class="slide-wrapper">
+<div class="slide-container">
+    <div class="meta-header">
+        <div class="left-meta">Lesson 1-12 | End of Term 1</div>
+        <div class="right-logo"><div class="logo-brand">AirPangaea</div></div>
+    </div>
+    <div class="slide-title-area"><h2 class="slide-title">10. To Stay Connected</h2></div>
+    <div class="content-area" style="padding-top: 20px;">
+        <div class="two-column" style="align-items: center;">
+            <div style="text-align: center; order: 2;">
+                <img src="data:image/png;base64,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" alt="AirPangaea Japan Instagram QR code" style="width: 280px; height: auto; border-radius: 8px;">
+                <p style="font-size: 16px; color: #666; margin-top: 10px;">@airpangaeajapan</p>
+            </div>
+            <div style="order: 1;">
+                <p style="font-size: 19px; margin-top: 0;">It would be great if you could follow AirPangaea. You will get the latest information — and you may find friends among the followers.</p>
+                <div class="card" style="margin-bottom: 10px;">
+                    <p style="font-size: 18px; margin: 0;"><i class="fa-brands fa-instagram" style="color:#c13584;"></i>&nbsp; <strong style="color:#c13584;">Instagram</strong> — scan the QR code</p>
+                </div>
+                <div class="card" style="margin-bottom: 10px;">
+                    <p style="font-size: 18px; margin: 0;"><i class="fa-brands fa-x-twitter"></i>&nbsp; <strong style="color:#000;">X</strong> — @AirPangaea / @AirPangaeaJapan</p>
+                </div>
+                <div class="card">
+                    <p style="font-size: 18px; margin: 0;"><i class="fa-brands fa-facebook" style="color:#1877f2;"></i>&nbsp; <strong style="color:#1877f2;">Facebook</strong> — airpangaea / AirPangaeaJapan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-footer"></div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 11: To Stay Connected
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label"><span class="notes-time">~1 min</span> Delivery</div>
+            <div class="notes-say">"One last thing. If you would like to stay connected, please follow AirPangaea. Instagram is the easiest — the QR code is on the screen now, so take a moment to scan it."</div>
+            <div class="notes-tip">Pause for about 15 seconds so students can actually scan the code before you move on.</div>
+        </div>
+        <div class="notes-section">
+            <div class="notes-label">Share in chat</div>
+            <div class="notes-tip">Paste the links so students who cannot scan can still follow:</div>
+            <div class="notes-tip">Instagram: https://www.instagram.com/airpangaeajapan/</div>
+            <div class="notes-tip">X: https://x.com/AirPangaea &nbsp;|&nbsp; https://x.com/AirPangaeaJapan</div>
+            <div class="notes-tip">Facebook: https://www.facebook.com/airpangaea &nbsp;|&nbsp; https://www.facebook.com/AirPangaeaJapan</div>
+            <div class="notes-tip">The Instagram account posts mainly in Japanese, but much of it is photos — tell students it is still worth following wherever they are from.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════ SLIDE 12: Term Dismissed -->
+<div class="slide-wrapper">
+<div class="slide-container title-slide">
+    <div class="meta-header" style="position: absolute; top: 0; width: 100%;">
+        <div class="left-meta" style="color: white;">End of Term 1</div>
+        <div class="right-logo" style="color: white;">
+            <div class="logo-brand">AirPangaea</div>
+            <div style="font-size: 14px;">TOMODACHI English</div>
+        </div>
+    </div>
+    <div class="content-area" style="justify-content: center; padding-top: 70px;">
+        <h1>Term Dismissed</h1>
+        <div style="width: 150px; height: 4px; background: var(--accent-yellow); margin: 28px auto;"></div>
+        <p class="subtitle">That's all for Term 1.<br>We hope to see you in the next term!</p>
+    </div>
+    <div class="ui-footer" style="color: white; opacity: 0.35; font-style: normal; font-size: 13px; justify-content: center;">&copy; AirPangaea, Inc.</div>
+</div>
+<div class="notes-panel">
+    <button class="notes-toggle" onclick="toggleNotes(this)">
+        <i class="fa-solid fa-chalkboard-user"></i>&nbsp; Instructor Notes — Slide 12: Term Dismissed
+        <span class="arrow"><i class="fa-solid fa-chevron-down"></i></span>
+    </button>
+    <div class="notes-body">
+        <div class="notes-section">
+            <div class="notes-label">Closing (~30 sec)</div>
+            <div class="notes-say">"That's the end of Term 1. Thank you for the work you have put in over these twelve weeks — it showed today. We hope to see you again in the next term. Take care, everyone."</div>
+            <div class="notes-tip">Stay on the call for a moment after you finish. Students often want to say goodbye to their partners, and on the last day that is worth the extra minute.</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<button class="notes-master-toggle" onclick="toggleMasterNotes()" title="Toggle instructor notes (Shift+N)">
+    <i class="fa-solid fa-arrow-up-short-wide"></i>
+</button>
+
+<script>
+    function toggleNotes(btn) {
+        btn.classList.toggle('open');
+        btn.nextElementSibling.classList.toggle('open');
+    }
+    function toggleMasterNotes() {
+        document.body.classList.toggle('show-notes');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.shiftKey && (e.key === 'N' || e.key === 'n')) {
+            toggleMasterNotes();
+        }
+    });
+
+    function scaleSlides() {
+        var vw = document.documentElement.clientWidth;
+        var scale = Math.min(1, vw / 1280);
+        document.querySelectorAll('.slide-container').forEach(function (sc) {
+            if (scale < 1) {
+                var h = sc.offsetHeight;
+                sc.style.transformOrigin = 'top left';
+                sc.style.transform = 'scale(' + scale + ')';
+                sc.style.marginBottom = (-(h * (1 - scale))) + 'px';
+            } else {
+                sc.style.transform = '';
+                sc.style.marginBottom = '';
+            }
+        });
+    }
+    window.addEventListener('load', scaleSlides);
+    window.addEventListener('resize', scaleSlides);
+</script>
+
+</body>
+</html>

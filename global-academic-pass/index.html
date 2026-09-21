@@ -843,6 +843,39 @@
         }
         .kc-list li:last-child { border-bottom: none; }
         .kc-list .kc-term { font-weight: 700; color: var(--navy-dark); }
+
+        /* ── CURRICULUM CTA ── */
+        .curriculum-cta {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0,33,64,0.08);
+            margin-top: 24px;
+        }
+        .curriculum-lead {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.9;
+            margin: 16px 0 24px;
+        }
+        .curriculum-lead strong { color: var(--navy-dark); }
+        .curriculum-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--navy);
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 13px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .curriculum-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,51,102,0.28);
+        }
     </style>
 </head>
 <body>
@@ -1166,6 +1199,18 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <!-- Curriculum -->
+        <div class="curriculum-cta">
+            <div class="oreo-title"><i class="fa-solid fa-calendar-days"></i>&nbsp; Term 1 のカリキュラム</div>
+            <p class="curriculum-lead">
+                Term 1のテーマは <strong>Life &amp; Society（暮らしと社会）</strong>。Technology &amp; Society（テクノロジーと社会）、Rules &amp; Freedom（ルールと自由）、Learning &amp; Success（学びと成功）、Friendship in a Digital Age（デジタル時代の友情）、Media &amp; Information（メディアと情報）、Work &amp; the Future（仕事と未来）という6つのトピックを、全12週かけて扱います。<br><br>
+                毎回OREOを土台にしながら、1週ごとに新しいKey Conceptを積み上げ、Speaking（話す）とWriting（書く）を交互に往復。同じトピックを「話して」「書く」ことで、話せた内容をそのまま書ける力へとつなげていきます。
+            </p>
+            <a href="curriculum-term1.html" class="curriculum-btn">
+                Term 1 のカリキュラムを見る <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i>
+            </a>
         </div>
     </div>
 </div>

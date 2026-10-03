@@ -707,6 +707,39 @@
         .kc-list li:last-child { border-bottom: none; }
         .kc-list .kc-term { font-weight: 700; color: var(--navy-dark); }
 
+        /* ── CURRICULUM CTA ── */
+        .curriculum-cta {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0,33,64,0.08);
+            margin-top: 24px;
+        }
+        .curriculum-lead {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.9;
+            margin: 16px 0 24px;
+        }
+        .curriculum-lead strong { color: var(--navy-dark); }
+        .curriculum-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--navy);
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 13px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .curriculum-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,51,102,0.28);
+        }
+
         /* ── ANIMATIONS ── */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -996,6 +1029,18 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <!-- Curriculum -->
+        <div class="curriculum-cta">
+            <div class="oreo-title"><i class="fa-solid fa-calendar-days"></i>&nbsp; Term 1 Curriculum</div>
+            <p class="curriculum-lead">
+                Term 1 is themed <strong>Life &amp; Society</strong>. Over 12 weeks, you explore six topics: Technology &amp; Society, Rules &amp; Freedom, Learning &amp; Success, Friendship in a Digital Age, Media &amp; Information, and Work &amp; the Future.<br><br>
+                Every class builds on OREO while adding one new Key Concept each week, and alternates between Speaking and Writing. You speak about a topic, then write about it, so what you can say turns into what you can write.
+            </p>
+            <a href="public-curriculum-term1.html" class="curriculum-btn">
+                View the Term 1 curriculum <i class="fa-solid fa-arrow-right" style="font-size: 12px;"></i>
+            </a>
         </div>
     </div>
 </div>

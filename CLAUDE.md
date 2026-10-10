@@ -11,7 +11,7 @@
 - HTML/CSS/JS（フレームワークなし、単一ページLP）
 - Cloudflare Pages + Pages Functions（サーバーレス）
 - Googleスプシ＋GAS（生徒管理）— 2026-10〜
-- Airtable（アーカイブ・予備経路）— MCP接続あり。Freeプランへ降格予定
+- Airtable（アーカイブ・予備経路）— MCP接続あり。2026-10-10 Freeプランへ降格済み（API上限 月1,000回・自動化 月100回）
 
 ## 主要ファイル
 - `index.html` — LP本体（フォーム含む）
@@ -40,6 +40,7 @@
 ## Airtable 接続情報（アーカイブ・予備経路）
 - LPは通常Airtableに書かない。GASが失敗した時だけ `apply.js` が Students に書き、Admin Notification の通知メール（本文の「■ 国:」行）をGASが読み取ってスプシに取り込む
 - 海外の申込は当面 Airtable フォーム「Application Indonesia」（Wixページに埋め込み）から来る → 通知メール経由で `生徒_海外` へ
+- 稼働中の自動化は「Admin Notification - New Application」だけ（他はOFF）。Freeなので**LPからAirtableを毎回読みに行く処理は作らない**こと
 - **Base**: Tomodachi English (`appi0RtkRf2MPfJ40`)
 - **PATスコープ**: `data.records:read`, `data.records:write`, `schema.bases:read`
 - **Cloudflare環境変数**: `AIRTABLE_TOKEN`(Secret), `AIRTABLE_BASE_ID`, `AIRTABLE_TABLE_ID`

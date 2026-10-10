@@ -1,26 +1,60 @@
-/* 授業時刻（日本時間）を、見ている人のタイムゾーンで表示する（/en/ と /en/global-academic-pass/ で共用）
+/* 授業時刻（日本時間）を、見ている人のタイムゾーンで表示する（/en/・/id/・/en/global-academic-pass/ で共用）
  *
  *  data-jst-range="20:30-21:30"   … 時間帯（"20:30" だけなら開始時刻のみ）
  *  data-jst-days="20:30"          … 「月〜金」の曜日。その時刻で日付がずれる国では曜日もずらす
- *  data-tz-label / data-tz-short  … 表示中のタイムゾーン名（例: Jakarta (UTC+7)）
+ *  data-tz-label / data-tz-short  … 表示中のタイムゾーン名（例: Jakarta (UTC+7) ／ WIB (UTC+7)）
  *  data-tz-picker / data-tz-select … タイムゾーンの切り替え（JSが動いた時だけ表示する）
  *
- * JSが動かない環境では、HTMLに書いた日本時間の表記がそのまま残る。
+ * 表示の言語は <html lang> で切り替える（en／id）。インドネシア語では24時間表記（18.30）と WIB／WITA／WIT を使う。
+ * JSが動かない環境では、HTMLに書いた時刻の表記がそのまま残る。
  */
 (function () {
   if (!window.Intl || !Intl.DateTimeFormat || !Intl.DateTimeFormat.prototype.formatToParts) return;
 
   var JAPAN = 'Asia/Tokyo';
-  var PRESETS = [
-    ['Asia/Jakarta', 'Jakarta'],
-    ['Asia/Bangkok', 'Bangkok / Hanoi'],
-    ['Asia/Kuala_Lumpur', 'Kuala Lumpur'],
-    ['Asia/Singapore', 'Singapore'],
-    ['Asia/Manila', 'Manila'],
-    ['Asia/Taipei', 'Taipei'],
-    [JAPAN, 'Tokyo']
-  ];
-  var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var INDONESIA = { 'Asia/Jakarta': 'WIB', 'Asia/Pontianak': 'WIB', 'Asia/Makassar': 'WITA', 'Asia/Jayapura': 'WIT' };
+
+  var TEXT = {
+    en: {
+      locale: 'en-US',
+      clock: { hour: 'numeric', minute: '2-digit' },
+      days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      japan: 'Japan time',
+      yourLocal: 'your local time — ',
+      myZone: 'My time zone — ',
+      nextDay: ' (next day)',
+      prevDay: ' (previous day)',
+      presets: [
+        ['Asia/Jakarta', 'Jakarta'],
+        ['Asia/Bangkok', 'Bangkok / Hanoi'],
+        ['Asia/Kuala_Lumpur', 'Kuala Lumpur'],
+        ['Asia/Singapore', 'Singapore'],
+        ['Asia/Manila', 'Manila'],
+        ['Asia/Taipei', 'Taipei'],
+        [JAPAN, 'Tokyo']
+      ]
+    },
+    id: {
+      locale: 'id-ID',
+      clock: { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' },
+      days: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+      japan: 'waktu Jepang',
+      yourLocal: 'waktu setempatmu — ',
+      myZone: 'Zona waktuku — ',
+      nextDay: ' (hari berikutnya)',
+      prevDay: ' (hari sebelumnya)',
+      presets: [
+        ['Asia/Jakarta', 'WIB — Jakarta'],
+        ['Asia/Makassar', 'WITA — Bali, Makassar'],
+        ['Asia/Jayapura', 'WIT — Jayapura'],
+        ['Asia/Kuala_Lumpur', 'Kuala Lumpur'],
+        ['Asia/Singapore', 'Singapura'],
+        [JAPAN, 'Tokyo']
+      ]
+    }
+  };
+  var LANG = (document.documentElement.lang || '').slice(0, 2) === 'id' ? 'id' : 'en';
+  var T = TEXT[LANG];
 
   function isValidTz(tz) {
     try { new Intl.DateTimeFormat('en-US', { timeZone: tz }); return true; } catch (e) { return false; }
@@ -63,26 +97,42 @@
   }
 
   function clock(date, tz) {
-    return new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit' }).format(date);
+    var opts = { timeZone: tz };
+    for (var k in T.clock) opts[k] = T.clock[k];
+    return new Intl.DateTimeFormat(T.locale, opts).format(date);
   }
 
   function cityOf(tz) {
-    for (var i = 0; i < PRESETS.length; i++) if (PRESETS[i][0] === tz) return PRESETS[i][1];
     return tz.split('/').pop().replace(/_/g, ' ');
+  }
+
+  // タイムゾーン切り替えの選択肢に出す名前（例: Kuala Lumpur ／ WIB — Jakarta）
+  function pickerName(tz) {
+    for (var i = 0; i < T.presets.length; i++) if (T.presets[i][0] === tz) return T.presets[i][1];
+    if (LANG === 'id' && INDONESIA[tz]) return INDONESIA[tz] + ' — ' + cityOf(tz);
+    return cityOf(tz);
+  }
+
+  // 本文に出す名前（英語: Jakarta ／ インドネシア語: WIB, waktu Kuala Lumpur）
+  function zoneName(tz) {
+    if (tz === JAPAN) return T.japan;
+    if (LANG === 'id') return INDONESIA[tz] || 'waktu ' + pickerName(tz);
+    return pickerName(tz);
   }
 
   function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
 
   function render(tz) {
-    var ref = nextMondayJst('20:30');
-    var utc = utcLabel(offsetMinutes(ref, tz));
-    var name = tz === JAPAN ? 'Japan time' : cityOf(tz);
+    var utc = utcLabel(offsetMinutes(nextMondayJst('20:30'), tz));
+    var name = zoneName(tz);
 
     each('[data-tz-label]', function (el) {
-      el.textContent = (tz === deviceTz && tz !== JAPAN ? 'your local time — ' : '') + name + ' (' + utc + ')';
+      el.textContent = (tz === deviceTz && tz !== JAPAN ? T.yourLocal : '') + name + ' (' + utc + ')';
     });
     each('[data-tz-short]', function (el) {
-      el.textContent = (tz === JAPAN ? 'Japan time' : name + ' time') + ', ' + utc;
+      if (LANG === 'id' && INDONESIA[tz]) el.textContent = name;
+      else if (LANG === 'en' && tz !== JAPAN) el.textContent = name + ' time, ' + utc;
+      else el.textContent = name + ', ' + utc;
     });
 
     var daysEl = document.querySelector('[data-jst-days]');
@@ -90,14 +140,14 @@
 
     each('[data-jst-days]', function (el) {
       var s = dayShift(nextMondayJst(el.getAttribute('data-jst-days')), tz);
-      el.textContent = DAYS[(1 + s + 7) % 7] + ' – ' + DAYS[(5 + s + 7) % 7];
+      el.textContent = T.days[(1 + s + 7) % 7] + ' – ' + T.days[(5 + s + 7) % 7];
     });
     each('[data-jst-range]', function (el) {
       var r = el.getAttribute('data-jst-range').split('-');
       var start = nextMondayJst(r[0]);
       var text = clock(start, tz) + (r[1] ? ' – ' + clock(nextMondayJst(r[1]), tz) : '');
       var s = dayShift(start, tz);
-      if (s !== baseShift) text += s > baseShift ? ' (next day)' : ' (previous day)';
+      if (s !== baseShift) text += s > baseShift ? T.nextDay : T.prevDay;
       el.textContent = text;
     });
   }
@@ -106,8 +156,8 @@
     var selects = document.querySelectorAll('[data-tz-select]');
     if (!selects.length) return;
     var ref = nextMondayJst('20:30');
-    var options = [[deviceTz, 'My time zone — ' + cityOf(deviceTz) + ' (' + utcLabel(offsetMinutes(ref, deviceTz)) + ')']];
-    PRESETS.forEach(function (p) {
+    var options = [[deviceTz, T.myZone + pickerName(deviceTz) + ' (' + utcLabel(offsetMinutes(ref, deviceTz)) + ')']];
+    T.presets.forEach(function (p) {
       if (p[0] !== deviceTz) options.push([p[0], p[1] + ' (' + utcLabel(offsetMinutes(ref, p[0])) + ')']);
     });
     Array.prototype.forEach.call(selects, function (sel) {

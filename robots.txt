@@ -3,4 +3,5 @@ Allow: /
 Disallow: /api/
 Disallow: /thanks.html
 Disallow: /en/thanks.html
+Disallow: /id/thanks.html
 Sitemap: https://tomodachi-english.airpangaea.com/sitemap.xml

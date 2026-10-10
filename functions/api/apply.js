@@ -3,22 +3,29 @@
 //  2) GAS が失敗したときだけ Airtable に書く（予備経路）。Airtable の通知メールを GAS が後で読み取り、スプシに取り込む
 // 環境変数: GAS_URL, GAS_KEY（スプシ）／ AIRTABLE_TOKEN, AIRTABLE_BASE_ID, AIRTABLE_TABLE_ID（予備経路）
 //
-// 海外向けLP（/en/）のフォームは region=intl と country を送ってくる → 「生徒_海外」に入れ、送信完了ページとエラー文を英語にする
+// 海外向けLP（/en/・/id/）のフォームは region=intl・country・lang（en／id）を送ってくる
+//  → 「生徒_海外」に入れ、送信完了ページとエラー文をそのページの言語にする
 
 const GAS_TIMEOUT_MS = 15000;
 
 const MESSAGES = {
-  jp: {
+  ja: {
     thanks: '/thanks.html',
     badName: 'お名前を正しく入力してください。',
     badEmail: '有効なメールアドレスを入力してください。',
     failed: '送信に失敗しました。しばらく待ってから再度お試しください。',
   },
-  intl: {
+  en: {
     thanks: '/en/thanks.html',
     badName: 'Please enter your name.',
     badEmail: 'Please enter a valid email address.',
     failed: 'Sorry, we could not send your application. Please wait a moment and try again.',
+  },
+  id: {
+    thanks: '/id/thanks.html',
+    badName: 'Mohon isi nama lengkap kamu.',
+    badEmail: 'Mohon masukkan alamat email yang valid.',
+    failed: 'Maaf, pendaftaran gagal dikirim. Silakan tunggu sebentar, lalu coba lagi.',
   },
 };
 
@@ -32,7 +39,8 @@ export async function onRequestPost(context) {
   }
 
   const region = rawForm.region === 'intl' ? 'intl' : 'jp';
-  const msg = MESSAGES[region];
+  const lang = region === 'jp' ? 'ja' : (rawForm.lang === 'id' ? 'id' : 'en');
+  const msg = MESSAGES[lang];
 
   // --- スパム対策 ---
   const thanksUrl = new URL(msg.thanks, request.url).toString();
@@ -108,7 +116,9 @@ export async function onRequestPost(context) {
     message,
   };
 
-  if (await saveToSheet(env, region, application)) {
+  // スプシの「経由」列：日本のLPは LP、海外は LP(EN)／LP(ID)
+  const source = region === 'jp' ? 'LP' : `LP(${lang.toUpperCase()})`;
+  if (await saveToSheet(env, region, source, application)) {
     return Response.redirect(thanksUrl + '?ok=1', 303);
   }
   if (await saveToAirtable(env, application, { gender, grade, englishLevel })) {
@@ -118,7 +128,7 @@ export async function onRequestPost(context) {
 }
 
 // --- 1) スプシ（GAS） ---
-async function saveToSheet(env, region, application) {
+async function saveToSheet(env, region, source, application) {
   if (!env.GAS_URL || !env.GAS_KEY) {
     console.error('GAS_URL / GAS_KEY is not set');
     return false;
@@ -129,7 +139,7 @@ async function saveToSheet(env, region, application) {
     const res = await fetch(env.GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: env.GAS_KEY, action: 'apply', region, source: region === 'intl' ? 'LP(EN)' : 'LP', data: application }),
+      body: JSON.stringify({ key: env.GAS_KEY, action: 'apply', region, source, data: application }),
       signal: controller.signal,
     });
     const data = res.ok ? await res.json() : null;

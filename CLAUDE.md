@@ -21,8 +21,9 @@
 - `thanks.html` — 送信完了ページ
 - `en/index.html` — 海外生向けの英語LP（金額は載せない。フォームは `region=intl`＋国名を送り、GASが「生徒_海外」に入れる）。CSSは日本語LPと同じTailwindビルドをインライン化し、ビルドに無いクラスはページ内の `<style>` に足している
 - `en/thanks.html` — 英語の送信完了ページ。GA4のイベントは `generate_lead_intl`（`generate_lead` はGoogle広告の日本向けコンバージョンなので使わない。英語ページにはGoogle広告タグ・Metaピクセルも入れない）
+- `id/index.html`・`id/thanks.html` — `/en/` のインドネシア語版（フォームは `lang=id` も送り、送信完了ページ・エラー文がインドネシア語になる。授業時刻はWIB表示）。`/en/` を直したら `/id/` も合わせて直す
 - `en/global-academic-pass/` — GAPの英語ページ。申込ボタンは `/en/?course=gap#apply`
-- `js/local-time.js` — 授業時刻（日本時間）を閲覧者のタイムゾーンで表示する（`data-jst-range` 等。英語LPとGAP英語ページで共用）
+- `js/local-time.js` — 授業時刻（日本時間）を閲覧者のタイムゾーンで表示する（`data-jst-range` 等。英語・インドネシア語LPとGAP英語ページで共用。表示言語は `<html lang>` で切り替え）
 - `_redirects` — 先頭で `CLAUDE.md`・`activo-update-guide.md`・`gas/*` をサイトから見えなくしている（Pagesはリポジトリ直下をそのまま配信するため）
 
 ---

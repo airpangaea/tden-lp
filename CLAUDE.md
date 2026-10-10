@@ -4,21 +4,42 @@
 - **TOMODACHI留学**（中高生向けオンライン英語留学プログラム）のランディングページ
 - 運営: AirPangaea
 - Cloudflare Pages でホスティング（git push で自動デプロイ、1-2分）
-- フォーム送信 → Cloudflare Pages Function → Airtable REST API
+- フォーム送信 → Cloudflare Pages Function → GAS → スプシ「TDEN 生徒管理」（GASが失敗した時だけ Airtable に書く）
+- 空き状況 → スプシ「クラス一覧」→ GAS → `/api/slots`（Cloudflareで15分キャッシュ）
 
 ## 技術スタック
 - HTML/CSS/JS（フレームワークなし、単一ページLP）
 - Cloudflare Pages + Pages Functions（サーバーレス）
-- Airtable（CRM/DB）— MCP接続あり
+- Googleスプシ＋GAS（生徒管理）— 2026-10〜
+- Airtable（アーカイブ・予備経路）— MCP接続あり。Freeプランへ降格予定
 
 ## 主要ファイル
 - `index.html` — LP本体（フォーム含む）
-- `functions/api/apply.js` — フォーム送信処理（Cloudflare Pages Function）
+- `functions/api/apply.js` — フォーム送信処理（GAS → 失敗時 Airtable）
+- `functions/api/slots.js` — 空き状況の取得（GAS経由でスプシ「クラス一覧」を読む）
+- `gas/Code.gs` — スプシにバインドするGAS（設置・更新手順は `gas/README.md`）
 - `thanks.html` — 送信完了ページ
+- `_redirects` — 先頭で `CLAUDE.md`・`activo-update-guide.md`・`gas/*` をサイトから見えなくしている（Pagesはリポジトリ直下をそのまま配信するため）
 
 ---
 
-## Airtable 接続情報
+## 生徒管理スプシ＋GAS（2026-10〜）
+- **スプシ**: 「TDEN 生徒管理」(`14E9vIHQ46Uew7gFElSsimWIAUnnk8jhXcukGmOKO_eQ`)
+  - `生徒_JP` / `生徒_海外` — 1人1行。生徒ID（J0001／G0001）・ステータス（新規→提案中→支払待ち→在籍→休会／退会、見送り）
+  - `クラス一覧` — 1クラス1行。Group ID（例 `Mon2030M`＝曜日＋時刻＋講師コード M/N/JR）。毎月更新するのは `空き_JP`・`空き_海外`（受付中／途中参加／満席／非表示）だけ
+  - `使い方` — 運用メモ
+- **生徒シートには個人情報が入るので、Claudeは中身を読まない**（構成はユーザーに聞く）。`クラス一覧` は読んでよい
+- **Cloudflare環境変数**: `GAS_URL`（ウェブアプリURL）, `GAS_KEY`(Secret, GASのスクリプトプロパティ `API_KEY` と同じ値)
+- **GASの入口**: `doPost`（action=apply）／`doGet`（action=classes）／5分おきの `processInbox`（activo とAirtable通知メールの読み取り）
+- 列は1行目の列名で読み書きしているので、**列名は変えない**（列の追加は右端に）
+- GASのコードを変えたら「デプロイを管理」→ 新バージョンで更新（新しいデプロイを作るとURLが変わる）
+- 管理者への通知メールの件名は `【TD受付通知】…`。`processInbox` の検索条件（`【TOMODACHI留学・新規申込】` 等）に一致させないこと（ループ防止）
+
+---
+
+## Airtable 接続情報（アーカイブ・予備経路）
+- LPは通常Airtableに書かない。GASが失敗した時だけ `apply.js` が Students に書き、Admin Notification の通知メール（本文の「■ 国:」行）をGASが読み取ってスプシに取り込む
+- 海外の申込は当面 Airtable フォーム「Application Indonesia」（Wixページに埋め込み）から来る → 通知メール経由で `生徒_海外` へ
 - **Base**: Tomodachi English (`appi0RtkRf2MPfJ40`)
 - **PATスコープ**: `data.records:read`, `data.records:write`, `schema.bases:read`
 - **Cloudflare環境変数**: `AIRTABLE_TOKEN`(Secret), `AIRTABLE_BASE_ID`, `AIRTABLE_TABLE_ID`
@@ -125,7 +146,8 @@
 
 ---
 
-## フォーム → Airtable マッピング（apply.js）
+## フォーム → Airtable マッピング（apply.js の予備経路 `saveToAirtable`）
+- Comments の `【希望コース】`・`【学年】`・`【第n希望】` 行は GAS が取り出してスプシの列に入れるので、書式を変えないこと
 - Gender: 男→男性, 女→女性, 回答しない→Prefer not to say
 - Grade: 半角数字→全角数字（中学1年生→中学１年生 等）
 - English Level: 英検3級相当→英検備３級（または同じレベルの英語力）を保有 等

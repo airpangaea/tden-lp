@@ -1,3 +1,9 @@
+# リポジトリ内の運用ドキュメントとGASのコードはサイトとして公開しない
+# （Pagesはリポジトリ直下をそのまま配信するため。_redirects は同名ファイルより優先される）
+/CLAUDE.md / 302
+/activo-update-guide.md / 302
+/gas/* / 302
+
 # GAP: フォルダ整理(term1/ shared/ trial/)に伴う旧URL転送。.html有りと無し(clean URL)の両方が必要。
 /global-academic-pass/GAP_Lesson1-1_TechnologySociety.html /global-academic-pass/term1/GAP_Lesson1-1_TechnologySociety 301
 /global-academic-pass/GAP_Lesson1-1_TechnologySociety /global-academic-pass/term1/GAP_Lesson1-1_TechnologySociety 301

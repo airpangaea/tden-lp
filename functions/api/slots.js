@@ -1,11 +1,12 @@
-// クラス空き状況をAirtable Timeslotsテーブルから取得して返す（公開エンドポイント）
-// 返すのは枠ID・曜日・時間・講師・Statusのみ。生徒情報（JP/IND Students）は一切返さない。
-const TIMESLOTS_TABLE_ID = 'tblKMHUl1Jt4kLVPv';
-const F = {
-  slotName: 'fldicexOtaJX4O9Mk', // Slot Name 例: "Mon 2030 Marina"
-  teacher:  'fldT1dTafEyL3uft1', // Teacher (singleSelect)
-  status:   'fldDPsECp1M3zrUz1', // Status (Empty / Not Full (high priority) / Not Full (low priority) / Full)
-};
+// クラス空き状況を「TDEN 生徒管理」スプシの「クラス一覧」からGAS経由で取得して返す（公開エンドポイント）
+// 返すのは枠ID(Group ID)・曜日・時間・講師・空き状況のみ。Zoom等のクラス情報や生徒情報は一切返さない。
+// 環境変数: GAS_URL（GASウェブアプリのURL）, GAS_KEY（GASと共有する合言葉）
+
+// スプシを毎回読みに行かないよう、Cloudflareのキャッシュに保存する（スプシ更新からLP反映まで最大15分）
+const CACHE_SECONDS = 900;
+
+// 「空き_JP」がこれ以外（空欄・非表示）のクラスはLPに出さない
+const LP_STATUSES = ['受付中', '途中参加', '満席'];
 
 const DAY_ORDER = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
 const DAY_JA = { Mon: '月曜', Tue: '火曜', Wed: '水曜', Thu: '木曜', Fri: '金曜', Sat: '土曜', Sun: '日曜' };
@@ -22,55 +23,49 @@ function timeLabel(t) {
   return t;
 }
 
-// singleSelect は REST では文字列で返るが、念のためオブジェクト形にも対応
-function selName(v) {
-  if (v && typeof v === 'object' && v.name) return v.name;
-  return v || '';
-}
+export async function onRequestGet({ request, env, waitUntil }) {
+  const cache = caches.default;
+  const cacheKey = new Request(new URL('/api/slots', request.url).toString());
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
 
-function parseSlot(name) {
-  const parts = String(name || '').trim().split(/\s+/);
-  return { dayKey: parts[0] || '', time: parts[1] || '', teacher: parts.slice(2).join(' ') };
-}
-
-export async function onRequestGet({ env }) {
   const headers = {
     'Content-Type': 'application/json; charset=utf-8',
-    // エッジで短時間キャッシュ（毎リクエストでAirtableを叩かない）
-    'Cache-Control': 'public, max-age=120, s-maxage=120',
+    'Cache-Control': `public, max-age=${CACHE_SECONDS}`,
   };
   try {
-    const url =
-      `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${TIMESLOTS_TABLE_ID}` +
-      `?returnFieldsByFieldId=true&pageSize=100` +
-      `&fields%5B%5D=${F.slotName}&fields%5B%5D=${F.teacher}&fields%5B%5D=${F.status}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}` } });
-    if (!res.ok) {
-      return new Response(JSON.stringify({ ok: false, slots: [] }), { status: 502, headers });
-    }
-    const data = await res.json();
-    const slots = (data.records || []).map((r) => {
-      const f = r.fields || {};
-      const parsed = parseSlot(f[F.slotName]);
-      const teacher = selName(f[F.teacher]) || parsed.teacher;
-      return {
-        id: r.id,
-        dayKey: parsed.dayKey,
-        dayJa: DAY_JA[parsed.dayKey] || parsed.dayKey,
-        time: parsed.time,
-        timeLabel: timeLabel(parsed.time),
-        teacher,
-        status: selName(f[F.status]), // 'Empty' | 'Not Full (high priority)' | 'Not Full (low priority)' | 'Full'
-      };
-    });
+    if (!env.GAS_URL || !env.GAS_KEY) throw new Error('GAS_URL / GAS_KEY is not set');
+    const res = await fetch(`${env.GAS_URL}?action=classes&key=${encodeURIComponent(env.GAS_KEY)}`);
+    const data = res.ok ? await res.json() : null;
+    if (!data || !data.ok || !Array.isArray(data.classes)) throw new Error('GAS returned an error');
+
+    const slots = data.classes
+      .filter((c) => LP_STATUSES.includes(c.jp) && DAY_ORDER[c.day])
+      .map((c) => ({
+        id: c.groupId,
+        dayKey: c.day,
+        dayJa: DAY_JA[c.day],
+        time: c.time,
+        timeLabel: timeLabel(c.time),
+        teacher: c.teacher,
+        status: c.jp, // '受付中' | '途中参加' | '満席'
+      }));
     slots.sort(
       (a, b) =>
-        (DAY_ORDER[a.dayKey] || 9) - (DAY_ORDER[b.dayKey] || 9) ||
+        DAY_ORDER[a.dayKey] - DAY_ORDER[b.dayKey] ||
         a.time.localeCompare(b.time) ||
         a.teacher.localeCompare(b.teacher)
     );
-    return new Response(JSON.stringify({ ok: true, slots }), { status: 200, headers });
+
+    const response = new Response(JSON.stringify({ ok: true, slots }), { status: 200, headers });
+    waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, slots: [] }), { status: 502, headers });
+    console.error('slots error:', e);
+    // 失敗時はキャッシュしない（index.html 側の FALLBACK_SLOTS で描画される）
+    return new Response(JSON.stringify({ ok: false, slots: [] }), {
+      status: 502,
+      headers: { ...headers, 'Cache-Control': 'no-store' },
+    });
   }
 }

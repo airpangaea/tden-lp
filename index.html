@@ -2000,33 +2000,34 @@
 
     // ===== クラス空き状況 ＋ 希望レッスン日時セレクト（/api/slots 連携） =====
     (function () {
-        // フォールバック（/api/slots が取得できない場合のみ使用。レコードIDは固定なのでリンクは有効）
+        // フォールバック（/api/slots が取得できない場合のみ使用）。
+        // 通常は「TDEN 生徒管理」スプシの「クラス一覧」から /api/slots 経由で取得する。id は Group ID。
         var FALLBACK_SLOTS = [
-            { id:'recfWnjhhNVVwr8Xl', dayKey:'Mon', dayJa:'月曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Marina',  status:'Not Full (high priority)' },
-            { id:'recx4KUn1cyIHhfBn', dayKey:'Mon', dayJa:'月曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Jomer',   status:'Empty' },
-            { id:'recs5RBJNGnxbJAuJ', dayKey:'Mon', dayJa:'月曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Marina',  status:'Not Full (low priority)' },
-            { id:'recSOQw1l8TSw6F0V', dayKey:'Tue', dayJa:'火曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Jomer',   status:'Not Full (high priority)' },
-            { id:'recayRtpsF6RXOvwH', dayKey:'Tue', dayJa:'火曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Nerissa', status:'Full' },
-            { id:'recKjYX1DR5PSbXj0', dayKey:'Tue', dayJa:'火曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Nerissa', status:'Empty' },
-            { id:'recnsP66r3Ws1UEcE', dayKey:'Wed', dayJa:'水曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Marina',  status:'Empty' },
-            { id:'recJQ7RUQ8a6vkor2', dayKey:'Wed', dayJa:'水曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Jomer',   status:'Empty' },
-            { id:'recdWKe1EspYj4fJg', dayKey:'Wed', dayJa:'水曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Marina',  status:'Empty' },
-            { id:'recTNWhApUGjuw2bE', dayKey:'Wed', dayJa:'水曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Jomer',   status:'Empty' },
-            { id:'recn3E6fNOFxqkppZ', dayKey:'Fri', dayJa:'金曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Nerissa', status:'Empty' },
-            { id:'recZqq9hb84BrP44t', dayKey:'Fri', dayJa:'金曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Nerissa', status:'Not Full (high priority)' }
+            { id:'Mon2030JR', dayKey:'Mon', dayJa:'月曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Jomer',   status:'満席' },
+            { id:'Mon2030M',  dayKey:'Mon', dayJa:'月曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Marina',  status:'満席' },
+            { id:'Mon2200JR', dayKey:'Mon', dayJa:'月曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Jomer',   status:'途中参加' },
+            { id:'Mon2200M',  dayKey:'Mon', dayJa:'月曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Marina',  status:'満席' },
+            { id:'Tue2030JR', dayKey:'Tue', dayJa:'火曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Jomer',   status:'受付中' },
+            { id:'Tue2030N',  dayKey:'Tue', dayJa:'火曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Nerissa', status:'受付中' },
+            { id:'Tue2200JR', dayKey:'Tue', dayJa:'火曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Jomer',   status:'満席' },
+            { id:'Tue2200N',  dayKey:'Tue', dayJa:'火曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Nerissa', status:'満席' },
+            { id:'Wed2030JR', dayKey:'Wed', dayJa:'水曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Jomer',   status:'満席' },
+            { id:'Wed2030N',  dayKey:'Wed', dayJa:'水曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Nerissa', status:'満席' },
+            { id:'Wed2200JR', dayKey:'Wed', dayJa:'水曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Jomer',   status:'受付中' },
+            { id:'Wed2200N',  dayKey:'Wed', dayJa:'水曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Nerissa', status:'満席' },
+            { id:'Thu2030N',  dayKey:'Thu', dayJa:'木曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Nerissa', status:'満席' },
+            { id:'Thu2200N',  dayKey:'Thu', dayJa:'木曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Nerissa', status:'満席' },
+            { id:'Fri2030N',  dayKey:'Fri', dayJa:'金曜', time:'2030', timeLabel:'20:30-21:30', teacher:'Nerissa', status:'途中参加' },
+            { id:'Fri2200N',  dayKey:'Fri', dayJa:'金曜', time:'2200', timeLabel:'22:00-23:00', teacher:'Nerissa', status:'満席' }
         ];
-        // Airtable Timeslots Status の4分類に対応
-        //  Empty                    → 受付中（入会月25%OFF）
-        //  Not Full (high priority) → 途中参加枠（入会月50%OFF）
-        //  Not Full (low priority)  → 満席（フォーム非表示）
-        //  Full                     → 満席（フォーム非表示）
-        // ※ 'Not Full'（旧値）は移行期の後方互換として途中参加枠扱い
+        // スプシ「クラス一覧」の「空き_JP」の値に対応（空欄・非表示のクラスは /api/slots が返さない）
+        //  受付中   → 入会月25%OFF
+        //  途中参加 → 入会月50%OFF
+        //  満席     → フォームの選択肢に出さない
         var STATUS = {
-            'Empty':                    { label:'受付中',     dot:'#22c55e', bg:'#dcfce7', fg:'#15803d', open:true,  note:'入会月25%OFF' },
-            'Not Full (high priority)': { label:'途中参加枠', dot:'#f59e0b', bg:'#fef3c7', fg:'#b45309', open:true,  note:'入会月50%OFF - 途中参加枠' },
-            'Not Full (low priority)':  { label:'満席',       dot:'#ef4444', bg:'#fee2e2', fg:'#dc2626', open:false },
-            'Not Full':                 { label:'途中参加枠', dot:'#f59e0b', bg:'#fef3c7', fg:'#b45309', open:true,  note:'入会月50%OFF - 途中参加枠' },
-            'Full':                     { label:'満席',       dot:'#ef4444', bg:'#fee2e2', fg:'#dc2626', open:false }
+            '受付中':   { label:'受付中',     dot:'#22c55e', bg:'#dcfce7', fg:'#15803d', open:true,  note:'入会月25%OFF' },
+            '途中参加': { label:'途中参加枠', dot:'#f59e0b', bg:'#fef3c7', fg:'#b45309', open:true,  note:'入会月50%OFF - 途中参加枠' },
+            '満席':     { label:'満席',       dot:'#ef4444', bg:'#fee2e2', fg:'#dc2626', open:false }
         };
         var DAYS = [['Mon','月'],['Tue','火'],['Wed','水'],['Thu','木'],['Fri','金']];
         function st(s) { return STATUS[s] || { label:(s || '—'), dot:'#cbd5e1', bg:'#f3f4f6', fg:'#6b7280', open:false }; }
@@ -2085,8 +2086,7 @@
             Array.prototype.forEach.call(selects, function (sel, idx) {
                 var placeholder = idx === 0 ? '第1希望を選択' : (idx === 1 ? '第2希望を選択' : '第3希望（任意）');
                 var html = '<option value="" ' + (idx < 2 ? 'disabled ' : '') + 'selected>' + placeholder + '</option>';
-                // value は "recID|ラベル"。recIDは Preference リンク用、ラベルはメール(Comments)用。
-                // ラベルは状況注記（受付中等）を除いた「曜 時刻 講師名講師」。
+                // value は "GroupID|ラベル"。ラベルはスプシ・通知メール用で、状況注記（受付中等）を除いた「曜 時刻 講師名講師」。
                 open.forEach(function (s) {
                     var labelForMail = s.dayJa + ' ' + s.timeLabel + ' ' + s.teacher + '講師';
                     html += '<option value="' + s.id + '|' + labelForMail + '">' + slotLabel(s) + '</option>';

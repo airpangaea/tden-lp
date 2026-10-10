@@ -1,3 +1,10 @@
+// 申込フォームの送信先。
+//  1) 「TDEN 生徒管理」スプシへ GAS 経由で登録（通常の経路）
+//  2) GAS が失敗したときだけ Airtable に書く（予備経路）。Airtable の通知メールを GAS が後で読み取り、スプシに取り込む
+// 環境変数: GAS_URL, GAS_KEY（スプシ）／ AIRTABLE_TOKEN, AIRTABLE_BASE_ID, AIRTABLE_TABLE_ID（予備経路）
+
+const GAS_TIMEOUT_MS = 15000;
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const formData = await request.formData();
@@ -30,9 +37,6 @@ export async function onRequestPost(context) {
   const englishLevel    = rawForm.englishLevel || '';
   const preferredCourse = rawForm.preferredCourse || '';
   const message         = rawForm.message || '';
-  const slot1           = rawForm.preferredSlot1 || '';
-  const slot2           = rawForm.preferredSlot2 || '';
-  const slot3           = rawForm.preferredSlot3 || '';
 
   // c. バリデーション: 名前の長さチェック
   if (!firstName || firstName.length > 100) {
@@ -50,6 +54,77 @@ export async function onRequestPost(context) {
   if (urlPattern.test(firstName) || urlPattern.test(school)) {
     return Response.redirect(thanksUrl, 303); // ?ok=1なし → tracking発火しない
   }
+
+  // --- 希望日時 ---
+  // フォームの value は "GroupID|ラベル"（例: "Mon2030M|月曜 20:30-21:30 Marina講師"）。
+  // "individual"（個別調整）や空文字もそのまま扱う。
+  const slotText = (v) => {
+    if (!v) return '';
+    if (v === 'individual') return '個別調整を希望';
+    const i = v.indexOf('|');
+    return i === -1 ? v : v.slice(i + 1);
+  };
+  const prefs = [rawForm.preferredSlot1, rawForm.preferredSlot2, rawForm.preferredSlot3].map(slotText);
+
+  const genderLabel = { '男': '男性', '女': '女性', '回答しない': '回答しない' }[gender] || gender;
+
+  const application = {
+    name: firstName,
+    gender: genderLabel,
+    grade,
+    school,
+    email,
+    phone,
+    englishLevel,
+    course: preferredCourse,
+    pref1: prefs[0],
+    pref2: prefs[1],
+    pref3: prefs[2],
+    message,
+  };
+
+  if (await saveToSheet(env, application)) {
+    return Response.redirect(thanksUrl + '?ok=1', 303);
+  }
+  if (await saveToAirtable(env, application, { gender, grade, englishLevel })) {
+    return Response.redirect(thanksUrl + '?ok=1', 303);
+  }
+  return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
+}
+
+// --- 1) スプシ（GAS） ---
+async function saveToSheet(env, application) {
+  if (!env.GAS_URL || !env.GAS_KEY) {
+    console.error('GAS_URL / GAS_KEY is not set');
+    return false;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GAS_TIMEOUT_MS);
+  try {
+    const res = await fetch(env.GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: env.GAS_KEY, action: 'apply', region: 'jp', source: 'LP', data: application }),
+      signal: controller.signal,
+    });
+    const data = res.ok ? await res.json() : null;
+    if (data && data.ok) return true;
+    console.error('GAS apply error:', res.status, data && data.error);
+    return false;
+  } catch (e) {
+    console.error('GAS apply exception:', e);
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// --- 2) 予備経路（Airtable） ---
+// Airtable の Admin Notification メール（件名「【TOMODACHI留学・新規申込】」）を GAS が読み取り、
+// 本文の「■ 国: Japan」を見て「生徒_JP」に取り込む。希望コース・希望日時は Comments の
+// 【希望コース】【第n希望】行から GAS が取り出すので、この書式は変えないこと。
+async function saveToAirtable(env, application, raw) {
+  if (!env.AIRTABLE_TOKEN || !env.AIRTABLE_BASE_ID || !env.AIRTABLE_TABLE_ID) return false;
 
   const genderMap = {
     '男': '男性', '女': '女性', '回答しない': 'Prefer not to say',
@@ -69,101 +144,44 @@ export async function onRequestPost(context) {
     'わからないので相談したい': 'Not sure',
   };
 
-  // --- 希望日時スロットのパース ---
-  // フォームの value は "recID|ラベル"（例: "recABC...|月 20:30 Marina講師"）。
-  // recID は Preference リンク用、ラベルはメール(Comments)用に使う。
-  // "individual"（個別調整）や空文字もそのまま扱う。
-  const parseSlot = (v) => {
-    if (!v || v === 'individual') return { id: '', label: '', individual: v === 'individual' };
-    const i = v.indexOf('|');
-    if (i === -1) return { id: v, label: '', individual: false }; // 後方互換: ラベルなしrecIDのみ
-    return { id: v.slice(0, i), label: v.slice(i + 1), individual: false };
-  };
-  const p1 = parseSlot(slot1);
-  const p2 = parseSlot(slot2);
-  const p3 = parseSlot(slot3);
-
-  // --- Commentsフィールドの組み立て ---
-  // 希望コース・希望日時はフィールドレベルの編集制限・リンク欄の都合があるため Comments に含める。
-  // メール(Airtable Automation)→GAS が Comments を読むので、ラベルは固定でテキスト化する。
   // 既知の学年は School Year(singleSelect) に。未知（その他 等）は Comments に逃がす
-  // （PATにスキーマ書込権限がなく、存在しない選択肢を typecast で作れないため）
-  const schoolYear = gradeMap[grade];
-
+  const schoolYear = gradeMap[raw.grade];
   const commentParts = [];
-  if (preferredCourse) commentParts.push(`【希望コース】${preferredCourse}`);
-  if (grade && !schoolYear) commentParts.push(`【学年】${grade}`);
-  // 希望日時は第1〜第3を省略せず1行ずつ記載する（個別調整も明示）
-  const slotLine = (n, p) => {
-    if (p.label) return `【第${n}希望】${p.label}`;
-    if (p.individual) return `【第${n}希望】個別調整を希望`;
-    return null;
-  };
-  [slotLine(1, p1), slotLine(2, p2), slotLine(3, p3)].forEach((l) => { if (l) commentParts.push(l); });
-  if (message)         commentParts.push(message);
-  const combinedComments = commentParts.join('\n');
-
-  // --- Airtable フィールド ---
-  const fields = {
-    'fldiatR2syOAnGeC1': firstName,                                     // Name
-    'fldkgBWAY5URfwVlO': genderMap[gender] || gender,                   // Gender
-    'fldteul63pEfP2j9i': englishLevelMap[englishLevel] || englishLevel,  // English Level
-    'fld7kF0rL8NBwqVL9': 'Applied',                                     // Status
-    'fldq5F1H26trbiiea': 'Form',                                        // Source
-    'fld0o4qUSxBA4hkJa': 'Japan',                                       // Country
-  };
-
-  // 任意フィールド（空でなければ追加）
-  if (schoolYear)       fields['fldxVi5K2gNiVyWf6'] = schoolYear;        // School Year（既知の学年のみ）
-  if (school)           fields['fldHofD6n1pignZRl'] = school;           // School Name
-  if (email)            fields['fldwEBlgkxM3TMQeo'] = email;            // Email（フォームにない場合は省略）
-  if (phone)            fields['fldvaJlyLqANY3IYw'] = phone;            // Phone
-  if (combinedComments) fields['flddosiHxBy3F59nM'] = combinedComments; // Comments
-
-  // 希望レッスン日時 → Preference 1/2/3 はレコード作成後に別リクエストで付与する。
-  // （typecast:true のままリンク欄にレコードIDを入れると、万一そのIDが存在しない場合に
-  //   名前とみなされてゴミTimeslotが新規生成される。typecastなしのPATCHでリンクすれば誤生成しない）
-  const isRecId = (v) => /^rec[A-Za-z0-9]{14}$/.test(v);
-  const prefFields = {};
-  if (isRecId(p1.id)) prefFields['fldgmc11RN7VPgmSc'] = [p1.id]; // Preference 1
-  if (isRecId(p2.id)) prefFields['fld3qeqTnCCFEXvPj'] = [p2.id]; // Preference 2
-  if (isRecId(p3.id)) prefFields['fld78aj1QTbcX4msr'] = [p3.id]; // Preference 3
-
-  const apiBase = `https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`;
-  const authHeaders = {
-    'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
-    'Content-Type': 'application/json',
-  };
-
-  // 1) レコード作成（セレクト値は typecast で変換）
-  const createRes = await fetch(apiBase, {
-    method: 'POST',
-    headers: authHeaders,
-    body: JSON.stringify({ records: [{ fields }], typecast: true }),
+  if (application.course) commentParts.push(`【希望コース】${application.course}`);
+  if (raw.grade && !schoolYear) commentParts.push(`【学年】${raw.grade}`);
+  [application.pref1, application.pref2, application.pref3].forEach((p, i) => {
+    if (p) commentParts.push(`【第${i + 1}希望】${p}`);
   });
+  if (application.message) commentParts.push(application.message);
 
-  if (!createRes.ok) {
-    console.error('Airtable create error:', await createRes.text());
-    return new Response('送信に失敗しました。しばらく待ってから再度お試しください。', { status: 500 });
+  const fields = {
+    'fldiatR2syOAnGeC1': application.name,                                         // Name
+    'fldkgBWAY5URfwVlO': genderMap[raw.gender] || raw.gender,                      // Gender
+    'fldteul63pEfP2j9i': englishLevelMap[raw.englishLevel] || raw.englishLevel,    // English Level
+    'fld7kF0rL8NBwqVL9': 'Applied',                                                // Status
+    'fldq5F1H26trbiiea': 'Form',                                                   // Source
+    'fld0o4qUSxBA4hkJa': 'Japan',                                                  // Country
+  };
+  if (schoolYear)             fields['fldxVi5K2gNiVyWf6'] = schoolYear;             // School Year
+  if (application.school)     fields['fldHofD6n1pignZRl'] = application.school;     // School Name
+  if (application.email)      fields['fldwEBlgkxM3TMQeo'] = application.email;      // Email
+  if (application.phone)      fields['fldvaJlyLqANY3IYw'] = application.phone;      // Phone
+  if (commentParts.length)    fields['flddosiHxBy3F59nM'] = commentParts.join('\n'); // Comments
+
+  try {
+    const res = await fetch(`https://api.airtable.com/v0/${env.AIRTABLE_BASE_ID}/${env.AIRTABLE_TABLE_ID}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ records: [{ fields }], typecast: true }),
+    });
+    if (res.ok) return true;
+    console.error('Airtable create error:', await res.text());
+    return false;
+  } catch (e) {
+    console.error('Airtable create exception:', e);
+    return false;
   }
-
-  // 2) 希望日時の Preference リンクを付与（best-effort。失敗してもリードは確定済みなので成功扱い）
-  if (Object.keys(prefFields).length) {
-    try {
-      const created = await createRes.json();
-      const recordId = created.records && created.records[0] && created.records[0].id;
-      if (recordId) {
-        const patchRes = await fetch(apiBase, {
-          method: 'PATCH',
-          headers: authHeaders,
-          body: JSON.stringify({ records: [{ id: recordId, fields: prefFields }] }), // typecastなし＝誤生成しない
-        });
-        if (!patchRes.ok) console.error('Airtable preference link error:', await patchRes.text());
-      }
-    } catch (e) {
-      console.error('Preference link exception:', e);
-    }
-  }
-
-  return Response.redirect(thanksUrl + '?ok=1', 303); // リード確定（リンク付与は best-effort）
 }

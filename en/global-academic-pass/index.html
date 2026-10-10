@@ -652,6 +652,22 @@
             color: rgba(255,255,255,0.5);
         }
 
+        .tz-note {
+            color: rgba(255,255,255,0.75);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+        .tz-select {
+            margin-top: 6px;
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 6px;
+            padding: 4px 8px;
+            background: #fff;
+            color: #1a1a2e;
+            font-size: 13px;
+            max-width: 100%;
+        }
+
         /* ── FOOTER ── */
         footer {
             background: var(--navy-dark);
@@ -769,7 +785,7 @@
         </picture>
     </div>
     <div class="hero-actions">
-        <a href="https://airpangaea.com/tomodachi-english-international#registration" class="hero-cta">Apply for This Course</a>
+        <a href="/en/?course=gap#apply" class="hero-cta">Apply for This Course</a>
     </div>
     <div class="hero-divider"></div>
 </section>
@@ -817,7 +833,10 @@
     <div class="schedule-inner">
         <p class="section-label">Schedule</p>
         <h2 class="section-title">Class Schedule</h2>
-        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">Once a week · 60 minutes · Online via Zoom · 4 sessions per month · All times UTC+7</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-top: -10px;">Once a week · 60 minutes · Online via Zoom · 4 sessions per month · <span data-jst-days="20:30">Monday – Friday</span></p>
+        <p class="tz-note">Times are shown in <strong data-tz-label>Japan time (UTC+9)</strong>.
+            <label data-tz-picker hidden>&nbsp;Show times for: <select class="tz-select" data-tz-select aria-label="Choose a time zone"></select></label>
+        </p>
 
         <div class="schedule-grid">
             <div class="schedule-card">
@@ -827,13 +846,13 @@
             </div>
             <div class="schedule-card">
                 <div class="session-num">Slot ①</div>
-                <div class="session-date">6:30 PM – 7:30 PM</div>
-                <div class="session-time">UTC+7</div>
+                <div class="session-date" data-jst-range="20:30-21:30">8:30 PM – 9:30 PM</div>
+                <div class="session-time" data-tz-short>Japan time, UTC+9</div>
             </div>
             <div class="schedule-card">
                 <div class="session-num">Slot ②</div>
-                <div class="session-date">8:00 PM – 9:00 PM</div>
-                <div class="session-time">UTC+7</div>
+                <div class="session-date" data-jst-range="22:00-23:00">10:00 PM – 11:00 PM</div>
+                <div class="session-time" data-tz-short>Japan time, UTC+9</div>
             </div>
         </div>
 
@@ -1052,22 +1071,25 @@
         <h2 class="section-title">How to Apply</h2>
         <p class="contact-body">
             GAP is offered to a select group of TOMODACHI English participants. Available slots are limited, so we coordinate scheduling individually after you apply.<br>
-            Please use the application form for TOMODACHI English International below.
+            Please use the <a href="/en/" style="color: inherit; text-decoration: underline;">TOMODACHI English</a> application form below. Fees and payment methods differ by country — we’ll send you the details after you apply.
         </p>
-        <a href="https://airpangaea.com/tomodachi-english-international#registration" class="contact-email">
+        <a href="/en/?course=gap#apply" class="contact-email">
             <i class="fa-solid fa-pen-to-square"></i>
             Go to the Application Form
         </a>
         <p class="contact-note" style="margin-top: 20px;">
-            In the Comments field, please write: <strong style="color: rgba(255,255,255,0.8);">Global Academic Pass</strong>
+            On the form, choose <strong style="color: rgba(255,255,255,0.8);">Global Academic Pass</strong> as the course.
         </p>
     </div>
 </div>
 
 <!-- ── FOOTER ── -->
 <footer>
+    <p><a href="/en/" style="color: rgba(255,255,255,0.6);">TOMODACHI English</a></p>
     <p>&copy; 2026 AirPangaea. All rights reserved.</p>
 </footer>
+
+<script src="/js/local-time.js" defer></script>
 
 </body>
 </html>

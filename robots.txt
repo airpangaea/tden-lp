@@ -2,4 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /thanks.html
+Disallow: /en/thanks.html
 Sitemap: https://tomodachi-english.airpangaea.com/sitemap.xml

@@ -51,7 +51,7 @@
         @layer base { img { height: auto; } }
         body { font-family: 'Rounded M Plus 1c', sans-serif; }
         html { scroll-behavior: smooth; }
-        section, #registration { scroll-margin-top: 90px; }
+        section, #registration, #certificate { scroll-margin-top: 90px; }
         @media (max-width: 767px) { html { font-size: 90%; } }
         .scroll-container { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .scroll-container::-webkit-scrollbar { display: none; }
@@ -100,6 +100,12 @@
         .lesson-flow { display: grid; gap: 1rem; align-items: center; }
         .lesson-flow .lesson-photo { max-width: 360px; margin-inline: auto; background: radial-gradient(ellipse at 50% 55%, #e0f2fe 0%, #e0f2fe 50%, rgba(224,242,254,0) 70%); }
         @media (min-width:48rem) { .lesson-flow { grid-template-columns: 3fr 2fr; gap: 2rem; } }
+
+        /* 認定証のカード（見本の画像＋短い説明。/en/ と同じ） */
+        .cert-card { display: grid; gap: 1rem; align-items: center; }
+        .cert-card a { display: block; max-width: 280px; margin-inline: auto; }
+        .cert-card img { display: block; width: 100%; height: auto; border-radius: .5rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+        @media (min-width:48rem) { .cert-card { grid-template-columns: 300px 1fr; gap: 1.75rem; } .cert-card a { max-width: none; } .md\:col-span-3 { grid-column: span 3 / span 3; } }
 
         .stat { text-align: center; }
         .stat strong { display: block; font-size: 1.75rem; line-height: 1.1; color: #1e3a8a; }
@@ -207,7 +213,7 @@
         <div class="container mx-auto px-4">
             <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">Kenapa TOMODACHI English?</h2>
             <div class="mx-auto mb-8 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
-            <div class="grid md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
                 <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#1e3a8a]">
                     <div class="text-xl font-bold text-[#1e3a8a] mb-2">🇯🇵 Teman sungguhan dari Jepang</div>
                     <p class="text-gray-700 leading-relaxed">Teman bicaramu adalah siswa Jepang seusiamu yang juga sedang belajar bahasa Inggris. Kalian bisa membahas sekolah, hobi, makanan, sampai cita-cita — sambil saling mengenal budaya masing-masing.</p>
@@ -220,11 +226,19 @@
                     <div class="text-xl font-bold text-[#1e3a8a] mb-2">🤝 Komunitas yang aman dan ramah</div>
                     <p class="text-gray-700 leading-relaxed">Siswa dari luar Jepang bergabung melalui sekolah-sekolah mitra AirPangaea di Asia, dan setiap kelas dipandu oleh seorang instruktur dan asisten. Kamu belajar bersama teman-teman yang bersemangat dalam suasana yang aman dan nyaman.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#FFD293]">
-                    <div class="text-xl font-bold text-[#1e3a8a] mb-2">📜 Sertifikat setiap term</div>
-                    <p class="text-gray-700 leading-relaxed">Satu term berlangsung 3 bulan (12 minggu). Di akhir setiap term, kamu menerima sertifikat kemajuan (<i>certificate of progress</i>) — bukti pengalaman internasional untuk portofolio sekolah dan pendaftaran kuliah nanti.</p>
+                <div id="certificate" class="bg-white rounded-2xl p-5 md:p-6 shadow-lg border border-sky-100 border-t-4 border-t-[#FFD293] md:col-span-3">
+                    <div class="cert-card">
+                        <a href="/images/en/certificate-standard.webp" target="_blank" rel="noopener" aria-label="Buka contoh sertifikat">
+                            <img src="/images/en/certificate-standard.webp" alt="Contoh Certificate of Progress dari TOMODACHI English" width="800" height="566" loading="lazy">
+                        </a>
+                        <div>
+                            <div class="text-xl font-bold text-[#1e3a8a] mb-2">📜 Certificate of Progress</div>
+                            <p class="text-gray-700 leading-relaxed">Setiap 3 bulan, kamu menerima sertifikat dengan gelar baru — catatan pengalaman internasional untuk pendaftaran kuliahmu.</p>
+                            <p class="text-sm text-gray-500 mt-2">Diterbitkan sebagai PDF bertanda tangan digital.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#f97316] md:col-span-2">
+                <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#f97316] md:col-span-3">
                     <div class="text-xl font-bold text-[#1e3a8a] mb-2">🎌 Suka budaya Jepang?</div>
                     <p class="text-gray-700 leading-relaxed">Suka anime, J-pop, atau sedang belajar bahasa Jepang? Di sini kamu bisa mengenal Jepang langsung dari teman seusiamu — dan teman-teman Jepangmu juga penasaran tentang Indonesia! Buat kamu yang bercita-cita kuliah di Jepang, ini juga kesempatan untuk mengenal kehidupan siswa di sana. Kelas berlangsung dalam bahasa Inggris, jadi kamu melatih bahasa Inggris sambil berteman.</p>
                 </div>
@@ -983,6 +997,16 @@
                     </summary>
                     <div class="px-6 pb-6 pt-2 bg-gray-50 text-gray-700 leading-relaxed">
                         <p>Sekitar sebulan sekali, kamu mungkin diminta menulis catatan harian singkat atau perkenalan diri di papan buletin grup.</p>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3"><span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>Apakah sertifikatnya bisa dipakai untuk mendaftar kuliah?</span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50 text-gray-700 leading-relaxed">
+                        <p>Bisa — kamu dapat mencantumkannya sebagai catatan pengalaman internasional. Sertifikat diterbitkan oleh AirPangaea dalam bentuk PDF bertanda tangan digital; bagaimana penilaiannya tergantung pada masing-masing sekolah atau universitas.</p>
                     </div>
                 </details>
 

@@ -51,7 +51,7 @@
         @layer base { img { height: auto; } }
         body { font-family: 'Rounded M Plus 1c', sans-serif; }
         html { scroll-behavior: smooth; }
-        section, #registration { scroll-margin-top: 90px; }
+        section, #registration, #certificate { scroll-margin-top: 90px; }
         @media (max-width: 767px) { html { font-size: 90%; } }
         .scroll-container { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .scroll-container::-webkit-scrollbar { display: none; }
@@ -101,6 +101,12 @@
         .lesson-flow { display: grid; gap: 1rem; align-items: center; }
         .lesson-flow .lesson-photo { max-width: 360px; margin-inline: auto; background: radial-gradient(ellipse at 50% 55%, #e0f2fe 0%, #e0f2fe 50%, rgba(224,242,254,0) 70%); }
         @media (min-width:48rem) { .lesson-flow { grid-template-columns: 3fr 2fr; gap: 2rem; } }
+
+        /* 認定証のカード（見本の画像＋短い説明） */
+        .cert-card { display: grid; gap: 1rem; align-items: center; }
+        .cert-card a { display: block; max-width: 280px; margin-inline: auto; }
+        .cert-card img { display: block; width: 100%; height: auto; border-radius: .5rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+        @media (min-width:48rem) { .cert-card { grid-template-columns: 300px 1fr; gap: 1.75rem; } .cert-card a { max-width: none; } .md\:col-span-3 { grid-column: span 3 / span 3; } }
 
         .stat { text-align: center; }
         .stat strong { display: block; font-size: 1.75rem; line-height: 1.1; color: #1e3a8a; }
@@ -208,7 +214,7 @@
         <div class="container mx-auto px-4">
             <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#1e3a8a]">Why TOMODACHI English?</h2>
             <div class="mx-auto mb-8 md:mb-10 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
-            <div class="grid md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
                 <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#1e3a8a]">
                     <div class="text-xl font-bold text-[#1e3a8a] mb-2">🇯🇵 Real friends from Japan</div>
                     <p class="text-gray-700 leading-relaxed">Your conversation partners are Japanese students your age who are learning English too. You talk about school, hobbies, food and the future — and learn about each other’s cultures along the way.</p>
@@ -221,9 +227,17 @@
                     <div class="text-xl font-bold text-[#1e3a8a] mb-2">🤝 A safe, friendly community</div>
                     <p class="text-gray-700 leading-relaxed">Students from outside Japan join through AirPangaea’s partner schools across Asia, and every class is run by an instructor and an assistant. You learn with motivated peers in a safe, welcoming environment.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-5 shadow-lg border border-sky-100 border-t-4 border-t-[#FFD293]">
-                    <div class="text-xl font-bold text-[#1e3a8a] mb-2">📜 Certificate every term</div>
-                    <p class="text-gray-700 leading-relaxed">Each term lasts 3 months (12 weeks). You receive a certificate of progress at the end of every term — a record of international experience for your school portfolio and future applications.</p>
+                <div id="certificate" class="bg-white rounded-2xl p-5 md:p-6 shadow-lg border border-sky-100 border-t-4 border-t-[#FFD293] md:col-span-3">
+                    <div class="cert-card">
+                        <a href="/images/en/certificate-standard.webp" target="_blank" rel="noopener" aria-label="Open the sample certificate">
+                            <img src="/images/en/certificate-standard.webp" alt="Sample Certificate of Progress from TOMODACHI English" width="800" height="566" loading="lazy">
+                        </a>
+                        <div>
+                            <div class="text-xl font-bold text-[#1e3a8a] mb-2">📜 Certificate of Progress</div>
+                            <p class="text-gray-700 leading-relaxed">Every 3 months, you receive a certificate with a new title — a record of international experience for your university applications.</p>
+                            <p class="text-sm text-gray-500 mt-2">Issued as a digitally signed PDF.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -978,6 +992,16 @@
                     </summary>
                     <div class="px-6 pb-6 pt-2 bg-gray-50 text-gray-700 leading-relaxed">
                         <p>About once a month, you may be asked to post a short diary entry or self-introduction on the group bulletin board.</p>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3"><span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>Can I use the certificate in university applications?</span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50 text-gray-700 leading-relaxed">
+                        <p>Yes — you can include it as a record of international experience. It is issued by AirPangaea as a digitally signed PDF; how it is evaluated depends on each school or university.</p>
                     </div>
                 </details>
 

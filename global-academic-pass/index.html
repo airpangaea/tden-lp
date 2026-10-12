@@ -694,6 +694,36 @@
             color: rgba(255,255,255,0.4);
         }
 
+        /* ── CERTIFICATE ── */
+        .cert-card {
+            display: grid;
+            gap: 20px;
+            align-items: center;
+            margin-top: 20px;
+            background: var(--white);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 2px 16px rgba(0,33,64,0.07);
+            border-top: 4px solid var(--yellow);
+            scroll-margin-top: 24px;
+        }
+        .cert-card a { display: block; width: 100%; max-width: 280px; justify-self: center; }
+        .cert-card img {
+            display: block;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 800 / 566;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        .cert-card h3 { font-size: 15px; font-weight: 700; color: var(--navy-dark); margin-bottom: 8px; }
+        .cert-card p { font-size: 13px; color: #666; line-height: 1.7; }
+        .cert-card .cert-note { margin-top: 8px; font-size: 12px; color: var(--gray); }
+        @media (min-width: 768px) {
+            .cert-card { grid-template-columns: 300px 1fr; gap: 28px; }
+            .cert-card a { max-width: none; justify-self: stretch; }
+        }
+
         /* ── FOOTER ── */
         footer {
             background: var(--navy-dark);
@@ -945,6 +975,18 @@
             <div class="icon"><i class="fa-solid fa-pen-nib"></i></div>
             <h3>アカデミック・ライティング</h3>
             <p>話す力で培った論理構成をライティングにも応用。IELTS Task 2形式を、海外大で求められるアカデミックな書き方の基準として扱います。</p>
+        </div>
+    </div>
+
+    <!-- プログレス認定証（見本画像＋短い説明。/en/global-academic-pass/ の #certificate と同じ作り。認定証は英語で発行される） -->
+    <div id="certificate" class="cert-card">
+        <a href="/images/en/certificate-gap.webp" target="_blank" rel="noopener" aria-label="認定証の見本を大きく見る">
+            <img src="/images/en/certificate-gap.webp" alt="GAPの受講も記載されたプログレス認定証（見本）" width="800" height="566" loading="lazy">
+        </a>
+        <div>
+            <h3><i class="fa-solid fa-award" style="color: var(--navy);"></i>&nbsp; プログレス認定証</h3>
+            <p>3ヶ月のタームごとに、GAPの受講も記載した認定証を発行します。大学入試などで活用できる、学術・国際系の活動実績になります。</p>
+            <p class="cert-note">電子署名付きPDFで発行します。認定証は英語表記です（画像は見本）。</p>
         </div>
     </div>
 </section>

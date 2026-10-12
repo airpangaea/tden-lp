@@ -106,6 +106,13 @@
                 .md\:text-xl { font-size: var(--text-xl); line-height: var(--tw-leading, var(--text-xl--line-height)); }
             }
         }
+        /* 認定証のカード（見本の画像＋短い説明。/en/ と同じ） */
+        .cert-card { display: grid; gap: 1rem; align-items: center; }
+        .cert-card a { display: block; width: 100%; max-width: 280px; justify-self: center; }
+        .cert-card img { display: block; width: 100%; height: auto; aspect-ratio: 800 / 566; border-radius: .5rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+        @media (min-width:48rem) { .cert-card { grid-template-columns: 300px 1fr; gap: 1.75rem; } .cert-card a { max-width: none; justify-self: stretch; } }
+        #certificate { scroll-margin-top: 100px; }
+
         body {
             font-family: 'Rounded M Plus 1c', sans-serif;
         }
@@ -231,6 +238,14 @@
                 "acceptedAnswer": {
                     "@type": "Answer",
                     "text": "海外校に在籍確認が取れた生徒のみ参加を認めているため、安心して交流いただけます。過去のプログラムで明るく積極的に交流し、日本生とのコミュニケーションを大切にしてくれた生徒、または海外校から推薦を得た生徒のみを厳選してご案内しています。"
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "プログレス認定証は入試で使えますか",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "3ヶ月のタームごとに、プログレス認定証を電子署名付きのPDFで発行します。国際交流・英語学習の継続的な活動実績として、高校や大学の入試（総合型選抜・学校推薦型選抜など）の出願書類や面接でご紹介いただけます。AirPangaeaが発行する認定証で、入試での評価は各学校・大学によります。"
                 }
             },
             {
@@ -496,6 +511,20 @@
                 <a href="/success-stories.html" class="inline-block bg-[#f97316] text-white px-8 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-lg" style="padding-top:0.75rem;padding-bottom:0.75rem;">
                     体験記を読む &rarr;
                 </a>
+            </div>
+
+            <!-- プログレス認定証（見本画像＋短い説明。/en/ の #certificate と同じ作り。認定証は英語で発行される） -->
+            <div id="certificate" class="max-w-4xl mx-auto mt-8 bg-white rounded-2xl p-5 md:p-6 shadow-lg border border-sky-100 border-t-4 border-t-[#FFD293]">
+                <div class="cert-card">
+                    <a href="/images/en/certificate-standard.webp" target="_blank" rel="noopener" aria-label="認定証の見本を大きく見る">
+                        <img src="/images/en/certificate-standard.webp" alt="TOMODACHI留学のプログレス認定証（見本）" width="800" height="566" loading="lazy">
+                    </a>
+                    <div>
+                        <div class="text-xl font-bold text-[#1e3a8a] mb-2">📜 プログレス認定証</div>
+                        <p class="text-gray-700 leading-relaxed">3ヶ月のタームごとに発行。高校や大学の入試で活用できる、国際系の活動実績になります。</p>
+                        <p class="text-xs text-gray-500 mt-2">電子署名付きPDFで発行します。認定証は英語表記です（画像は見本）。</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1110,7 +1139,7 @@
                                 <span class="font-bold text-gray-900">提携校による推薦</span>：各国の進学校が推薦した意欲的な生徒のみが参加。身元が確かな同世代と、安全に深く繋がることができます。
                             </li>
                             <li>
-                                <span class="font-bold text-gray-900">認定証発行</span>：高校や大学の入試で活用できる国際系の活動実績を得られます
+                                <span class="font-bold text-gray-900">認定証発行</span>：3ヶ月のタームごとに、電子署名付きPDFで発行。高校や大学の入試で活用できる国際系の活動実績を得られます
                             </li>
                         </ul>
                 </div>
@@ -1360,6 +1389,28 @@
                                     <li>海外校に在籍確認が取れた生徒のみ参加を認めているため、安心して交流いただけます。</li>
                                     <li>過去のプログラムで明るく積極的に交流し、日本生とのコミュニケーションを大切にしてくれた生徒、または、その基準で海外校から推薦を得た生徒のみを厳選してご案内しています。</li>
                                     <li>これまでのクラスでも、こうした海外生のおかげで自然と信頼関係が築かれ、毎回楽しく学べる環境が生まれています。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="group bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-[#1e3a8a] transition">
+                    <summary class="cursor-pointer p-4 flex items-center justify-between font-bold text-lg text-[#1e3a8a]">
+                        <span class="flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-[#1e3a8a] text-white rounded-full flex items-center justify-center text-sm">Q</span>
+                            プログレス認定証は入試で使えますか。
+                        </span>
+                        <span class="text-2xl group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 pt-2 bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm mt-1">A</span>
+                            <div class="text-gray-700 leading-relaxed flex-1">
+                                <ul class="list-disc pl-5 space-y-2">
+                                    <li>3ヶ月のタームごとに、プログレス認定証を電子署名付きのPDFで発行します。</li>
+                                    <li>国際交流・英語学習の継続的な活動実績として、高校や大学の入試（総合型選抜・学校推薦型選抜など）の出願書類や面接でご紹介いただけます。</li>
+                                    <li>AirPangaeaが発行する認定証です。入試での評価は、各学校・大学によります。</li>
                                 </ul>
                             </div>
                         </div>

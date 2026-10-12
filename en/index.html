@@ -104,9 +104,9 @@
 
         /* 認定証のカード（見本の画像＋短い説明） */
         .cert-card { display: grid; gap: 1rem; align-items: center; }
-        .cert-card a { display: block; max-width: 280px; margin-inline: auto; }
-        .cert-card img { display: block; width: 100%; height: auto; border-radius: .5rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
-        @media (min-width:48rem) { .cert-card { grid-template-columns: 300px 1fr; gap: 1.75rem; } .cert-card a { max-width: none; } .md\:col-span-3 { grid-column: span 3 / span 3; } }
+        .cert-card a { display: block; width: 100%; max-width: 280px; justify-self: center; }
+        .cert-card img { display: block; width: 100%; height: auto; aspect-ratio: 800 / 566; border-radius: .5rem; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+        @media (min-width:48rem) { .cert-card { grid-template-columns: 300px 1fr; gap: 1.75rem; } .cert-card a { max-width: none; justify-self: stretch; } .md\:col-span-3 { grid-column: span 3 / span 3; } }
 
         .stat { text-align: center; }
         .stat strong { display: block; font-size: 1.75rem; line-height: 1.1; color: #1e3a8a; }

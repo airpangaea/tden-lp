@@ -24,6 +24,9 @@
 - `id/index.html`・`id/thanks.html` — `/en/` のインドネシア語版（フォームは `lang=id` も送り、送信完了ページ・エラー文がインドネシア語になる。授業時刻はWIB表示）。`/en/` を直したら `/id/` も合わせて直す
 - `en/global-academic-pass/` — GAPの英語ページ。申込ボタンは `/en/?course=gap#apply`
 - `js/local-time.js` — 授業時刻（日本時間）を閲覧者のタイムゾーンで表示する（`data-jst-range` 等。英語・インドネシア語LPとGAP英語ページで共用。表示言語は `<html lang>` で切り替え）
+- `404.html` — 存在しないURL用（これが無いとPagesは全URLにトップページを200で返し、検索上は重複ページになる）
+- `sitemap.xml` — 公開ページの一覧。ページを追加・削除したら更新する（URLは `.html` なしの形。Pagesは `.html` を付けたURLを308で転送する）
+- `images/tden-og.jpg` — 日本語LPと体験記のSNS共有画像（1200×630）。英語・インドネシア語LPは `images/en/hero-zoom.jpg`、GAPは `global-academic-pass/images/GAP_hero.jpg`
 - `_redirects` — 先頭で `CLAUDE.md`・`activo-update-guide.md`・`gas/*` をサイトから見えなくしている（Pagesはリポジトリ直下をそのまま配信するため）
 
 ---
@@ -44,7 +47,7 @@
 
 ## Airtable 接続情報（アーカイブ・予備経路）
 - LPは通常Airtableに書かない。GASが失敗した時だけ `apply.js` が Students に書き、Admin Notification の通知メール（本文の「■ 国:」行）をGASが読み取ってスプシに取り込む
-- 海外の申込は当面 Airtable フォーム「Application Indonesia」（Wixページに埋め込み）から来る → 通知メール経由で `生徒_海外` へ
+- 海外の申込は 2026-10-11 から `/en/`・`/id/` のフォーム（GASが `生徒_海外` に入れる）。Airtableフォーム「Application Indonesia」を埋め込んでいたWixの旧ページは `/en/`・`/id/` へ転送済みで、フォームには実質たどり着けない（共有リンクから申込があっても通知メール経由で `生徒_海外` へ入る）
 - 稼働中の自動化は「Admin Notification - New Application」だけ（他はOFF）。Freeなので**LPからAirtableを毎回読みに行く処理は作らない**こと
 - **Base**: Tomodachi English (`appi0RtkRf2MPfJ40`)
 - **PATスコープ**: `data.records:read`, `data.records:write`, `schema.bases:read`

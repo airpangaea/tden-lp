@@ -18,6 +18,8 @@
 - `functions/api/apply.js` — フォーム送信処理（GAS → 失敗時 Airtable）
 - `functions/api/slots.js` — 空き状況の取得（GAS経由でスプシ「クラス一覧」を読む）
 - `gas/Code.gs` — スプシにバインドするGAS（設置・更新手順は `gas/README.md`）
+- `gas/Ops.gs` — 台帳の自動化（Class Structure の今月・来月の一覧表、月の記録、週1の見張りメール、生徒シートの列の整理）。Code.gs と同じプロジェクトに別ファイルで置く（関数・定数は ops／OPS で始める）。2026-10 時点はテスト用スプシ「TDEN 生徒管理（テスト）」で確認中
+- `gas/OpsTestData.gs` — テスト用スプシにだけ置くダミーデータ作り（本番には入れない）
 - `thanks.html` — 送信完了ページ
 - `en/index.html` — 海外生向けの英語LP（金額は載せない。フォームは `region=intl`＋国名を送り、GASが「生徒_海外」に入れる）。CSSは日本語LPと同じTailwindビルドをインライン化し、ビルドに無いクラスはページ内の `<style>` に足している
 - `en/thanks.html` — 英語の送信完了ページ。GA4のイベントは `generate_lead_intl`（`generate_lead` はGoogle広告の日本向けコンバージョンなので使わない。英語ページにはGoogle広告タグ・Metaピクセルも入れない）
@@ -39,7 +41,7 @@
 - **生徒シートには個人情報が入るので、Claudeは中身を読まない**（構成はユーザーに聞く）。`クラス一覧` は読んでよい
 - **Cloudflare環境変数**: `GAS_URL`（ウェブアプリURL）, `GAS_KEY`(Secret, GASのスクリプトプロパティ `API_KEY` と同じ値)
 - **GASの入口**: `doPost`（action=apply）／`doGet`（action=classes）／5分おきの `processInbox`（activo とAirtable通知メールの読み取り）
-- 列は1行目の列名で読み書きしているので、**列名は変えない**（列の追加は右端に）
+- 列は1行目の列名で読み書きしているので、**列名は変えない**（列の追加は右端に）。並べ替えは可（Phase 3 で Ops.gs の「列を整理する」で並べ替える予定。名前を変えるのは GAS が使っていない「提案クラス」→「クラス」だけ）
 - GASのコードを変えたら「デプロイを管理」→ 新バージョンで更新（新しいデプロイを作るとURLが変わる）
 - 管理者への通知メールの件名は `【TD受付通知】…`。`processInbox` の検索条件（`【TOMODACHI留学・新規申込】` 等）に一致させないこと（ループ防止）
 

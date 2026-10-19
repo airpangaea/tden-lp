@@ -3,6 +3,7 @@
  * メニュー「TD台帳」→「テスト用のダミーを入れ直す」で、生徒_JP・生徒_海外・クラス一覧・使い方を作り直す。
  * 生徒・メール・電話・学校名はすべて架空。クラスの並び（Group ID・講師・曜日・時間）は本番と同じ。
  * 日付は今日から計算するので、いつ入れ直しても、今月・来月の見どころ（新しい生徒・退会予定・支払い・差3など）が出る。
+ * 本番と同じく、行は申込順で、生徒IDも申込順（J0001 がいちばん古い）。名前は、LPからの申込は英語、activo は日本語。
  * 列の整理を試せるよう、列は Phase 1 で作った並び（＋右端に 最終日・支払い済み〜・Wixパスワード）で入れる。
  * Ops.gs と同じプロジェクトに置く（OPS・opsMonth_ などを使う）。
  */
@@ -33,7 +34,7 @@ function opsTestFill() {
   ss.getSheets().filter(s => s.getSheetId() === firstId && ours.indexOf(s.getName()) === -1 && s.getLastRow() <= 3)
     .forEach(s => ss.deleteSheet(s));
 
-  // 入力規則（Phase 1 と同じ）
+  // 入力規則（Phase 1 と同じ）と、ステータスの色
   const cls = ss.getSheetByName(OPS.SHEET_CLASSES);
   const list = (range, values) => range.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(values, true).build());
   list(cls.getRange('B2:B200'), ['Standard', 'GAP', 'Assist']);
@@ -44,12 +45,13 @@ function opsTestFill() {
     list(sh.getRange(2, head.indexOf('ステータス') + 1, 999, 1), OPS.STATUSES);
     sh.getRange(2, head.indexOf('提案クラス') + 1, 999, 1).setDataValidation(
       SpreadsheetApp.newDataValidation().requireValueInRange(cls.getRange('A2:A200'), true).setAllowInvalid(true).build());
+    opsStatusColors_(sh);
   });
   ss.setActiveSheet(ss.getSheetByName(OPS.SHEET_JP));
   ui.alert('ダミーを入れました', '次は、メニュー「TD台帳」の「列を整理する（最初に1回）」→「一覧表を今すぐ作り直す」の順にどうぞ。', ui.ButtonSet.OK);
 }
 
-/** シートを作り直して表を入れる（前の列の束ね・入力規則も消える） */
+/** シートを作り直して表を入れる（前の列の束ね・入力規則・色も消える） */
 function opsTestSheet_(ss, name, head, rows, fmt) {
   const old = ss.getSheetByName(name);
   const sheet = ss.insertSheet(name + '（作成中）', ss.getSheets().length);
@@ -74,27 +76,28 @@ function opsTestRows_(T) {
   const dow = k => new Date(Date.UTC(Math.floor(k / 10000), Math.floor(k / 100) % 100 - 1, k % 100)).getUTCDay();
   const firstDay = (month, w) => { let k = month.start; while (dow(k) !== w) k = opsAddDays_(k, 1); return k; };
   const addMonths = (k, n) => { const m = opsMonth_(k, n); return m.start - 1 + Math.min(k % 100, 28); };
-  const term = (month, w) => OPS_MONTHS[month.m - 1] + '-' + OPS_MONTHS[(month.m + 1) % 12] + ' Term・' + opsMd_(firstDay(month, w)) + '〜';
-  const W = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5 };
+  // クラス一覧の「ターム・開始日」は、Class Structure の見出しと同じ書き方（例「Oct-Dec Term 2・10/5〜」）
+  const term = (month, w, no) => OPS_MONTHS[month.m - 1] + '-' + OPS_MONTHS[(month.m + 1) % 12] + ' Term ' + no + '・' + opsMd_(firstDay(month, w)) + '〜';
+  const recruit = (w, no) => 'Recruiting Class・Term ' + no + '・' + opsMd_(firstDay(m1, w)) + '〜';
   const DAY_JA = { Mon: '月曜', Tue: '火曜', Wed: '水曜', Thu: '木曜', Fri: '金曜' };
 
   const C = [ // Group ID, 曜日, 時間, 講師, 空き（LPと同じ）, ターム・開始日, メモ
-    ['Mon2030JR', 'Mon', '20:30', 'Jomer', '満席', term(m0, 1), ''],
-    ['Mon2030M', 'Mon', '20:30', 'Marina', '途中参加', term(m0, 1), ''],
-    ['Mon2200JR', 'Mon', '22:00', 'Jomer', '途中参加', term(m0, 1), ''],
-    ['Mon2200M', 'Mon', '22:00', 'Marina', '満席', term(m0, 1), ''],
-    ['Tue2030JR', 'Tue', '20:30', 'Jomer', '受付中', 'Recruiting Class・' + opsMd_(firstDay(m1, 2)) + '〜', '新しいクラス（来月から）'],
-    ['Tue2030N', 'Tue', '20:30', 'Nerissa', '受付中', 'Recruiting Class・' + opsMd_(firstDay(m1, 2)) + '〜', ''],
-    ['Tue2200JR', 'Tue', '22:00', 'Jomer', '満席', term(m0, 2), ''],
-    ['Tue2200N', 'Tue', '22:00', 'Nerissa', '満席', term(m0, 2), ''],
-    ['Wed2030JR', 'Wed', '20:30', 'Jomer', '満席', term(m0, 3), ''],
-    ['Wed2030N', 'Wed', '20:30', 'Nerissa', '満席', term(m0, 3), ''],
-    ['Wed2200JR', 'Wed', '22:00', 'Jomer', '受付中', term(m1, 3), '来月から新しいターム'],
-    ['Wed2200N', 'Wed', '22:00', 'Nerissa', '満席', term(m0, 3), ''],
-    ['Thu2030N', 'Thu', '20:30', 'Nerissa', '満席', term(mp, 4), ''],
-    ['Thu2200N', 'Thu', '22:00', 'Nerissa', '満席', term(mp, 4), ''],
-    ['Fri2030N', 'Fri', '20:30', 'Nerissa', '途中参加', term(m0, 5), ''],
-    ['Fri2200N', 'Fri', '22:00', 'Nerissa', '満席', term(m0, 5), ''],
+    ['Mon2030JR', 'Mon', '20:30', 'Jomer', '満席', term(m0, 1, 3), ''],
+    ['Mon2030M', 'Mon', '20:30', 'Marina', '途中参加', term(m0, 1, 2), ''],
+    ['Mon2200JR', 'Mon', '22:00', 'Jomer', '途中参加', term(m0, 1, 4), ''],
+    ['Mon2200M', 'Mon', '22:00', 'Marina', '満席', term(m0, 1, 1), ''],
+    ['Tue2030JR', 'Tue', '20:30', 'Jomer', '受付中', recruit(2, 1), '新しいクラス（来月から）'],
+    ['Tue2030N', 'Tue', '20:30', 'Nerissa', '受付中', recruit(2, 1), ''],
+    ['Tue2200JR', 'Tue', '22:00', 'Jomer', '満席', term(m0, 2, 5), ''],
+    ['Tue2200N', 'Tue', '22:00', 'Nerissa', '満席', term(m0, 2, 2), ''],
+    ['Wed2030JR', 'Wed', '20:30', 'Jomer', '満席', term(m0, 3, 2), ''],
+    ['Wed2030N', 'Wed', '20:30', 'Nerissa', '満席', term(m0, 3, 6), ''],
+    ['Wed2200JR', 'Wed', '22:00', 'Jomer', '受付中', term(m1, 3, 3), '来月から Term 3'],
+    ['Wed2200N', 'Wed', '22:00', 'Nerissa', '満席', term(m0, 3, 4), ''],
+    ['Thu2030N', 'Thu', '20:30', 'Nerissa', '満席', term(mp, 4, 2), ''],
+    ['Thu2200N', 'Thu', '22:00', 'Nerissa', '満席', term(mp, 4, 5), ''],
+    ['Fri2030N', 'Fri', '20:30', 'Nerissa', '途中参加', term(m0, 5, 1), ''],
+    ['Fri2200N', 'Fri', '22:00', 'Nerissa', '満席', term(m0, 5, 3), ''],
   ];
   const byId = {};
   C.forEach(c => { byId[c[0]] = c; });
@@ -114,29 +117,29 @@ function opsTestRows_(T) {
     ['Vina', 'F'], ['Gita', 'F'], ['Nabila', 'F']];
   const IF = ['Pratama', 'Anggraini', 'Saputra', 'Wijaya', 'Lestari', 'Hidayat', 'Kusuma', 'Santoso', 'Permata', 'Nugroho', 'Wibowo', 'Rahma', 'Setiawan',
     'Utami', 'Hakim', 'Sari', 'Fitri', 'Tari', 'Ayu'];
+  const LEVEL_JP = ['英検3級相当', '英検準2級相当', '英検準2級相当', '英検2級相当', '英検2級相当', '英検準1級相当', 'わからないので相談したい'];
   const used = {};
   const password = () => { let s = 'td'; for (let i = 0; i < 6; i++) s += 'abcdefghjkmnpqrstuvwxyz23456789'.charAt(Math.floor(rnd() * 31)); return s; };
   const jp = [], intl = [];
-  let nextJ = 40, nextG = 100;
 
+  // name は [漢字, ローマ字(名 姓), Display name, 性別] で渡す（無ければ作る）
   const addJp = (cid, o) => {
     o = o || {};
     let name = o.name;
     while (!name) {
       const f = pick(FAM), g = pick(GIV), kanji = f[0] + ' ' + g[0];
-      if (!used[kanji]) name = [kanji, g[1] + ' ' + f[1].charAt(0) + '.', g[2]];
+      if (!used[kanji]) name = [kanji, g[1] + ' ' + f[1], g[1] + ' ' + f[1].charAt(0) + '.', g[2]];
     }
     used[name[0]] = 1;
     const status = o.status || '在籍';
-    const id = o.id || 'J' + ('000' + nextJ++).slice(-4);
     const start = o.start !== undefined ? o.start : (['在籍', '休会', '退会'].indexOf(status) !== -1 ? opsAddDays_(T, -int(40, 210)) : 0);
     const applied = o.applied || (start ? opsAddDays_(start, -int(10, 30)) : opsAddDays_(T, -int(1, 18)));
+    const via = o.via || pick(['LP', 'LP', 'LP', 'activo']);
     jp.push({
-      '生徒ID': id, '申込日時': str(applied) + ' ' + ('0' + int(9, 22)).slice(-2) + ':' + ('0' + int(0, 59)).slice(-2) + ':00',
-      '経由': pick(['LP', 'LP', 'LP', 'activo']), 'ステータス': status, '国': 'Japan', '名前': name[0],
-      'Display name': o.noDisplay ? '' : name[1], '性別': name[2], '学年': pick(['中学1年生', '中学2年生', '中学3年生', '高校1年生', '高校2年生', '高校3年生']),
-      '学校名': pick(['テスト中学校', 'テスト高校', 'サンプル学園']), 'Email': id.toLowerCase() + '@example.com', '電話': '090-0000-' + id.slice(1),
-      'WhatsApp': '', '英語レベル': pick(['英検準2級相当', '英検2級相当', '英検準1級相当']), '希望コース': 'スタンダード',
+      '申込日時': str(applied) + ' ' + ('0' + int(9, 22)).slice(-2) + ':' + ('0' + int(0, 59)).slice(-2) + ':00',
+      '経由': via, 'ステータス': status, '国': 'Japan', '名前': via === 'activo' ? name[0] : name[1],
+      'Display name': o.noDisplay ? '' : name[2], '性別': name[3], '学年': pick(['中学1年生', '中学2年生', '中学3年生', '高校1年生', '高校2年生', '高校3年生']),
+      '学校名': pick(['テスト中学校', 'テスト高校', 'サンプル学園']), 'WhatsApp': '', '英語レベル': pick(LEVEL_JP), '希望コース': 'スタンダード',
       '第1希望': cid ? pref(cid) : '', '第2希望': '', '第3希望': '', 'コメント': '', '提案クラス': cid || '', '開始日': str(start), '既存照合': '',
       'メモ': o.memo || '', '最終日': str(o.end || 0),
       'Wixパスワード': (!o.noPassword && ['在籍', '休会', '退会'].indexOf(status) !== -1) ? password() : '',
@@ -151,8 +154,7 @@ function opsTestRows_(T) {
     }
     used[name[0]] = 1;
     const status = o.status || '在籍';
-    const id = o.id || 'G' + ('000' + nextG++).slice(-4);
-    const start = o.start !== undefined ? o.start : (status === '在籍' ? opsAddDays_(T, -int(40, 210)) : 0);
+    const start = o.start !== undefined ? o.start : (['在籍', '退会'].indexOf(status) !== -1 ? opsAddDays_(T, -int(40, 210)) : 0);
     let paid = o.paid;
     if (paid === undefined && status === '在籍' && start && start < T) { // 3か月ごとに払ってもらっている
       let p = start;
@@ -161,54 +163,54 @@ function opsTestRows_(T) {
     }
     const parts = name[0].split(' ');
     intl.push({
-      '生徒ID': id, '申込日時': str(opsAddDays_(start || T, -int(7, 25))) + ' 20:' + ('0' + int(0, 59)).slice(-2) + ':00', '経由': 'LP',
+      '申込日時': str(o.applied || opsAddDays_(start || T, -int(7, 25))) + ' 20:' + ('0' + int(0, 59)).slice(-2) + ':00', '経由': 'LP',
       'ステータス': status, '国': 'Indonesia', '名前': name[0], 'Display name': o.noDisplay ? '' : parts[0] + ' ' + parts[1].charAt(0) + '.',
-      '性別': name[1], '学年': 'Grade ' + int(7, 12), '学校名': pick(['SMP Test', 'SMA Sample', 'SMP Contoh']),
-      'Email': id.toLowerCase() + '@example.com', '電話': '+62 800-0000-' + id.slice(1), 'WhatsApp': '',
-      '英語レベル': pick(['Intermediate', 'Upper intermediate']), '希望コース': '', '第1希望': cid ? pref(cid) : '', '第2希望': '', '第3希望': '',
+      '性別': name[1], '学年': 'Grade ' + int(7, 12), '学校名': pick(['SMP Test', 'SMA Sample', 'SMP Contoh']), 'WhatsApp': '',
+      '英語レベル': pick(['Basic', 'Intermediate', 'Intermediate', 'Upper intermediate']), '希望コース': '', '第1希望': cid ? pref(cid) : '', '第2希望': '', '第3希望': '',
       'コメント': '', '提案クラス': cid || '', '開始日': str(start), '既存照合': '', 'メモ': o.memo || '', '最終日': str(o.end || 0),
       '支払い済み〜': str(paid || 0), 'Wixパスワード': (!o.noPassword && status === '在籍') ? password() : '',
     });
   };
   const times = (n, f) => { for (let i = 0; i < n; i++) f(); };
   const tue1 = firstDay(m1, 2), wed1 = firstDay(m1, 3);
+  const classIds = C.map(c => c[0]);
 
   // Marina
-  addJp('Mon2030M', { name: ['田中 遥', 'Haru T.', '男'], start: opsAddDays_(T, -190) });
-  addJp('Mon2030M', { name: ['森 空', 'Sora K.', '男'], start: opsAddDays_(T, -160) });
-  addJp('Mon2030M', { name: ['山田 晴', 'Haru Y.', '男'], id: 'J0012', start: Math.max(m0.start, opsAddDays_(T, -7)), noPassword: true });
-  addJp('Mon2030M', { name: ['松本 陽菜', 'Hina M.', '女'], id: 'J0015', status: '支払待ち', start: opsAddDays_(T, -7) });
-  addIntl('Mon2030M', { name: ['Putri Anggraini', 'Female'], id: 'G0045', start: opsAddDays_(T, -105), end: m0.end, paid: opsAddDays_(T, -14), noDisplay: true, memo: 'アンケートで「続けない」' });
-  addIntl('Mon2030M', { name: ['Rizky Pratama', 'Male'], id: 'G0051', status: '支払待ち', start: opsAddDays_(T, -14) });
-  addIntl('Mon2030M', { name: ['Nadia Lestari', 'Female'], id: 'G0052', start: opsAddDays_(T, -42), paid: opsAddDays_(T, 48) });
-  addIntl('Mon2030M', { name: ['Bima Wijaya', 'Male'], id: 'G0053', start: opsAddDays_(T, -77), paid: opsAddDays_(T, 6) });
+  addJp('Mon2030M', { name: ['田中 遥', 'Haru Tanaka', 'Haru T.', '男'], start: opsAddDays_(T, -190) });
+  addJp('Mon2030M', { name: ['森 空', 'Sora Mori', 'Sora M.', '男'], start: opsAddDays_(T, -160) });
+  addJp('Mon2030M', { name: ['山田 晴', 'Haru Yamada', 'Haru Y.', '男'], start: Math.max(m0.start, opsAddDays_(T, -7)), noPassword: true });
+  addJp('Mon2030M', { name: ['松本 陽菜', 'Hina Matsumoto', 'Hina M.', '女'], status: '支払待ち', start: opsAddDays_(T, -7) });
+  addIntl('Mon2030M', { name: ['Putri Anggraini', 'Female'], start: opsAddDays_(T, -105), end: m0.end, paid: opsAddDays_(T, -14), noDisplay: true, memo: 'アンケートで「続けない」' });
+  addIntl('Mon2030M', { name: ['Rizky Pratama', 'Male'], status: '支払待ち', start: opsAddDays_(T, -14) });
+  addIntl('Mon2030M', { name: ['Nadia Lestari', 'Female'], start: opsAddDays_(T, -42), paid: opsAddDays_(T, 48) });
+  addIntl('Mon2030M', { name: ['Bima Wijaya', 'Male'], start: opsAddDays_(T, -77), paid: opsAddDays_(T, 6) });
   times(5, () => addJp('Mon2200M'));
   times(5, () => addIntl('Mon2200M'));
-  addJp('Mon2200M', { name: ['高橋 奏', 'Kanade T.', '女'], id: 'J0021', status: '空き待ち', memo: '来月からを希望' });
+  addJp('Mon2200M', { name: ['高橋 奏', 'Kanade Takahashi', 'Kanade T.', '女'], status: '空き待ち', memo: '来月からを希望' });
 
   // Jomer
   times(5, () => addJp('Mon2030JR'));
   times(5, () => addIntl('Mon2030JR'));
   times(3, () => addJp('Mon2200JR'));
-  addJp('Mon2200JR', { name: ['中村 葵', 'Aoi N.', '女'], id: 'J0028', start: opsAddDays_(T, -160), end: opsAddDays_(T, -5), memo: '部活のため退会' });
-  addJp('Mon2200JR', { name: ['森 陽向', 'Hinata M.', '男'], id: 'J0036', start: opsAddDays_(T, 7), noPassword: true });
+  addJp('Mon2200JR', { name: ['中村 葵', 'Aoi Nakamura', 'Aoi N.', '女'], start: opsAddDays_(T, -160), end: opsAddDays_(T, -5), memo: '部活のため退会' });
+  addJp('Mon2200JR', { name: ['森 陽向', 'Hinata Mori', 'Hinata M.', '男'], start: opsAddDays_(T, 7), noPassword: true });
   times(3, () => addIntl('Mon2200JR'));
-  addIntl('Mon2200JR', { name: ['Wulan Tari', 'Female'], id: 'G0063', start: opsAddDays_(T, -35), paid: opsAddDays_(T, -6) });
-  addJp('Tue2030JR', { name: ['鈴木 陸', 'Riku S.', '男'], id: 'J0019', status: '支払待ち', start: tue1 });
-  addJp('Tue2030JR', { name: ['伊藤 湊', 'Minato I.', '男'], id: 'J0024', status: '提案中', start: tue1, noDisplay: true });
-  addIntl('Tue2030JR', { name: ['Lala Kusuma', 'Female'], id: 'G0061', start: tue1, paid: opsAddDays_(addMonths(tue1, 3), -1) });
-  addIntl('Tue2030JR', { name: ['Nisa Fitri', 'Female'], id: 'G0062', start: tue1, paid: 0 });
+  addIntl('Mon2200JR', { name: ['Wulan Tari', 'Female'], start: opsAddDays_(T, -35), paid: opsAddDays_(T, -6) });
+  addJp('Tue2030JR', { name: ['鈴木 陸', 'Riku Suzuki', 'Riku S.', '男'], status: '支払待ち', start: tue1 });
+  addJp('Tue2030JR', { name: ['伊藤 湊', 'Minato Ito', 'Minato I.', '男'], status: '提案中', start: tue1, noDisplay: true });
+  addIntl('Tue2030JR', { name: ['Lala Kusuma', 'Female'], start: tue1, paid: opsAddDays_(addMonths(tue1, 3), -1) });
+  addIntl('Tue2030JR', { name: ['Nisa Fitri', 'Female'], start: tue1, paid: 0 });
   times(5, () => addJp('Tue2200JR'));
   times(5, () => addIntl('Tue2200JR'));
-  addIntl('Tue2200JR', { name: ['Nabila Sari', 'Female'], id: 'G0060', status: '空き待ち', memo: '再来月から' });
+  addIntl('Tue2200JR', { name: ['Nabila Sari', 'Female'], status: '空き待ち', memo: '再来月から' });
   times(4, () => addJp('Wed2030JR'));
-  addJp('Wed2030JR', { name: ['吉田 莉緒', 'Rio Y.', '女'], id: 'J0003', start: opsAddDays_(T, -190), end: m1.start + 24 });
+  addJp('Wed2030JR', { name: ['吉田 莉緒', 'Rio Yoshida', 'Rio Y.', '女'], start: opsAddDays_(T, -190), end: m1.start + 24 });
   times(5, () => addIntl('Wed2030JR'));
-  addJp('Wed2200JR', { name: ['佐藤 芽衣', 'Mei S.', '女'], id: 'J0007', start: wed1, memo: opsMd_(opsAddDays_(T, 7)) + 'まで Mon2200JR（クラス変更）' });
-  addJp('Wed2200JR', { name: ['石川 恵', 'Kei S.', '男'], start: wed1 });
-  addJp('Wed2200JR', { name: ['阿部 花', 'Hana O.', '女'], start: wed1 });
-  addJp('Wed2200JR', { name: ['小林 蒼', '', '男'], id: 'J0030', status: '支払待ち', start: wed1, noDisplay: true });
-  addIntl('Wed2200JR', { name: ['Gita Ayu', 'Female'], id: 'G0064', start: wed1, paid: opsAddDays_(addMonths(wed1, 3), -1) });
+  addJp('Wed2200JR', { name: ['佐藤 芽衣', 'Mei Sato', 'Mei S.', '女'], start: wed1, applied: opsAddDays_(T, -230), memo: opsMd_(opsAddDays_(T, 7)) + 'まで Mon2200JR（クラス変更）' });
+  addJp('Wed2200JR', { name: ['石川 恵', 'Kei Ishikawa', 'Kei I.', '男'], start: wed1 });
+  addJp('Wed2200JR', { name: ['阿部 花', 'Hana Abe', 'Hana A.', '女'], start: wed1 });
+  addJp('Wed2200JR', { name: ['小林 蒼', 'Aoi Kobayashi', '', '男'], status: '支払待ち', start: wed1, noDisplay: true });
+  addIntl('Wed2200JR', { name: ['Gita Ayu', 'Female'], start: wed1, paid: opsAddDays_(addMonths(wed1, 3), -1) });
 
   // Nerissa
   addJp('Tue2030N', { start: tue1 });
@@ -222,13 +224,20 @@ function opsTestRows_(T) {
   times(4, () => addJp('Fri2030N'));
   times(3, () => addIntl('Fri2030N'));
 
-  // 席に関係しない行
-  addJp('', { name: ['加藤 結', 'Yui K.', '女'], id: 'J0031', status: '新規', applied: opsAddDays_(T, -7) });
-  addJp('', { name: ['渡辺 蓮', 'Ren W.', '男'], id: 'J0032', status: '新規', applied: opsAddDays_(T, -1) });
-  addJp('Mon2030JR', { name: ['井上 樹', 'Itsuki I.', '男'], id: 'J0005', status: '退会', start: opsAddDays_(T, -260), end: opsAddDays_(T, -50) });
-  addJp('', { name: ['木村 澪', 'Rei K.', '女'], id: 'J0009', status: '見送り', applied: opsAddDays_(T, -30) });
+  // 席に関係しない行（本番のシートには、入会しなかった人や、やめた人もたくさん並ぶ）
+  addJp('', { name: ['加藤 結', 'Yui Kato', 'Yui K.', '女'], status: '新規', applied: opsAddDays_(T, -7) });
+  addJp('', { name: ['渡辺 蓮', 'Ren Watanabe', 'Ren W.', '男'], status: '新規', applied: opsAddDays_(T, -1), via: 'activo' });
+  times(7, () => addJp('', { status: '見送り', applied: opsAddDays_(T, -int(20, 330)) }));
+  times(7, () => { const s = opsAddDays_(T, -int(250, 420)); addJp(pick(classIds), { status: '退会', start: s, end: opsAddDays_(s, int(90, 200)) }); });
+  times(3, () => addIntl('', { status: '見送り', applied: opsAddDays_(T, -int(20, 300)) }));
+  times(4, () => { const s = opsAddDays_(T, -int(250, 420)); addIntl(pick(classIds), { status: '退会', start: s, end: opsAddDays_(s, int(90, 180)) }); });
 
+  // 本番と同じく、申込順に並べて、生徒IDも申込順に振る（J0001 がいちばん古い）
   const byApplied = (a, b) => a['申込日時'] < b['申込日時'] ? -1 : a['申込日時'] > b['申込日時'] ? 1 : 0;
+  const number = (rows, prefix) => rows.sort(byApplied).map((r, i) => {
+    const id = prefix + ('000' + (i + 1)).slice(-4);
+    return Object.assign({ '生徒ID': id }, r, { 'Email': id.toLowerCase() + '@example.com', '電話': (prefix === 'J' ? '090-0000-' : '+62 800-0000-') + id.slice(1) });
+  });
   const classes = C.map(c => {
     const r = {};
     OPS_TEST_CLASS_HEAD.forEach(h => { r[h] = ''; });
@@ -236,15 +245,15 @@ function opsTestRows_(T) {
   });
   const howto = [
     ['このスプシ', 'テスト用です。生徒・メール・電話・学校名はすべて架空です。本番の「TDEN 生徒管理」やLPとはつながっていません。'],
-    ['① 列を整理する', 'メニュー「TD台帳」→「列を整理する（最初に1回）」。生徒_JP・生徒_海外の列が「いつも見る → クラス分け → 申込の時だけ（畳む）」の順に並びます。'],
-    ['② 一覧表を作る', '「一覧表を今すぐ作り直す」。マイドライブに「Class Structure（自動・テスト）」ができ、「今月（自動）」「来月（自動）」のタブに一覧表が出ます。'],
+    ['① 列を整理する', 'メニュー「TD台帳」→「列を整理する（最初に1回）」。生徒_JP・生徒_海外の列が「いつも見る → クラス分け → 申込の時だけ（畳む）」の順に並び、ステータスで行に色が付きます。クラス一覧の「ターム・開始日」が「ターム」と「ターム開始日」に分かれます。'],
+    ['② 一覧表を作る', '「一覧表を今すぐ作り直す」。マイドライブに「Class Structure（自動・テスト）」ができ、「今月（自動）」「来月（自動）」のタブに一覧表が出ます。名前を押すと、その生徒の行が開きます。'],
     ['③ 変えてみる', '生徒の行のステータス・クラス・開始日・最終日・支払い済み〜を変えて、②をもう一度。一覧表が変わります。'],
     ['④ 見張りメール', '「見張りメールを今すぐ送る」。自分宛てに【TD週1チェック】のメールが届きます。'],
     ['⑤ 月の記録', '「今の一覧表を記録する（タブとPDF）」。記録のタブと、マイドライブの「TD 月の記録（テスト）」にPDFができます。'],
     ['入れ直す', '「テスト用のダミーを入れ直す」で、いつでも最初の状態に戻せます。日付は今日から計算し直します。'],
     ['自動の更新', 'テストでは入れなくても大丈夫です（入れると5分おき・月末・月曜の朝に動きます）。'],
   ].map(r => ({ '項目': r[0], '説明': r[1] }));
-  return { jp: jp.sort(byApplied), intl: intl.sort(byApplied), classes, howto };
+  return { jp: number(jp, 'J'), intl: number(intl, 'G'), classes, howto };
 }
 
 /** 毎回同じダミーになるよう、種から作る乱数 */

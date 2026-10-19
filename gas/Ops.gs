@@ -4,12 +4,14 @@
  * テスト用のスプシでは、このファイルだけで動く（Code.gs は要らない）。
  *
  * 役割
- *  1. 一覧表 … 生徒_JP・生徒_海外・クラス一覧から、Class Structure に「今月（自動）」「来月（自動）」のタブを作る
+ *  1. 一覧表 … 生徒_JP・生徒_海外・クラス一覧から、Class Structure に「今月（自動）」「来月（自動）」のタブを作る。
+ *               生徒の名前を押すと、生徒_JP／生徒_海外のその行が開く
  *  2. 5分おき … 一覧表を作り直す（中身が変わった時だけ）／最終日を過ぎた生徒を「退会」にする／
  *               支払待ち・在籍で「Wixパスワード」が空なら作る／海外生の「Display name」が空なら名前から作る
  *  3. 月の記録 … 月末に、今月の一覧表を「26Nov（自動）」のようなタブに写し、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）
  *  4. 見張りメール … 毎週月曜の朝、対応が要るものだけを送る
- *  5. 列の整理 … 生徒シートの列を、使う場面ごとに並べ替える（1回だけ。Code.gs は列名で読み書きするので影響しない）
+ *  5. 列の整理 … 生徒シートの列を使う場面ごとに並べ替え、ステータスで行に色を付ける。クラス一覧の「ターム・開始日」を
+ *               「ターム」（1〜6）と「ターム開始日」に分ける（1回だけ。Code.gs は列名で読み書きし、ターム・開始日は使っていない）
  *
  * 初回（手順は gas/README.md）
  *  - メニュー「TD台帳」→「列を整理する」→「一覧表を今すぐ作り直す」→ よければ「自動の更新を始める」
@@ -27,8 +29,9 @@ const OPS = {
   SHEET_CLASSES: 'クラス一覧',
   TZ: 'Asia/Tokyo',
 
-  CAPACITY: 5,     // 1クラスの定員（日本生・海外生それぞれ）
-  DIFF_ALERT: 3,   // 日本生と海外生の差がこれ以上なら、一覧表で赤・見張りメールに出す
+  CAPACITY: 5,       // 1クラスの定員（日本生・海外生それぞれ）
+  DIFF_ALERT: 3,     // 日本生と海外生の差がこれ以上なら、一覧表で赤・見張りメールに出す
+  TERM_WEEKS: 12,    // 1ターム＝12回（毎週1回）
   TEACHER_ORDER: [], // 一覧表の講師の並び。空ならクラス一覧に出てくる順
 
   STATUSES: ['新規', '提案中', '支払待ち', '在籍', '休会', '退会', '見送り', '空き待ち'],
@@ -48,18 +51,28 @@ const OPS_COLOR = {
   ink: '#1c2528', muted: '#6b777b', alert: '#b23a3a', white: '#ffffff', line: '#d2d9da',
 };
 
+// 生徒シートの行の色（ステータスごと）。在籍がひと目で分かるように
+const OPS_STATUS_COLORS = [
+  { statuses: ['在籍'], bg: '#e6f4ea' },
+  { statuses: ['新規'], bg: '#fff4c2' },
+  { statuses: ['提案中', '支払待ち'], bg: '#fde3c4' },
+  { statuses: ['空き待ち'], bg: '#e3ecf7' },
+  { statuses: ['休会'], bg: '#ece6f5' },
+  { statuses: ['退会', '見送り'], font: '#98a2a6' },
+];
+
 // 列の整理：使う場面ごとの並び（いつも見る → クラス分け・依頼文に使う → 申込の時だけ見る）
 const OPS_LAYOUT = {
   '生徒_JP': {
     order: ['生徒ID', '名前', 'ステータス', 'クラス', '開始日', '最終日', 'メモ',
-            'Display name', '性別', '学年', '学校名', 'Email', 'Wixパスワード',
-            '申込日時', '経由', '英語レベル', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
+            'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', 'Wixパスワード',
+            '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
     drop: ['国', 'WhatsApp'], // 日本の申込では空か Japan だけ。中身がある時は消さない
   },
   '生徒_海外': {
     order: ['生徒ID', '名前', 'ステータス', 'クラス', '開始日', '最終日', '支払い済み〜', 'WhatsApp', 'メモ',
-            'Display name', '性別', '学年', '学校名', 'Email', '国', 'Wixパスワード',
-            '申込日時', '経由', '英語レベル', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
+            'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', '国', 'Wixパスワード',
+            '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
     drop: [],
   },
 };
@@ -166,19 +179,23 @@ function opsWeekly() {
 
 function opsData_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const table = name => {
+  const sheetOf = name => {
     const sheet = ss.getSheetByName(name);
     if (!sheet) throw new Error('シートが見つかりません: ' + name);
-    return opsTable_(sheet);
+    return sheet;
   };
-  const students = [];
+  const students = [], link = {};
   [['jp', OPS.SHEET_JP], ['intl', OPS.SHEET_INTL]].forEach(([region, name]) => {
-    table(name).rows.forEach(r => students.push(opsStudent_(r, region)));
+    const sheet = sheetOf(name);
+    // 一覧表の名前を押すと、この行が開く
+    link[region] = ss.getUrl().replace(/\/edit.*$/, '') + '/edit#gid=' + sheet.getSheetId() + '&range=A';
+    opsTable_(sheet).rows.forEach(r => students.push(opsStudent_(r, region)));
   });
   return {
-    classes: table(OPS.SHEET_CLASSES).rows.map(opsClass_).filter(c => c.id),
+    classes: opsTable_(sheetOf(OPS.SHEET_CLASSES)).rows.map(opsClass_).filter(c => c.id),
     students: students.filter(s => s.id || s.name),
     today: opsTodayKey_(),
+    link,
   };
 }
 
@@ -210,6 +227,9 @@ function opsStudent_(r, region) {
     end: opsKey_(r['最終日']),
     paid: opsKey_(r['支払い済み〜']),
     applied: opsKey_(r['申込日時']),
+    sex: s(r['性別']),
+    grade: s(r['学年']),
+    level: s(r['英語レベル']),
   };
 }
 
@@ -217,6 +237,8 @@ function opsClass_(c) {
   const s = v => String(v == null ? '' : v).trim();
   let time = c['時間(JST)'];
   if (time instanceof Date) time = Utilities.formatDate(time, opsSheetTz_(), 'HH:mm');
+  const old = s(c['ターム・開始日']); // 列の整理の前の書き方（例「Oct - Dec Term 2」）
+  const no = s(c['ターム']) || ((old.match(/Term\s*(\d+)/i) || [])[1] || '');
   return {
     id: s(c['Group ID']),
     day: opsDay_(c['曜日']),
@@ -224,7 +246,9 @@ function opsClass_(c) {
     teacher: s(c['講師']),
     lpJp: s(c['空き_JP']),
     lpIntl: s(c['空き_海外']),
-    term: s(c['ターム・開始日']),
+    termNo: no.replace(/\D/g, ''),
+    termStart: opsKey_(c['ターム開始日']),
+    termText: old,
     memo: s(c['メモ']),
   };
 }
@@ -273,7 +297,7 @@ function opsMd_(k) {
   return (Math.floor(k / 100) % 100) + '/' + (k % 100);
 }
 
-/** 「ターム・開始日」の文字から日付を拾う（2026/11/4 も 11/4 も可。年が無ければ表示する月に近い年） */
+/** 文字から日付を拾う（2026/11/4 も 11/4 も可。年が無ければ month に近い年） */
 function opsFindDate_(text, month) {
   const t = String(text || '');
   let m = t.match(/(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);
@@ -338,18 +362,50 @@ function opsCount_(slot) {
   return { jp: n('jp'), intl: n('intl') };
 }
 
+/** ターム開始日（無ければ古い「ターム・開始日」の文字から拾う） */
+function opsTermStart_(cls, month) {
+  return cls.termStart || opsFindDate_(cls.termText, month);
+}
+
 function opsClassState_(cls, month) {
-  if (/recruit|募集/i.test(cls.term)) return 'newclass';
-  const d = opsFindDate_(cls.term, month);
-  if (d && d > month.end) return 'newclass';
-  if (d && d >= month.start) return 'newterm';
-  return 'ongoing';
+  const d = opsTermStart_(cls, month);
+  if (d) return d > month.end ? 'newclass' : d >= month.start ? 'newterm' : 'ongoing';
+  return /recruit|募集/i.test(cls.termText) ? 'newclass' : 'ongoing';
+}
+
+/** 一覧表のクラス名の横に出す文字（例「Oct-Dec Term 2」「Recruiting Class・Term 1・11/3〜」） */
+function opsTermLabel_(cls, month) {
+  const d = opsTermStart_(cls, month);
+  const term = cls.termNo ? 'Term ' + cls.termNo : '';
+  if (opsClassState_(cls, month) === 'newclass') return ['Recruiting Class', term, d ? opsMd_(d) + '〜' : ''].filter(Boolean).join('・');
+  if (!d) return term || cls.termText;
+  const m = Math.floor(d / 100) % 100 - 1;
+  return OPS_MONTHS[m] + '-' + OPS_MONTHS[(m + 2) % 12] + (term ? ' ' + term : '');
+}
+
+/** クラスの生徒の内訳（学年・男女・英語レベル）。一覧表の人数の欄にメモで出す */
+function opsBreakdown_(slot) {
+  const tally = (list, f, order) => {
+    const n = {};
+    list.forEach(x => { const k = f(x.st); if (k) n[k] = (n[k] || 0) + 1; });
+    const keys = Object.keys(n).sort((a, b) => (order || []).indexOf(a) - (order || []).indexOf(b) || a.localeCompare(b, 'ja', { numeric: true }));
+    return keys.map(k => k + n[k]).join('・');
+  };
+  const grade = st => st.grade.replace(/\(.*?\)|（.*?）/g, '').replace(/^中学(\d)年生?$/, '中$1').replace(/^高校(\d)年生?$/, '高$1').replace(/^Grade\s*/i, 'G').trim() + ':';
+  const sex = st => ({ 男: '男', 男性: '男', Male: '男', 女: '女', 女性: '女', Female: '女' })[st.sex] || '';
+  const level = st => (((st.level.match(/準?[1-5]級/) || [])[0]) || (/満たない/.test(st.level) ? '準2級未満' : /相談|わから/.test(st.level) ? '相談' : st.level.slice(0, 20))) + ':';
+  const line = (label, r) => {
+    const list = slot[r].filter(x => !x.leaving);
+    if (!list.length) return '';
+    return label + '：' + [tally(list, grade), tally(list, sex, ['男', '女']), tally(list, level)].filter(Boolean).join('／');
+  };
+  return [line('日本生', 'jp'), line('海外生', 'intl')].filter(Boolean).join('\n');
 }
 
 
 /* ======================= 一覧表（Class Structure と同じ並び） ======================= */
 
-/** 一覧表のマス目を作る（シートには書かない）。cells[行][列] = {v, bg, color, bold, strike, size, align, wrap, note} */
+/** 一覧表のマス目を作る（シートには書かない）。cells[行][列] = {v, bg, color, bold, strike, size, align, wrap, note, link} */
 function opsBoardGrid_(data, month, title) {
   const place = opsPlace_(data, month);
   const C = OPS_COLOR, CAP = OPS.CAPACITY;
@@ -362,6 +418,7 @@ function opsBoardGrid_(data, month, title) {
   const blank = () => Array.from({ length: width }, () => ({ v: '' }));
   const push = row => { cells.push(row); return cells.length; };
   const span = (r, c, n) => merges.push([r, c, 1, n]);
+  const link = data.link || {};
 
   // 見出し・凡例
   let row = blank();
@@ -378,6 +435,9 @@ function opsBoardGrid_(data, month, title) {
   ];
   legend.slice(0, width).forEach((l, i) => { row[i] = Object.assign({ size: 9 }, l); });
   push(row);
+  row = blank();
+  row[0] = { v: '名前を押すと生徒管理スプシのその生徒の行が開きます。人数の欄にカーソルを置くと、学年・男女・英語レベルの内訳が出ます。', color: C.muted, size: 9, align: 'left' };
+  span(push(row), 1, width);
   push(blank());
 
   const byKey = {};
@@ -404,8 +464,10 @@ function opsBoardGrid_(data, month, title) {
       row[0] = { v: time, bold: true };
       here.forEach((c, i) => {
         if (c) {
-          row[1 + i * 2] = { v: c.id + (c.term ? '・' + c.term : ''), bg: C[opsClassState_(c, month)], bold: true, size: 9, wrap: true, note: c.memo };
-          row[2 + i * 2] = { v: '', bg: C[opsClassState_(c, month)] };
+          const bg = C[opsClassState_(c, month)];
+          const label = opsTermLabel_(c, month);
+          row[1 + i * 2] = { v: c.id + (label ? '・' + label : ''), bg, bold: true, size: 9, wrap: true, note: c.memo };
+          row[2 + i * 2] = { v: '', bg };
         } else {
           row[1 + i * 2] = { v: '', bg: C.none };
           row[2 + i * 2] = { v: '', bg: C.none };
@@ -424,8 +486,8 @@ function opsBoardGrid_(data, month, title) {
             row[2 + i * 2] = { v: '', bg: C.none };
             return;
           }
-          row[1 + i * 2] = opsSeatCell_(slotOf(i).jp[k], k);
-          row[2 + i * 2] = opsSeatCell_(slotOf(i).intl[k], k);
+          row[1 + i * 2] = opsSeatCell_(slotOf(i).jp[k], k, link.jp);
+          row[2 + i * 2] = opsSeatCell_(slotOf(i).intl[k], k, link.intl);
         });
         push(row);
       }
@@ -442,7 +504,8 @@ function opsBoardGrid_(data, month, title) {
         const wait = sl.waitJp + sl.waitIntl;
         const text = '日本 ' + n.jp + '/' + CAP + '・海外 ' + n.intl + '/' + CAP + '・差' + diff +
           (sl.prop ? '・提案中' + sl.prop : '') + (wait ? '・空き待ち' + wait : '');
-        row[1 + i * 2] = diff >= OPS.DIFF_ALERT ? { v: text, size: 9, color: C.alert, bold: true } : { v: text, size: 9, color: C.muted };
+        const note = opsBreakdown_(sl);
+        row[1 + i * 2] = diff >= OPS.DIFF_ALERT ? { v: text, size: 9, color: C.alert, bold: true, note } : { v: text, size: 9, color: C.muted, note };
         row[2 + i * 2] = { v: '' };
       });
       const rc = push(row);
@@ -453,15 +516,16 @@ function opsBoardGrid_(data, month, title) {
   return { width, cells, merges, problems: place.problems };
 }
 
-function opsSeatCell_(seat, k) {
+function opsSeatCell_(seat, k, linkBase) {
   const C = OPS_COLOR;
   if (!seat) return k < OPS.CAPACITY ? { v: '空席', color: C.muted, size: 9 } : { v: '' };
   const st = seat.st;
   const name = st.display + (seat.leaving ? '（' + opsMd_(st.end) + 'まで）' : '') + (seat.paused ? '（休会）' : '');
-  if (seat.leaving) return { v: name, bg: C.leave, strike: true, color: C.muted };
-  if (seat.unpaid) return { v: name, bg: C.pay };
-  if (seat.fresh) return { v: name, bg: C.fresh };
-  return { v: name };
+  const cell = { v: name, link: linkBase ? linkBase + st.row : '' };
+  if (seat.leaving) return Object.assign(cell, { bg: C.leave, strike: true, color: C.muted });
+  if (seat.unpaid) return Object.assign(cell, { bg: C.pay });
+  if (seat.fresh) return Object.assign(cell, { bg: C.fresh });
+  return cell;
 }
 
 /** Class Structure の「今月」「来月」を作り直す。中身が前と同じなら書かない（force で必ず書く） */
@@ -507,8 +571,23 @@ function opsWriteGrid_(sheet, grid) {
   range.setWraps(pick('wrap', false, b => !!b));
   range.setNotes(pick('note', ''));
   range.setVerticalAlignment('middle');
+  // 名前に生徒の行へのリンクを付ける（付けられなくても一覧表はそのまま使える）
+  try {
+    range.setRichTextValues(grid.cells.map(row => row.map(c => {
+      const text = String(c.v == null ? '' : c.v);
+      const b = SpreadsheetApp.newRichTextValue().setText(text);
+      if (!text) return b.build();
+      b.setTextStyle(SpreadsheetApp.newTextStyle().setForegroundColor(c.color || OPS_COLOR.ink).setBold(!!c.bold)
+        .setStrikethrough(!!c.strike).setUnderline(false).setFontSize(c.size || 10).build());
+      if (c.link) b.setLinkUrl(c.link);
+      return b.build();
+    })));
+  } catch (err) {
+    console.warn('リンクを付けられませんでした: ' + err);
+  }
   grid.merges.forEach(([r, c, nr, nc]) => sheet.getRange(r, c, nr, nc).merge());
-  if (R > 4) sheet.getRange(5, 1, R - 4, W).setBorder(true, true, true, true, true, true, OPS_COLOR.line, SpreadsheetApp.BorderStyle.SOLID);
+  const top = 6; // 見出し・凡例の下から罫線
+  if (R >= top) sheet.getRange(top, 1, R - top + 1, W).setBorder(true, true, true, true, true, true, OPS_COLOR.line, SpreadsheetApp.BorderStyle.SOLID);
   sheet.setColumnWidth(1, 70);
   for (let c = 2; c <= W; c++) sheet.setColumnWidth(c, 104);
 }
@@ -690,7 +769,16 @@ function opsWatchItems_(data) {
   add('この1週間に、最終日を過ぎて「退会」にした',
     S.filter(s => s.status === '退会' && s.end && s.end < T && s.end >= opsAddDays_(T, -7)).map(s => who(s) + ' 最終日 ' + md(s.end)));
   add('LPの空き状況が人数と合っていない（来月の人数で比べています）', lp);
-  add('クラスの欄を確かめる', opsPlace_(data, opsMonth_(T, 0)).problems.map(p => who(p.st) + ' ' + p.why));
+  // タームは12回。11回目の週を過ぎたら、次のタームの番号と開始日をクラス一覧に入れてもらう
+  const m0 = opsMonth_(T, 0);
+  add('そろそろ次のターム（クラス一覧の「ターム」と「ターム開始日」を直す）',
+    data.classes.map(c => {
+      const d = opsTermStart_(c, m0);
+      if (!d || opsAddDays_(d, (OPS.TERM_WEEKS - 2) * 7) > T) return '';
+      return c.id + '：Term ' + (c.termNo || '?') + '（' + md(d) + '〜）→ 次は Term ' + (c.termNo ? Number(c.termNo) + 1 : '?');
+    }).filter(Boolean));
+  add('クラス一覧のタームか開始日が空', data.classes.filter(c => !c.termNo || !opsTermStart_(c, m0)).map(c => c.id));
+  add('クラスの欄を確かめる', opsPlace_(data, m0).problems.map(p => who(p.st) + ' ' + p.why));
   return items;
 }
 
@@ -711,7 +799,8 @@ function opsSendWatch_(items) {
 function opsSetupColumns() {
   const ui = SpreadsheetApp.getUi();
   const ok = ui.alert('列を整理します',
-    '生徒_JP・生徒_海外の列を、使う場面ごとに並べ替えます。足りない列（最終日など）は足し、申込の時だけ見る列は畳みます。' +
+    '生徒_JP・生徒_海外の列を、使う場面ごとに並べ替えます。足りない列（最終日など）は足し、申込の時だけ見る列は畳み、ステータスで行に色を付けます。' +
+    'クラス一覧の「ターム・開始日」は「ターム」と「ターム開始日」に分けます。' +
     '中身は消しません（日本の「国」「WhatsApp」は、空か Japan だけの時に限り列ごと消します）。進めますか？', ui.ButtonSet.OK_CANCEL);
   if (ok !== ui.Button.OK) return;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -719,6 +808,8 @@ function opsSetupColumns() {
     const sheet = ss.getSheetByName(name);
     return sheet ? name + '：' + opsArrangeSheet_(sheet, OPS_LAYOUT[name], ss).join('、') : name + '：シートが無い';
   });
+  const classes = ss.getSheetByName(OPS.SHEET_CLASSES);
+  if (classes) report.push(OPS.SHEET_CLASSES + '：' + opsArrangeClasses_(classes).join('、'));
   ui.alert('列を整理しました', report.join('\n\n'), ui.ButtonSet.OK);
 }
 
@@ -801,20 +892,83 @@ function opsArrangeSheet_(sheet, layout, ss) {
   }
   OPS_DATE_COLS.forEach(h => {
     if (!col(h)) return;
-    const range = sheet.getRange(2, col(h), rows, 1);
-    range.setNumberFormat('yyyy/mm/dd');
-    // 文字で入っている日付は、日付として入れ直す（カレンダーで選べるように）
-    const vals = range.getValues();
-    let fixed = 0;
-    vals.forEach((r, i) => {
-      if (typeof r[0] === 'string' && /^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/.test(r[0].trim())) {
-        sheet.getRange(i + 2, col(h)).setValue(r[0].trim().replace(/[\-.]/g, '/'));
-        fixed++;
-      }
-    });
-    range.setDataValidation(SpreadsheetApp.newDataValidation().requireDate().setAllowInvalid(true).build());
+    const fixed = opsDateColumn_(sheet, col(h));
     if (fixed) notes.push('「' + h + '」の文字の日付' + fixed + '件を日付に');
   });
   if (col('Wixパスワード')) sheet.getRange(2, col('Wixパスワード'), rows, 1).setNumberFormat('@');
+  if (opsStatusColors_(sheet)) notes.push('ステータスで行に色を付けた');
+  return notes.length ? notes : ['変更なし'];
+}
+
+/** 日付の列にする（文字で入っている日付は入れ直す。カレンダーで選べるように）。直した件数を返す */
+function opsDateColumn_(sheet, c) {
+  const range = sheet.getRange(2, c, Math.max(sheet.getMaxRows() - 1, 1), 1);
+  range.setNumberFormat('yyyy/mm/dd');
+  let fixed = 0;
+  range.getValues().forEach((r, i) => {
+    if (typeof r[0] === 'string' && /^\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2}$/.test(r[0].trim())) {
+      sheet.getRange(i + 2, c).setValue(r[0].trim().replace(/[\-.]/g, '/'));
+      fixed++;
+    }
+  });
+  range.setDataValidation(SpreadsheetApp.newDataValidation().requireDate().setAllowInvalid(true).build());
+  return fixed;
+}
+
+/** ステータスで行に色を付ける（前に付けた Ops の色は付け直す。自分で付けた条件付き書式は残す）。付けたら true */
+function opsStatusColors_(sheet) {
+  const c = opsHead_(sheet).indexOf('ステータス') + 1;
+  if (!c) return false;
+  let letter = '', n = c;
+  while (n) { const r = (n - 1) % 26; letter = String.fromCharCode(65 + r) + letter; n = Math.floor((n - 1) / 26); }
+  const mine = /^=OR\(\$[A-Z]+2="/;
+  const keep = sheet.getConditionalFormatRules().filter(rule => {
+    const cond = rule.getBooleanCondition();
+    const f = cond && cond.getCriteriaValues && cond.getCriteriaValues()[0];
+    return !(typeof f === 'string' && mine.test(f));
+  });
+  const range = sheet.getRange(2, 1, Math.max(sheet.getMaxRows() - 1, 1), Math.max(sheet.getMaxColumns(), 1));
+  const added = OPS_STATUS_COLORS.map(s => {
+    let b = SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=OR(' + s.statuses.map(v => '$' + letter + '2="' + v + '"').join(',') + ')')
+      .setRanges([range]);
+    if (s.bg) b = b.setBackground(s.bg);
+    if (s.font) b = b.setFontColor(s.font);
+    return b.build();
+  });
+  sheet.setConditionalFormatRules(keep.concat(added));
+  return true;
+}
+
+/** クラス一覧の「ターム・開始日」を「ターム」（1〜6）と「ターム開始日」に分ける */
+function opsArrangeClasses_(sheet) {
+  const notes = [];
+  let head = opsHead_(sheet);
+  const old = head.indexOf('ターム・開始日');
+  if (head.indexOf('ターム') === -1 && head.indexOf('ターム開始日') === -1 && old !== -1) {
+    const last = sheet.getLastRow();
+    const texts = last > 1 ? sheet.getRange(2, old + 1, last - 1, 1).getDisplayValues().map(r => String(r[0]).trim()) : [];
+    sheet.insertColumnsAfter(old + 1, 1); // 古い列の右に「ターム開始日」
+    sheet.getRange(1, old + 1).setValue('ターム');
+    sheet.getRange(1, old + 2).setValue('ターム開始日');
+    const month = opsMonth_(opsTodayKey_(), 0);
+    let unread = 0;
+    texts.forEach((t, i) => {
+      if (!t) return;
+      const no = (t.match(/Term\s*(\d+)/i) || [])[1] || '';
+      const d = opsFindDate_(t, month);
+      sheet.getRange(i + 2, old + 1).setValue(no);
+      // 日付が読めない時は、元の文字をそのまま残す（消さない）
+      sheet.getRange(i + 2, old + 2).setValue(d ? Math.floor(d / 10000) + '/' + (Math.floor(d / 100) % 100) + '/' + (d % 100) : t);
+      if (!no || !d) unread++;
+    });
+    notes.push('「ターム・開始日」を「ターム」と「ターム開始日」に分けた' + (unread ? '（読めなかった' + unread + '行は、ターム開始日を入れてください）' : ''));
+    head = opsHead_(sheet);
+  }
+  const ct = head.indexOf('ターム') + 1, cd = head.indexOf('ターム開始日') + 1;
+  const rows = Math.max(sheet.getMaxRows() - 1, 1);
+  if (ct) sheet.getRange(2, ct, rows, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList(['1', '2', '3', '4', '5', '6'], true).setAllowInvalid(true).build());
+  if (cd) opsDateColumn_(sheet, cd);
   return notes.length ? notes : ['変更なし'];
 }

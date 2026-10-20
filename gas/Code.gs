@@ -72,7 +72,7 @@ function doPost(e) {
   try {
     added = addApplicant_(region, {
       source: req.source || 'LP',
-      country: region === 'jp' ? 'Japan' : (d.country || ''),
+      country: region === 'jp' ? 'Japan' : (d.country || countryFromPhone_(d.phone)),
       name: d.name, gender: d.gender, grade: d.grade, school: d.school,
       email: d.email, phone: d.phone, englishLevel: d.englishLevel, course: d.course,
       pref1: d.pref1, pref2: d.pref2, pref3: d.pref3, message: d.message,
@@ -326,6 +326,32 @@ function isDuplicate_(sheetName, email, name) {
   return all.some(r =>
     String(r[cols['名前']]).trim() === nm &&
     (!mail || String(r[cols['Email']]).trim().toLowerCase() === mail));
+}
+
+/**
+ * 国で「Other」を選んだ申込の国名の代わりに、電話番号の国番号を「Other（+234）」の形で返す。
+ * 国番号は前方一致で重ならないので、1桁（1・7）→ 2桁（下の一覧）→ それ以外は3桁、で切り出せる。
+ * +や00で始まらない番号（国番号の無い番号）は判定できないので「Other」だけを返す。
+ */
+function countryFromPhone_(phone) {
+  const raw = String(phone || '').trim();
+  let digits = raw.replace(/\D/g, '');
+  if (raw.charAt(0) === '+') {
+    // 国番号つき
+  } else if (digits.indexOf('00') === 0) {
+    digits = digits.slice(2);
+  } else {
+    return 'Other';
+  }
+  if (!digits) return 'Other';
+  const TWO_DIGIT = ['20', '27', '30', '31', '32', '33', '34', '36', '39', '40', '41', '43', '44', '45', '46',
+    '47', '48', '49', '51', '52', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '64', '65', '66',
+    '81', '82', '84', '86', '90', '91', '92', '93', '94', '95', '98'];
+  let cc;
+  if (digits.charAt(0) === '1' || digits.charAt(0) === '7') cc = digits.slice(0, 1);
+  else if (TWO_DIGIT.indexOf(digits.slice(0, 2)) !== -1) cc = digits.slice(0, 2);
+  else cc = digits.slice(0, 3);
+  return 'Other（+' + cc + '）';
 }
 
 function waLink_(phone, country, name) {

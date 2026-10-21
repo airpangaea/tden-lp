@@ -344,9 +344,9 @@
 </head>
 <body class="bg-white text-gray-900">
 
-    <!-- 募集バナー（毎月の更新はページ下部の CAMPAIGN 設定で） -->
+    <!-- 募集バナー（月・締切は </header> 直後のスクリプトが今日の日付から自動で入れる） -->
     <div class="bg-[#1e3a8a] text-white text-center text-sm md:text-base py-2 px-4">
-        <span class="font-bold" data-month-label>11月開始クラス</span>　2次申込締切 <span class="font-bold text-[#FFD293]" data-deadline>10月31日（土）23:59</span>
+        <span class="font-bold" data-month-label>新規クラス</span>　<span data-deadline-label>申込受付中</span> <span class="font-bold text-[#FFD293]" data-deadline></span>
     </div>
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
@@ -357,7 +357,7 @@
                 <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">講師紹介</a>
                 <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">料金</a>
                 <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] transition whitespace-nowrap border-b-2 border-transparent hover:border-[#f97316] text-lg lg:text-xl">保護者の皆様へ</a>
-                <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg lg:text-xl">11月開始クラスに申し込む</a>
+                <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg lg:text-xl">クラスに申し込む</a>
             </div>
             <div class="md:hidden flex items-center gap-3">
                 <a href="#contact" class="bg-[#f97316] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg whitespace-nowrap text-lg">
@@ -381,9 +381,48 @@
             <a href="#instructors" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">講師紹介</a>
             <a href="#pricing" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">料金</a>
             <a href="#parents" class="text-gray-700 hover:text-[#1e3a8a] font-bold py-2 border-b border-[#1e3a8a]/10">保護者の皆様へ</a>
-            <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-center text-lg">11月開始クラスに申し込む</a>
+            <a href="#contact" data-cta-apply class="bg-[#f97316] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#ea580c] transition shadow-lg text-center text-lg">クラスに申し込む</a>
         </div>
     </header>
+
+    <script>
+    /* ===== 募集月・申込締切は閲覧時点の日本時間から自動で決まる（毎月の更新は不要） =====
+       1〜20日 → 翌月開始クラス／1次申込締切＝当月20日
+       21日〜月末 → 翌月開始クラス／2次申込締切＝当月末日
+       例外にしたい時だけ CAMPAIGN_OVERRIDE を書く。deadline の日を過ぎると自動で通常ルールに戻る。
+         例: { month: 9, label: '申込締切', deadline: '2026-09-03' }
+    */
+    var CAMPAIGN_OVERRIDE = null;
+
+    window.tdenApplyCampaign = function () {
+        var p = {};
+        new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Tokyo', year: 'numeric', month: 'numeric', day: 'numeric' })
+            .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+        var y = +p.year, m = +p.month, d = +p.day;
+        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        var today = y + '-' + pad(m) + '-' + pad(d);
+
+        var month, label, dy = y, dm = m, dd;
+        var o = CAMPAIGN_OVERRIDE;
+        if (o && today <= o.deadline) {
+            month = o.month; label = o.label;
+            var a = o.deadline.split('-'); dy = +a[0]; dm = +a[1]; dd = +a[2];
+        } else {
+            month = m % 12 + 1;
+            if (d <= 20) { label = '1次申込締切'; dd = 20; }
+            else { label = '2次申込締切'; dd = new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+        }
+        var wd = '日月火水木金土'.charAt(new Date(Date.UTC(dy, dm - 1, dd)).getUTCDay());
+        var deadline = dm + '月' + dd + '日（' + wd + '）23:59';
+
+        var set = function (sel, text) { document.querySelectorAll(sel).forEach(function (el) { el.textContent = text; }); };
+        set('[data-month-label]', month + '月開始クラス');
+        set('[data-cta-apply]', month + '月開始クラスに申し込む');
+        set('[data-deadline-label]', label);
+        set('[data-deadline]', deadline);
+    };
+    window.tdenApplyCampaign();
+    </script>
 
     <main>
 
@@ -423,7 +462,7 @@
                         </p>
 
                         <a href="#contact" data-cta-apply class="inline-flex w-fit self-center md:self-start bg-[#f97316] text-white px-6 py-3 md:px-8 md:py-4 rounded-lg text-xl md:text-2xl font-bold hover:bg-[#ea580c] transition shadow-xl transform hover:scale-105 order-2">
-                            11月開始クラスに申し込む
+                            クラスに申し込む
                         </a>
                         <p class="text-sm text-gray-500 text-center md:text-left order-3">入会月<span class="font-bold text-[#ea580c]">25%〜50%OFF</span>・1ヶ月から始められます</p>
                     </div>
@@ -1710,7 +1749,7 @@
             <div class="mx-auto mb-6 md:mb-8 h-1.5 w-44 sm:w-64 rounded-full bg-[#1e3a8a]"></div>
             <p class="text-center text-gray-600 mb-6 md:mb-8 text-lg">ご希望のレッスン日時を選んでお申し込みください</p>
             
-            <p class="text-center mb-6 text-lg font-bold text-[#f97316]">📅 2次申込締切：<span data-deadline>10月31日（土）23:59</span></p>
+            <p class="text-center mb-6 text-lg font-bold text-[#f97316]">📅 <span data-deadline-label>申込締切</span>：<span data-deadline></span></p>
             <form action="/api/apply" method="POST" class="max-w-2xl mx-auto bg-white p-5 rounded-2xl shadow-lg">
                 <!-- ハニーポット（botが入力する非表示フィールド） -->
                 <div style="position:absolute;left:-9999px;" aria-hidden="true">
@@ -1808,7 +1847,7 @@
                         にご同意頂いた上でお申し込みください。
                     </p>
                     <button type="submit" id="submitBtn" data-cta-apply class="w-full bg-[#f97316] text-white px-8 py-3 rounded-lg text-2xl font-bold hover:bg-[#ea580c] transition shadow-lg">
-                        11月開始クラスに申し込む
+                        クラスに申し込む
                     </button>
                 </div>
             </form>
@@ -2076,16 +2115,8 @@
         })();
     </script>
     <script>
-    /* ============ 毎月の更新はこのブロックだけでOK ============ */
-    const CAMPAIGN = {
-        monthLabel: '11月開始クラス',           // バナー等の月ラベル
-        ctaLabel:   '11月開始クラスに申し込む',  // 申込ボタンの文言
-        deadline:   '10月31日（土）23:59',      // 2次申込締切
-    };
-    /* ======================================================== */
-    document.querySelectorAll('[data-cta-apply]').forEach(function (el) { el.textContent = CAMPAIGN.ctaLabel; });
-    document.querySelectorAll('[data-month-label]').forEach(function (el) { el.textContent = CAMPAIGN.monthLabel; });
-    document.querySelectorAll('[data-deadline]').forEach(function (el) { el.textContent = CAMPAIGN.deadline; });
+    // 募集月・締切（</header> 直後で定義）をページ下部の要素にも反映
+    window.tdenApplyCampaign();
 
     // ===== クラス空き状況 ＋ 希望レッスン日時セレクト（/api/slots 連携） =====
     (function () {

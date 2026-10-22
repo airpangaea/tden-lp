@@ -4,6 +4,8 @@
  * 生徒・メール・電話・学校名はすべて架空。クラスの並び（Group ID・講師・曜日・時間）は本番と同じ。
  * 日付は今日から計算するので、いつ入れ直しても、今月・来月の見どころ（新しい生徒・退会予定・支払い・差3など）が出る。
  * 本番と同じく、行は申込順で、生徒IDも申込順（J0001 がいちばん古い）。名前は、LPからの申込は英語、activo は日本語。
+ * 本番の今と同じ形にするため、生徒_JP／生徒_海外には最近（10日以内）の申込だけを入れ、前からいる生徒は
+ * 「旧名簿（テスト）」（クラス別シートと Japanese Applicants）に入れる。メニューの「旧名簿から今の生徒を取り込む」で試せる。
  * 列の整理を試せるよう、列は Phase 1 で作った並び（＋右端に 最終日・支払い済み〜・Wixパスワード）で入れる。
  * Ops.gs と同じプロジェクトに置く（OPS・opsMonth_ などを使う）。
  */
@@ -47,8 +49,30 @@ function opsTestFill() {
       SpreadsheetApp.newDataValidation().requireValueInRange(cls.getRange('A2:A200'), true).setAllowInvalid(true).build());
     opsStatusColors_(sh);
   });
+  opsTestWriteOld_(d.old);
   ss.setActiveSheet(ss.getSheetByName(OPS.SHEET_JP));
-  ui.alert('ダミーを入れました', '次は、メニュー「TD台帳」の「列を整理する（最初に1回）」→「一覧表を今すぐ作り直す」の順にどうぞ。', ui.ButtonSet.OK);
+  ui.alert('ダミーを入れました', '次は、メニュー「TD台帳」の「列を整理する（最初に1回）」→「旧名簿から今の生徒を取り込む（最初に1回）」→「一覧表を今すぐ作り直す」の順にどうぞ。', ui.ButtonSet.OK);
+}
+
+const OPS_TEST_OLD_CLASS_HEAD = ['Group ID', 'Student ID', 'Display name', 'Full name', 'Gender', 'Email (Google Account)', 'Notes (if any)',
+  '学年', 'School', '海外生WA', 'Password', 'DB 削除確認'];
+const OPS_TEST_OLD_APP_HEAD = ['申し込み番号', '支払い', '確認メール', '申込日時', '経由', '名前', '国名', '性別', 'Eメール', '英語レベル', '学年',
+  '学校名', '電話番号', '第１希望日程', '第２希望日程', '第３希望日程', 'ご要望など'];
+
+/** 旧名簿（テスト）を作り直す。本番の旧名簿と同じく、Japanese Applicants とクラス別シート */
+function opsTestWriteOld_(old) {
+  const ss = opsTestFile_('OPS_TEST_OLD_ID', '旧名簿（テスト）');
+  const write = (name, head, rows) => {
+    const sheet = ss.getSheetByName(name) || ss.insertSheet(name, ss.getSheets().length);
+    sheet.clear();
+    const values = [head].concat(rows.map(r => head.map(h => (r[h] === undefined || r[h] === null) ? '' : r[h])));
+    sheet.getRange(1, 1, values.length, head.length).setNumberFormat('@').setValues(values);
+    sheet.getRange(1, 1, 1, head.length).setFontWeight('bold');
+    return name;
+  };
+  const keep = [write(OPS.OLD_APPLICANTS_SHEET, OPS_TEST_OLD_APP_HEAD, old.applicants)]
+    .concat(old.sheets.map(sh => write(sh.name, OPS_TEST_OLD_CLASS_HEAD, sh.rows)));
+  ss.getSheets().filter(sh => keep.indexOf(sh.getName()) === -1).forEach(sh => ss.deleteSheet(sh));
 }
 
 /** シートを作り直して表を入れる（前の列の束ね・入力規則・色も消える） */
@@ -133,7 +157,8 @@ function opsTestRows_(T) {
     used[name[0]] = 1;
     const status = o.status || '在籍';
     const start = o.start !== undefined ? o.start : (['在籍', '休会', '退会'].indexOf(status) !== -1 ? opsAddDays_(T, -int(40, 210)) : 0);
-    const applied = o.applied || (start ? opsAddDays_(start, -int(10, 30)) : opsAddDays_(T, -int(1, 18)));
+    const applied = Math.min(o.applied || (opsTestPending_(status) ? opsAddDays_(T, -int(1, 9)) :
+      start ? opsAddDays_(start, -int(10, 30)) : opsAddDays_(T, -int(1, 18))), opsAddDays_(T, -1));
     const via = o.via || pick(['LP', 'LP', 'LP', 'activo']);
     jp.push({
       '申込日時': str(applied) + ' ' + ('0' + int(9, 22)).slice(-2) + ':' + ('0' + int(0, 59)).slice(-2) + ':00',
@@ -163,7 +188,8 @@ function opsTestRows_(T) {
     }
     const parts = name[0].split(' ');
     intl.push({
-      '申込日時': str(o.applied || opsAddDays_(start || T, -int(7, 25))) + ' 20:' + ('0' + int(0, 59)).slice(-2) + ':00', '経由': 'LP',
+      '申込日時': str(Math.min(o.applied || (opsTestPending_(status) ? opsAddDays_(T, -int(1, 9)) : opsAddDays_(start || T, -int(7, 25))), opsAddDays_(T, -1))) +
+        ' 20:' + ('0' + int(0, 59)).slice(-2) + ':00', '経由': 'LP',
       'ステータス': status, '国': 'Indonesia', '名前': name[0], 'Display name': o.noDisplay ? '' : parts[0] + ' ' + parts[1].charAt(0) + '.',
       '性別': name[1], '学年': 'Grade ' + int(7, 12), '学校名': pick(['SMP Test', 'SMA Sample', 'SMP Contoh']), 'WhatsApp': '',
       '英語レベル': pick(['Basic', 'Intermediate', 'Intermediate', 'Upper intermediate']), '希望コース': '', '第1希望': cid ? pref(cid) : '', '第2希望': '', '第3希望': '',
@@ -246,14 +272,51 @@ function opsTestRows_(T) {
   const howto = [
     ['このスプシ', 'テスト用です。生徒・メール・電話・学校名はすべて架空です。本番の「TDEN 生徒管理」やLPとはつながっていません。'],
     ['① 列を整理する', 'メニュー「TD台帳」→「列を整理する（最初に1回）」。生徒_JP・生徒_海外の列が「いつも見る → クラス分け → 申込の時だけ（畳む）」の順に並び、ステータスで行に色が付きます。クラス一覧の「ターム・開始日」が「ターム」と「ターム開始日」に分かれます。'],
-    ['② 一覧表を作る', '「一覧表を今すぐ作り直す」。マイドライブに「Class Structure（自動・テスト）」ができ、「今月（自動）」「来月（自動）」のタブに一覧表が出ます。名前を押すと、その生徒の行が開きます。'],
+    ['①の次 取り込む', '「旧名簿から今の生徒を取り込む（最初に1回）」。マイドライブの「旧名簿（テスト）」のクラス別シートから今の生徒を読み、Japanese Applicants の申込日時などを付けて入れます。最後に申込順に並べ直し、生徒IDも振り直します。'],
+    ['② 一覧表を作る', '「一覧表を今すぐ作り直す」。このスプシの「一覧表_今月／来月」（あなた用・名前を押すと生徒の行が開く）、マイドライブの「Class Structure（自動・テスト）」（スタッフ・講師用・リンク無し）、「スタッフ用の名簿（自動・テスト）」（クラス別シート）ができます。'],
     ['③ 変えてみる', '生徒の行のステータス・クラス・開始日・最終日・支払い済み〜を変えて、②をもう一度。一覧表が変わります。'],
     ['④ 見張りメール', '「見張りメールを今すぐ送る」。自分宛てに【TD週1チェック】のメールが届きます。'],
     ['⑤ 月の記録', '「今の一覧表を記録する（タブとPDF）」。記録のタブと、マイドライブの「TD 月の記録（テスト）」にPDFができます。'],
     ['入れ直す', '「テスト用のダミーを入れ直す」で、いつでも最初の状態に戻せます。日付は今日から計算し直します。'],
     ['自動の更新', 'テストでは入れなくても大丈夫です（入れると5分おき・月末・月曜の朝に動きます）。'],
   ].map(r => ({ '項目': r[0], '説明': r[1] }));
-  return { jp: number(jp, 'J'), intl: number(intl, 'G'), classes, howto };
+  // 本番の今と同じ形に分ける：生徒シートには最近（10日以内）の申込だけ、前からの生徒は旧名簿に
+  const jpAll = number(jp, 'J'), intlAll = number(intl, 'G');
+  const cutoff = str(opsAddDays_(T, -10));
+  const recent = r => r['申込日時'] >= cutoff;
+  const applicants = jpAll.concat(intlAll).filter(r => !recent(r)).sort(byApplied).map((r, i) => ({
+    '申し込み番号': i + 1, '申込日時': r['申込日時'], '経由': r['経由'], '名前': r['名前'], '国名': r['国'], '性別': r['性別'],
+    'Eメール': r['Email'], '英語レベル': r['英語レベル'], '学年': r['学年'], '学校名': r['学校名'], '電話番号': r['電話'],
+    'ご要望など': r['第1希望'] ? '第1希望: ' + r['第1希望'] : '',
+  }));
+  // クラス別シート：今の生徒（支払いが済んで入った生徒。席番号は始めた順）、空の行、やめた生徒
+  const inClass = r => (r['ステータス'] === '在籍' || r['ステータス'] === '休会') && !(opsKey_(r['最終日']) && opsKey_(r['最終日']) < T);
+  const toOld = (r, seat) => ({
+    'Group ID': r['提案クラス'], 'Student ID': seat, 'Display name': r['Display name'] || opsShortName_(r['名前']), 'Full name': r['名前'],
+    'Gender': r['性別'], 'Email (Google Account)': r['Email'], 'Notes (if any)': r['英語レベル'], '学年': r['学年'], 'School': r['学校名'],
+    '海外生WA': r['国'] === 'Japan' ? '' : r['電話'], 'Password': r['Wixパスワード'],
+  });
+  const sheets = C.map(c => {
+    const now = [], past = [];
+    [['JP-', jpAll], ['ID-', intlAll]].forEach(([prefix, all]) => {
+      all.filter(r => r['提案クラス'] === c[0] && inClass(r)).sort((a, b) => a['開始日'] < b['開始日'] ? -1 : 1)
+        .forEach((r, i) => now.push(toOld(r, prefix + ('0' + (i + 1)).slice(-2))));
+      all.filter(r => r['提案クラス'] === c[0] && r['ステータス'] === '退会').forEach(r => past.push(toOld(r, '')));
+    });
+    return { name: c[0], rows: past.length ? now.concat([{}], past) : now };
+  });
+  // 閉じたクラスのシート（クラス一覧に無いので、取り込みでは読まない）
+  sheets.push({ name: 'Thu2030JR', rows: [{ 'Group ID': 'Thu2030JR', 'Student ID': 'JP-01', 'Display name': 'Old S.', 'Full name': 'Old Student' }] });
+  const renumber = (rows, prefix) => rows.map((r, i) => Object.assign({}, r, { '生徒ID': prefix + ('000' + (i + 1)).slice(-4) }));
+  return {
+    jp: renumber(jpAll.filter(recent), 'J'), intl: renumber(intlAll.filter(recent), 'G'), classes, howto,
+    all: { jp: jpAll, intl: intlAll }, old: { applicants, sheets },
+  };
+}
+
+/** まだ席が決まっていない（旧名簿のクラスシートに入る前の）ステータス */
+function opsTestPending_(status) {
+  return ['新規', '提案中', '支払待ち', '空き待ち'].indexOf(status) !== -1;
 }
 
 /** 毎回同じダミーになるよう、種から作る乱数 */

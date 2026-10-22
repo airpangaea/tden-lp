@@ -23,7 +23,13 @@
 
 const OPS = {
   // Class Structure のスプシID。空のあいだは「Class Structure（自動・テスト）」を新しく作って使う（テスト用）
+  // Class Structure はスタッフ・講師も見るので、生徒管理へのリンクは付けない
   BOARD_FILE_ID: '',
+  // スタッフ用の名簿（クラス別シート。メール・パスワード入り。スタッフだけに共有）。空ならテスト用を新しく作る
+  STAFF_FILE_ID: '',
+  // 旧名簿（クラス別シートと Japanese Applicants があるスプシ）。本番で取り込む時だけ入れる。空ならテスト用のダミーを読む
+  OLD_FILE_ID: '',
+  OLD_APPLICANTS_SHEET: 'Japanese Applicants',
   SHEET_JP: '生徒_JP',
   SHEET_INTL: '生徒_海外',
   SHEET_CLASSES: 'クラス一覧',
@@ -39,6 +45,8 @@ const OPS = {
 
   TAB_THIS: '今月（自動）',
   TAB_NEXT: '来月（自動）',
+  LEDGER_TAB_THIS: '一覧表_今月', // 生徒管理スプシの中の、あなた用の一覧表（名前を押すと生徒の行が開く）
+  LEDGER_TAB_NEXT: '一覧表_来月',
   RECORD_FOLDER: 'TD 月の記録',
   // 見張りメールの件名の頭。Code.gs の SEARCH_QUERY に一致しない文言にしておくこと
   MAIL_SUBJECT: '【TD週1チェック】',
@@ -64,13 +72,13 @@ const OPS_STATUS_COLORS = [
 // 列の整理：使う場面ごとの並び（いつも見る → クラス分け・依頼文に使う → 申込の時だけ見る）
 const OPS_LAYOUT = {
   '生徒_JP': {
-    order: ['生徒ID', '名前', 'ステータス', 'クラス', '開始日', '最終日', 'メモ',
+    order: ['生徒ID', '名前', 'ステータス', 'クラス', '席番号', '開始日', '最終日', 'メモ',
             'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', 'Wixパスワード',
             '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
     drop: ['国', 'WhatsApp'], // 日本の申込では空か Japan だけ。中身がある時は消さない
   },
   '生徒_海外': {
-    order: ['生徒ID', '名前', 'ステータス', 'クラス', '開始日', '最終日', '支払い済み〜', 'WhatsApp', 'メモ',
+    order: ['生徒ID', '名前', 'ステータス', 'クラス', '席番号', '開始日', '最終日', '支払い済み〜', 'WhatsApp', 'メモ',
             'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', '国', 'Wixパスワード',
             '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
     drop: [],
@@ -92,6 +100,7 @@ function onOpen() {
     .addItem('見張りメールを今すぐ送る', 'opsWeeklyNow')
     .addSeparator()
     .addItem('列を整理する（最初に1回）', 'opsSetupColumns')
+    .addItem('旧名簿から今の生徒を取り込む（最初に1回）', 'opsImportOld')
     .addItem('自動の更新を始める', 'opsInstallTriggers')
     .addItem('自動の更新を止める', 'opsRemoveTriggers');
   // テスト用のスプシ（OpsTestData.gs を貼ったもの）だけに出る
@@ -101,7 +110,12 @@ function onOpen() {
 
 function opsRefreshNow() {
   opsRefresh(true);
-  opsShowLink_('一覧表を作り直しました', opsBoardFile_().getUrl(), 'Class Structure（自動）を開く');
+  const ledger = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(OPS.LEDGER_TAB_THIS);
+  opsShowLinks_('一覧表を作り直しました', [
+    [SpreadsheetApp.getActiveSpreadsheet().getUrl() + '#gid=' + ledger.getSheetId(), 'あなた用の一覧表（このスプシの「' + OPS.LEDGER_TAB_THIS + '」）'],
+    [opsBoardFile_().getUrl(), 'Class Structure（スタッフ・講師用）'],
+    [opsStaffFile_().getUrl(), 'スタッフ用の名簿（クラス別シート）'],
+  ]);
 }
 
 function opsRecordNow() {
@@ -137,8 +151,12 @@ function opsDeleteTriggers_() {
 }
 
 function opsShowLink_(title, url, label) {
-  const html = '<p style="font-family:sans-serif;font-size:14px"><a href="' + url + '" target="_blank">' + label + '</a></p>';
-  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(360).setHeight(90), title);
+  opsShowLinks_(title, [[url, label]]);
+}
+
+function opsShowLinks_(title, links) {
+  const html = links.map(([url, label]) => '<p style="font-family:sans-serif;font-size:14px;margin:8px 0"><a href="' + url + '" target="_blank">' + label + '</a></p>').join('');
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(420).setHeight(50 + links.length * 34), title);
 }
 
 
@@ -230,6 +248,11 @@ function opsStudent_(r, region) {
     sex: s(r['性別']),
     grade: s(r['学年']),
     level: s(r['英語レベル']),
+    seat: s(r['席番号']),
+    email: s(r['Email']),
+    phone: s(r['電話']),
+    school: s(r['学校名']),
+    password: s(r['Wixパスワード']),
   };
 }
 
@@ -350,15 +373,32 @@ function opsPlace_(data, month) {
       paused: st.status === '休会',
     });
   });
-  Object.keys(slots).forEach(id => ['jp', 'intl'].forEach(r => {
-    slots[id][r].sort((a, b) => (a.st.start || 0) - (b.st.start || 0) || (a.st.id < b.st.id ? -1 : a.st.id > b.st.id ? 1 : 0));
-  }));
+  Object.keys(slots).forEach(id => ['jp', 'intl'].forEach(r => { slots[id][r] = opsSeatOrder_(slots[id][r]); }));
   return { slots, problems };
+}
+
+/** 席番号（JP-03 なら3番目）の位置に並べる。番号が無い・重なる生徒は空いている所へ。空席は undefined */
+function opsSeatOrder_(list) {
+  const out = [];
+  const byStart = list.slice().sort((a, b) => (a.st.start || 0) - (b.st.start || 0) || (a.st.id < b.st.id ? -1 : a.st.id > b.st.id ? 1 : 0));
+  const rest = [];
+  byStart.forEach(x => {
+    const n = opsSeatNo_(x.st.seat);
+    if (n && !out[n - 1]) out[n - 1] = x; else rest.push(x);
+  });
+  rest.forEach(x => { let i = 0; while (out[i]) i++; out[i] = x; });
+  return out;
+}
+
+/** "JP-03" → 3（読めなければ 0） */
+function opsSeatNo_(seat) {
+  const m = String(seat || '').match(/(\d+)\s*$/);
+  return m ? Number(m[1]) : 0;
 }
 
 /** 退会予定を除いた人数 */
 function opsCount_(slot) {
-  const n = r => slot[r].filter(x => !x.leaving).length;
+  const n = r => slot[r].filter(x => x && !x.leaving).length;
   return { jp: n('jp'), intl: n('intl') };
 }
 
@@ -395,7 +435,7 @@ function opsBreakdown_(slot) {
   const sex = st => ({ 男: '男', 男性: '男', Male: '男', 女: '女', 女性: '女', Female: '女' })[st.sex] || '';
   const level = st => (((st.level.match(/準?[1-5]級/) || [])[0]) || (/満たない/.test(st.level) ? '準2級未満' : /相談|わから/.test(st.level) ? '相談' : st.level.slice(0, 20))) + ':';
   const line = (label, r) => {
-    const list = slot[r].filter(x => !x.leaving);
+    const list = slot[r].filter(x => x && !x.leaving);
     if (!list.length) return '';
     return label + '：' + [tally(list, grade), tally(list, sex, ['男', '女']), tally(list, level)].filter(Boolean).join('／');
   };
@@ -480,6 +520,7 @@ function opsBoardGrid_(data, month, title) {
       here.forEach((c, i) => { if (c) seats = Math.max(seats, slotOf(i).jp.length, slotOf(i).intl.length); });
       for (let k = 0; k < seats; k++) {
         row = blank();
+        row[0] = { v: ('0' + (k + 1)).slice(-2), color: C.muted, size: 9 }; // 席番号（JP-01・ID-01 の 01）
         here.forEach((c, i) => {
           if (!c) {
             row[1 + i * 2] = { v: '', bg: C.none };
@@ -528,24 +569,105 @@ function opsSeatCell_(seat, k, linkBase) {
   return cell;
 }
 
-/** Class Structure の「今月」「来月」を作り直す。中身が前と同じなら書かない（force で必ず書く） */
+/**
+ * 一覧表を作り直す（中身が前と同じなら書かない。force で必ず書く）
+ *  - Class Structure（スタッフ・講師も見る）… リンク無し
+ *  - 生徒管理スプシの「一覧表_今月／来月」（あなた用）… 名前を押すと生徒の行が開く
+ *  - スタッフ用の名簿（クラス別シート）
+ */
 function opsBuildBoards_(force) {
   const data = opsData_();
-  const ss = opsBoardFile_();
-  const props = PropertiesService.getScriptProperties();
+  const board = opsBoardFile_();
+  const ledger = SpreadsheetApp.getActiveSpreadsheet();
   const stamp = Utilities.formatDate(new Date(), OPS.TZ, 'M/d HH:mm');
-  [[OPS.TAB_THIS, 0, '今月'], [OPS.TAB_NEXT, 1, '来月']].forEach(([tab, add, label]) => {
+  [[0, '今月', OPS.TAB_THIS, OPS.LEDGER_TAB_THIS], [1, '来月', OPS.TAB_NEXT, OPS.LEDGER_TAB_NEXT]].forEach(([add, label, tab, ledgerTab]) => {
     const month = opsMonth_(data.today, add);
     const grid = opsBoardGrid_(data, month, label + '：' + month.y + '年' + month.m + '月');
-    const hash = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, JSON.stringify(grid), Utilities.Charset.UTF_8));
-    const key = 'OPS_HASH_' + add;
-    const exists = !!ss.getSheetByName(tab);
-    if (!force && exists && props.getProperty(key) === hash) return;
-    grid.cells[1][0].v = '生徒管理スプシから自動で作っています。直す時は生徒管理スプシを直してください（このタブは手で直さない）。最終更新 ' + stamp;
-    opsWriteGrid_(opsTab_(ss, tab, add), grid);
+    const shared = opsStripLinks_(grid);
+    shared.cells[3][0].v = '人数の欄にカーソルを置くと、学年・男女・英語レベルの内訳が出ます。';
+    opsWriteIfChanged_(board, tab, add, shared, 'OPS_HASH_' + add, force,
+      '生徒管理スプシから自動で作っています（このタブは手で直さない）。最終更新 ' + stamp);
+    opsWriteIfChanged_(ledger, ledgerTab, ledger.getSheets().length, grid, 'OPS_HASH_L' + add, force,
+      '生徒管理スプシから自動で作っています（直す時は生徒_JP／生徒_海外を直す）。最終更新 ' + stamp);
+  });
+  opsDropBlankFirstSheet_(board);
+  opsBuildRoster_(data, force);
+}
+
+function opsWriteIfChanged_(ss, tab, index, grid, key, force, note) {
+  const props = PropertiesService.getScriptProperties();
+  const hash = opsHash_(grid);
+  if (!force && ss.getSheetByName(tab) && props.getProperty(key) === hash) return;
+  grid.cells[1][0].v = note;
+  opsWriteGrid_(opsTab_(ss, tab, index), grid);
+  props.setProperty(key, hash);
+}
+
+function opsHash_(obj) {
+  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, JSON.stringify(obj), Utilities.Charset.UTF_8));
+}
+
+/** スタッフ・講師が見る一覧表には、生徒管理スプシへのリンクを付けない */
+function opsStripLinks_(grid) {
+  const copy = JSON.parse(JSON.stringify(grid));
+  copy.cells.forEach(row => row.forEach(c => { delete c.link; }));
+  return copy;
+}
+
+
+/* ======================= スタッフ用の名簿（旧名簿のクラス別シートの代わり） ======================= */
+
+const OPS_ROSTER_HEAD = ['Group ID', 'Student ID', 'Display name', 'Full name', 'Gender', 'Email (Google Account)', 'Notes (if any)',
+  '学年', 'School', '海外生WA', 'Password'];
+
+/** 1クラス分の行（席番号順。日本生→海外生。空けて、やめた生徒） */
+function opsRosterRows_(data, cls) {
+  const T = data.today;
+  const mine = data.students.filter(s => s.cls === cls.id);
+  // 載せるのは入会した生徒（在籍・休会）だけ。支払待ちの生徒は、席番号は押さえるが、名簿にはまだ出さない
+  const now = mine.filter(s => (s.status === '在籍' || s.status === '休会') && !(s.end && s.end < T));
+  const row = s => [cls.id, s.seat, s.display, s.name, s.sex, s.email, s.level, s.grade, s.school,
+    s.region === 'intl' ? s.phone : '', s.password];
+  const bySeat = (a, b) => (opsSeatNo_(a.seat) || 99) - (opsSeatNo_(b.seat) || 99) || (a.start || 0) - (b.start || 0);
+  const rows = ['jp', 'intl'].reduce((acc, r) => acc.concat(now.filter(s => s.region === r).sort(bySeat).map(row)), []);
+  const past = mine.filter(s => s.status === '退会').sort((a, b) => (b.end || 0) - (a.end || 0)).map(row);
+  return past.length ? rows.concat([OPS_ROSTER_HEAD.map(() => ''), ['（やめた生徒）'].concat(OPS_ROSTER_HEAD.slice(1).map(() => ''))], past) : rows;
+}
+
+function opsBuildRoster_(data, force) {
+  const ss = opsStaffFile_();
+  const props = PropertiesService.getScriptProperties();
+  data.classes.forEach(cls => {
+    const rows = opsRosterRows_(data, cls);
+    const key = 'OPS_HASH_R_' + cls.id, hash = opsHash_(rows);
+    let sheet = ss.getSheetByName(cls.id);
+    if (!force && sheet && props.getProperty(key) === hash) return;
+    if (!sheet) sheet = ss.insertSheet(cls.id, ss.getSheets().length);
+    sheet.clear();
+    const values = [OPS_ROSTER_HEAD].concat(rows);
+    sheet.getRange(1, 1, values.length, OPS_ROSTER_HEAD.length).setNumberFormat('@').setValues(values);
+    sheet.getRange(1, 1, 1, OPS_ROSTER_HEAD.length).setFontWeight('bold').setBackground(OPS_COLOR.head);
+    sheet.setFrozenRows(1);
     props.setProperty(key, hash);
   });
   opsDropBlankFirstSheet_(ss);
+}
+
+function opsStaffFile_() {
+  if (OPS.STAFF_FILE_ID) return SpreadsheetApp.openById(OPS.STAFF_FILE_ID);
+  return opsTestFile_('OPS_TEST_STAFF_ID', 'スタッフ用の名簿（自動・テスト）');
+}
+
+/** テスト用のファイルを開く（無ければ作る） */
+function opsTestFile_(prop, title) {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty(prop);
+  if (id) {
+    try { return SpreadsheetApp.openById(id); } catch (err) { /* 消されていたら作り直す */ }
+  }
+  const ss = SpreadsheetApp.create(title);
+  props.setProperty(prop, ss.getId());
+  return ss;
 }
 
 function opsWriteGrid_(sheet, grid) {
@@ -606,14 +728,7 @@ function opsDropBlankFirstSheet_(ss) {
 
 function opsBoardFile_() {
   if (OPS.BOARD_FILE_ID) return SpreadsheetApp.openById(OPS.BOARD_FILE_ID);
-  const props = PropertiesService.getScriptProperties();
-  const id = props.getProperty('OPS_TEST_BOARD_ID');
-  if (id) {
-    try { return SpreadsheetApp.openById(id); } catch (err) { /* 消されていたら作り直す */ }
-  }
-  const ss = SpreadsheetApp.create('Class Structure（自動・テスト）');
-  props.setProperty('OPS_TEST_BOARD_ID', ss.getId());
-  return ss;
+  return opsTestFile_('OPS_TEST_BOARD_ID', 'Class Structure（自動・テスト）');
 }
 
 
@@ -684,13 +799,17 @@ function opsRetirePast_() {
   });
 }
 
-/** 支払待ち・在籍で Wixパスワード が空なら作る／海外生の Display name が空なら名前から作る */
+/** 支払待ち・在籍で Wixパスワード が空なら作る／海外生の Display name が空なら名前から作る／席番号が空なら空いている番号を入れる */
 function opsFillDefaults_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const active = ['新規', '提案中', '支払待ち', '在籍', '休会', '空き待ち'];
+  const today = opsTodayKey_();
   [[OPS.SHEET_JP, 'jp'], [OPS.SHEET_INTL, 'intl']].forEach(([name, region]) => {
     const t = opsTable_(ss.getSheetByName(name));
-    const cp = t.col['Wixパスワード'], cd = t.col['Display name'];
+    const cp = t.col['Wixパスワード'], cd = t.col['Display name'], cs = t.col['席番号'];
+    if (cs !== undefined) {
+      opsAssignSeats_(t.rows, region, today).forEach(([r, seat]) => t.sheet.getRange(r._row, cs + 1).setValue(seat));
+    }
     t.rows.forEach(r => {
       const st = String(r['ステータス'] || '').trim();
       if (cp !== undefined && (st === '支払待ち' || st === '在籍') && !String(r['Wixパスワード'] || '').trim()) {
@@ -702,6 +821,33 @@ function opsFillDefaults_() {
       }
     });
   });
+}
+
+/**
+ * 席番号が空の生徒に、そのクラスで空いている一番小さい番号を割り当てる（日本生 JP-01〜、海外生 ID-01〜）。
+ * 対象は席に出るステータスで、最終日を過ぎていない生徒。[行, 席番号] の並びを返す
+ */
+function opsAssignSeats_(rows, region, today) {
+  const prefix = region === 'jp' ? 'JP-' : 'ID-';
+  const live = rows.filter(r => OPS.SEAT_STATUSES.indexOf(String(r['ステータス'] || '').trim()) !== -1 &&
+    String(r['クラス'] || '').trim() && !(opsKey_(r['最終日']) && opsKey_(r['最終日']) < today));
+  const used = {};
+  live.forEach(r => {
+    const n = opsSeatNo_(r['席番号']);
+    if (n) (used[String(r['クラス']).trim()] = used[String(r['クラス']).trim()] || {})[n] = true;
+  });
+  const out = [];
+  live.filter(r => !String(r['席番号'] || '').trim())
+    .sort((a, b) => (opsKey_(a['開始日']) || 0) - (opsKey_(b['開始日']) || 0) || a._row - b._row)
+    .forEach(r => {
+      const cls = String(r['クラス']).trim();
+      const u = used[cls] = used[cls] || {};
+      let n = 1;
+      while (u[n]) n++;
+      u[n] = true;
+      out.push([r, prefix + ('0' + n).slice(-2)]);
+    });
+  return out;
 }
 
 /** 打ち間違えにくい文字だけで8文字（td＋6文字） */
@@ -779,6 +925,13 @@ function opsWatchItems_(data) {
     }).filter(Boolean));
   add('クラス一覧のタームか開始日が空', data.classes.filter(c => !c.termNo || !opsTermStart_(c, m0)).map(c => c.id));
   add('クラスの欄を確かめる', opsPlace_(data, m0).problems.map(p => who(p.st) + ' ' + p.why));
+  // 同じクラス・同じ席番号の生徒が2人いる（スライドの交流テーブルがずれる）
+  const seen = {}, dup = [];
+  S.filter(s => OPS.SEAT_STATUSES.indexOf(s.status) !== -1 && s.cls && s.seat && !(s.end && s.end < T)).forEach(s => {
+    const k = s.cls + '|' + s.region + '|' + opsSeatNo_(s.seat);
+    if (seen[k]) dup.push(s.cls + ' ' + s.seat + '：' + seen[k].name + ' と ' + s.name); else seen[k] = s;
+  });
+  add('同じ席番号の生徒が2人いる（どちらかの席番号を直す）', dup);
   return items;
 }
 
@@ -972,3 +1125,164 @@ function opsArrangeClasses_(sheet) {
   if (cd) opsDateColumn_(sheet, cd);
   return notes.length ? notes : ['変更なし'];
 }
+
+
+/* ======================= 旧名簿から今の生徒を取り込む（最初に1回） ======================= */
+
+// 旧名簿のクラス別シートの列（1行目の名前で探し、見つからなければこの位置）
+const OPS_OLD_COLS = {
+  seat: { names: ['Student ID'], at: 1 }, display: { names: ['Display name'], at: 2 }, full: { names: ['Full name'], at: 3 },
+  sex: { names: ['Gender'], at: 4 }, email: { names: ['Email (Google Account)', 'Email'], at: 5 }, notes: { names: ['Notes (if any)', 'Notes'], at: 6 },
+  grade: { names: ['学年'], at: 7 }, school: { names: ['School'], at: 8 }, wa: { names: ['海外生WA'], at: 9 }, password: { names: ['Password'], at: 10 },
+};
+// Japanese Applicants（旧GASの転記先。日本生も海外生も入っている）の列
+const OPS_APPLICANT_COLS = {
+  applied: { names: ['申込日時'], at: 3 }, via: { names: ['経由'], at: 4 }, name: { names: ['名前'], at: 5 }, country: { names: ['国名'], at: 6 },
+  sex: { names: ['性別'], at: 7 }, email: { names: ['Eメール', 'Email', 'メール'], at: 8 }, level: { names: ['英語レベル'], at: 9 },
+  grade: { names: ['学年'], at: 10 }, school: { names: ['学校名'], at: 11 }, phone: { names: ['電話番号', '電話'], at: 12 },
+  comment: { names: ['ご要望など'], at: 16 },
+};
+
+function opsImportOld() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = { jp: ss.getSheetByName(OPS.SHEET_JP), intl: ss.getSheetByName(OPS.SHEET_INTL) };
+  if (['jp', 'intl'].some(r => ['クラス', '席番号'].some(h => opsHead_(sheets[r]).indexOf(h) === -1))) {
+    ui.alert('先にメニューの「列を整理する（最初に1回）」を押してください（「クラス」「席番号」の列が要ります）。');
+    return;
+  }
+  const ok = ui.alert('旧名簿から今の生徒を取り込みます',
+    '旧名簿のクラス別シート（クラス一覧にあるクラスだけ）から、空の行までの生徒を読み、生徒_JP・生徒_海外に「在籍」で入れます。' +
+    '申込日時・電話・経由などは Japanese Applicants から探します。すでにある生徒（メールか名前が同じ）は、クラスと席番号を書き足します。' +
+    '最後に全体を申込順に並べ直し、生徒IDも申込順に振り直します（今のIDも変わります）。旧名簿は読むだけで、書き換えません。進めますか？', ui.ButtonSet.OK_CANCEL);
+  if (ok !== ui.Button.OK) return;
+
+  const old = opsOldFile_();
+  const ja = old.getSheetByName(OPS.OLD_APPLICANTS_SHEET);
+  const ledger = {};
+  ['jp', 'intl'].forEach(r => { ledger[r] = opsReadWithFormulas_(sheets[r]); });
+  const res = opsImportMerge_({
+    classIds: opsData_().classes.map(c => c.id),
+    sheets: old.getSheets().filter(sh => sh.getName() !== OPS.OLD_APPLICANTS_SHEET).map(sh => ({ name: sh.getName(), values: sh.getDataRange().getValues() })),
+    applicants: ja ? ja.getDataRange().getValues() : [[]],
+    ledger,
+  });
+  ['jp', 'intl'].forEach(r => {
+    const head = ledger[r].head, sheet = sheets[r];
+    const out = res[r].map(row => head.map(h => row[h] === undefined || row[h] === null ? '' : row[h]));
+    if (sheet.getLastRow() > 1) sheet.getRange(2, 1, sheet.getLastRow() - 1, head.length).clearContent();
+    if (out.length) sheet.getRange(2, 1, out.length, head.length).setValues(out);
+  });
+  const rp = res.report;
+  ui.alert('取り込みました', [
+    '新しく入れた生徒：' + rp.added + '人　／　すでにあった生徒に書き足した：' + rp.updated + '人',
+    rp.noDate.length ? 'Japanese Applicants に見つからず、申込日時が空の生徒（いちばん上に入れました）：' + rp.noDate.join('、') : '',
+    rp.twice.length ? '2つのクラスシートにいた生徒（最初のクラスだけ入れました）：' + rp.twice.join('、') : '',
+    rp.skipped.length ? 'クラス一覧に無いので読まなかったシート：' + rp.skipped.join('、') : '',
+    rp.missing.length ? '旧名簿にシートが無かったクラス：' + rp.missing.join('、') : '',
+    '次は「一覧表を今すぐ作り直す」。取り込んだ生徒は、開始日・最終日（海外は支払い済み〜も）が空なので、分かる所から入れてください。',
+  ].filter(Boolean).join('\n\n'), ui.ButtonSet.OK);
+}
+
+function opsOldFile_() {
+  if (OPS.OLD_FILE_ID) return SpreadsheetApp.openById(OPS.OLD_FILE_ID);
+  const id = PropertiesService.getScriptProperties().getProperty('OPS_TEST_OLD_ID');
+  if (!id) throw new Error('旧名簿のスプシIDが入っていません（Ops.gs の OLD_FILE_ID）');
+  return SpreadsheetApp.openById(id);
+}
+
+/** 生徒シートを {列名: 値} で読む。数式（WhatsApp のリンク）は数式のまま持つ */
+function opsReadWithFormulas_(sheet) {
+  const range = sheet.getDataRange();
+  const values = range.getValues(), formulas = range.getFormulas();
+  const head = values[0].map(h => String(h).trim());
+  const rows = values.slice(1).map((v, i) => {
+    const r = {};
+    head.forEach((h, j) => { if (h) r[h] = formulas[i + 1][j] || v[j]; });
+    return r;
+  }).filter(r => head.some(h => h && String(r[h]).trim() !== ''));
+  return { head, rows };
+}
+
+/** 表（1行目＝列名）を、決めた項目名の行に読み替える */
+function opsReadAs_(values, cols) {
+  const head = (values[0] || []).map(h => String(h).trim());
+  const idx = {};
+  Object.keys(cols).forEach(k => {
+    const i = cols[k].names.map(n => head.indexOf(n)).filter(i => i !== -1)[0];
+    idx[k] = i !== undefined ? i : cols[k].at;
+  });
+  return values.slice(1).map(v => {
+    const o = {};
+    Object.keys(idx).forEach(k => {
+      const x = v[idx[k]];
+      o[k] = x instanceof Date ? Utilities.formatDate(x, OPS.TZ, 'yyyy/MM/dd HH:mm:ss') : String(x == null ? '' : x).trim();
+    });
+    return o;
+  });
+}
+
+/**
+ * 旧名簿の今の生徒を、生徒シートの行に合わせる（シートには書かない）。
+ * 返す行は申込順（申込日時が分からない生徒がいちばん上）で、生徒IDも申込順に振り直してある
+ */
+function opsImportMerge_(input) {
+  const report = { added: 0, updated: 0, noDate: [], twice: [], skipped: [], missing: [] };
+  const lower = v => String(v || '').trim().toLowerCase();
+  const classOf = {};
+  input.classIds.forEach(id => { classOf[lower(id)] = id; });
+  const apps = opsReadAs_(input.applicants, OPS_APPLICANT_COLS).filter(a => a.name || a.email);
+  const findApps = (email, name) => apps.filter(a => (email && lower(a.email) === lower(email)) || (name && a.name === name));
+  const rows = { jp: input.ledger.jp.rows.slice(), intl: input.ledger.intl.rows.slice() };
+  const done = {}, seenClass = {};
+
+  input.sheets.forEach(sh => {
+    const id = classOf[lower(sh.name)];
+    if (!id) { report.skipped.push(sh.name); return; }
+    seenClass[id] = true;
+    const list = opsReadAs_(sh.values, OPS_OLD_COLS);
+    for (const o of list) {
+      if (!o.display && !o.full) break; // 空の行から下は、やめた生徒
+      const found = findApps(o.email, o.full);
+      const first = found.slice().sort((a, b) => (a.applied < b.applied ? -1 : 1))[0] || {};
+      const last = found[found.length - 1] || {};
+      const region = /^JP/i.test(o.seat) ? 'jp' : /^ID/i.test(o.seat) ? 'intl' : (last.country && last.country !== 'Japan' ? 'intl' : 'jp');
+      const key = lower(o.email) || o.full || o.display;
+      if (done[key]) { report.twice.push((o.full || o.display) + '（' + done[key] + '・' + id + '）'); continue; }
+      done[key] = id;
+      const hit = rows[region].filter(r => (o.email && lower(r['Email']) === lower(o.email)) || (o.full && r['名前'] === o.full))[0];
+      if (hit) {
+        hit['クラス'] = id;
+        hit['席番号'] = o.seat;
+        if (['', '新規', '提案中', '支払待ち', '空き待ち', '見送り'].indexOf(String(hit['ステータス'] || '')) !== -1) hit['ステータス'] = '在籍';
+        if (!hit['Display name']) hit['Display name'] = o.display;
+        if (!hit['Wixパスワード']) hit['Wixパスワード'] = o.password;
+        if (!hit['英語レベル']) hit['英語レベル'] = o.notes || last.level || '';
+        report.updated++;
+        continue;
+      }
+      rows[region].push({
+        '申込日時': first.applied || '', '経由': last.via || '旧名簿', 'ステータス': '在籍',
+        '国': region === 'intl' ? (last.country || '') : 'Japan',
+        '名前': o.full || last.name || o.display, 'Display name': o.display, '性別': o.sex || last.sex, '学年': o.grade || last.grade,
+        '学校名': o.school || last.school, 'Email': o.email || last.email,
+        '電話': region === 'intl' ? (o.wa || last.phone || '') : (last.phone || ''),
+        '英語レベル': o.notes || last.level || '', 'コメント': last.comment || '',
+        'クラス': id, '席番号': o.seat, 'Wixパスワード': o.password, 'メモ': '旧名簿から取り込み',
+      });
+      report.added++;
+      if (!first.applied) report.noDate.push(o.full || o.display);
+    }
+  });
+  input.classIds.forEach(id => { if (!seenClass[id]) report.missing.push(id); });
+
+  const key = r => r['申込日時'] instanceof Date ? Utilities.formatDate(r['申込日時'], OPS.TZ, 'yyyy/MM/dd HH:mm:ss') : String(r['申込日時'] || '');
+  const out = {};
+  [['jp', 'J'], ['intl', 'G']].forEach(([r, prefix]) => {
+    out[r] = rows[r].slice().sort((a, b) => key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0)
+      .map((row, i) => Object.assign(row, { '生徒ID': prefix + ('000' + (i + 1)).slice(-4) }));
+  });
+  out.report = report;
+  return out;
+}
+

@@ -23,11 +23,12 @@ function opsTestFill() {
 function opsTestFill_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
+  // 確認の画面は出さない（Googleアカウントに複数ログインしていると、画面を出したところで止まることがあるため）
   if (OPS.BOARD_FILE_ID || ss.getName().indexOf('テスト') === -1) {
-    ui.alert('テスト用のスプシ（名前に「テスト」が入っているもの）でだけ使えます。');
+    ss.toast('テスト用のスプシ（名前に「テスト」が入っているもの）でだけ使えます。', 'テスト用のダミー', 8);
     return;
   }
-  if (ui.alert('ダミーを入れ直します', '生徒_JP・生徒_海外・クラス一覧・使い方を消して、ダミーで作り直します。進めますか？', ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return;
+  ss.toast('ダミーを入れ直しています（30秒ほど）…', 'テスト用のダミー', 30);
 
   const d = opsTestRows_(opsTodayKey_());
   const ours = [OPS.SHEET_JP, OPS.SHEET_INTL, OPS.SHEET_CLASSES, '使い方'];
@@ -55,7 +56,7 @@ function opsTestFill_() {
   });
   opsTestWriteOld_(d.old);
   ss.setActiveSheet(ss.getSheetByName(OPS.SHEET_JP));
-  ui.alert('ダミーを入れました', '次は、メニュー「TD台帳」の「列を整理する（最初に1回）」→「旧名簿から今の生徒を取り込む（最初に1回）」→「一覧表を今すぐ作り直す」の順にどうぞ。', ui.ButtonSet.OK);
+  ss.toast('次は「列を整理する」→「旧名簿から今の生徒を取り込む」→「一覧表を今すぐ作り直す」', 'ダミーを入れました', 15);
 }
 
 const OPS_TEST_OLD_CLASS_HEAD = ['Group ID', 'Student ID', 'Display name', 'Full name', 'Gender', 'Email (Google Account)', 'Notes (if any)',

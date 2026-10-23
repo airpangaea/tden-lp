@@ -17,6 +17,10 @@ const OPS_TEST_CLASS_HEAD = ['Group ID', '種別', '曜日', '時間(JST)', '講
   'Class Student Info', 'スライド', 'Slackチャンネル', 'メモ'];
 
 function opsTestFill() {
+  opsRun_(opsTestFill_);
+}
+
+function opsTestFill_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
   if (OPS.BOARD_FILE_ID || ss.getName().indexOf('テスト') === -1) {
@@ -70,7 +74,7 @@ function opsTestWriteOld_(old) {
     sheet.getRange(1, 1, 1, head.length).setFontWeight('bold');
     return name;
   };
-  const keep = [write(OPS.OLD_APPLICANTS_SHEET, OPS_TEST_OLD_APP_HEAD, old.applicants)]
+  const keep = [write(OPS.OLD_APPLICANTS_SHEETS[0], OPS_TEST_OLD_APP_HEAD, old.applicants)]
     .concat(old.sheets.map(sh => write(sh.name, OPS_TEST_OLD_CLASS_HEAD, sh.rows)));
   ss.getSheets().filter(sh => keep.indexOf(sh.getName()) === -1).forEach(sh => ss.deleteSheet(sh));
 }
@@ -78,6 +82,8 @@ function opsTestWriteOld_(old) {
 /** シートを作り直して表を入れる（前の列の束ね・入力規則・色も消える） */
 function opsTestSheet_(ss, name, head, rows, fmt) {
   const old = ss.getSheetByName(name);
+  const left = ss.getSheetByName(name + '（作成中）'); // 前に途中で止まった時の残り
+  if (left) ss.deleteSheet(left);
   const sheet = ss.insertSheet(name + '（作成中）', ss.getSheets().length);
   if (old) ss.deleteSheet(old);
   sheet.setName(name);

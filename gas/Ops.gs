@@ -29,7 +29,8 @@ const OPS = {
   STAFF_FILE_ID: '',
   // 旧名簿（クラス別シートと Japanese Applicants があるスプシ）。本番で取り込む時だけ入れる。空ならテスト用のダミーを読む
   OLD_FILE_ID: '',
-  OLD_APPLICANTS_SHEET: 'Japanese Applicants',
+  // 旧名簿の申込の一覧（申込日時などを探す。クラス別シートとしては読まない）
+  OLD_APPLICANTS_SHEETS: ['Japanese Applicants', 'Overseas Applicants'],
   SHEET_JP: '生徒_JP',
   SHEET_INTL: '生徒_海外',
   SHEET_CLASSES: 'クラス一覧',
@@ -109,6 +110,10 @@ function onOpen() {
 }
 
 function opsRefreshNow() {
+  opsRun_(opsRefreshNow_);
+}
+
+function opsRefreshNow_() {
   opsRefresh(true);
   const ledger = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(OPS.LEDGER_TAB_THIS);
   opsShowLinks_('一覧表を作り直しました', [
@@ -119,11 +124,19 @@ function opsRefreshNow() {
 }
 
 function opsRecordNow() {
+  opsRun_(opsRecordNow_);
+}
+
+function opsRecordNow_() {
   const rec = opsRecordMonth_(true);
   opsShowLink_('記録しました（タブとPDF）', rec.url, '記録したタブを開く');
 }
 
 function opsWeeklyNow() {
+  opsRun_(opsWeeklyNow_);
+}
+
+function opsWeeklyNow_() {
   const to = opsSendWatch_(opsWatchItems_(opsData_()));
   SpreadsheetApp.getActiveSpreadsheet().toast(to + ' に送りました', '見張りメール', 5);
 }
@@ -148,6 +161,16 @@ function opsDeleteTriggers_() {
   ScriptApp.getProjectTriggers()
     .filter(t => mine.indexOf(t.getHandlerFunction()) !== -1)
     .forEach(t => ScriptApp.deleteTrigger(t));
+}
+
+/** メニューから動かした処理でエラーが出たら、中身を画面に出す（Googleの通知だけでは原因が分からないため） */
+function opsRun_(fn) {
+  try {
+    fn();
+  } catch (err) {
+    const where = String(err && err.stack || '').split('\n').slice(0, 4).join('\n');
+    SpreadsheetApp.getUi().alert('エラーが出ました', String(err && err.message || err) + '\n\n' + where + '\n\nこの画面のスクショを送ってください。', SpreadsheetApp.getUi().ButtonSet.OK);
+  }
 }
 
 function opsShowLink_(title, url, label) {
@@ -950,6 +973,10 @@ function opsSendWatch_(items) {
 /* ======================= 列の整理（最初に1回） ======================= */
 
 function opsSetupColumns() {
+  opsRun_(opsSetupColumns_);
+}
+
+function opsSetupColumns_() {
   const ui = SpreadsheetApp.getUi();
   const ok = ui.alert('列を整理します',
     '生徒_JP・生徒_海外の列を、使う場面ごとに並べ替えます。足りない列（最終日など）は足し、申込の時だけ見る列は畳み、ステータスで行に色を付けます。' +
@@ -1140,10 +1167,14 @@ const OPS_APPLICANT_COLS = {
   applied: { names: ['申込日時'], at: 3 }, via: { names: ['経由'], at: 4 }, name: { names: ['名前'], at: 5 }, country: { names: ['国名'], at: 6 },
   sex: { names: ['性別'], at: 7 }, email: { names: ['Eメール', 'Email', 'メール'], at: 8 }, level: { names: ['英語レベル'], at: 9 },
   grade: { names: ['学年'], at: 10 }, school: { names: ['学校名'], at: 11 }, phone: { names: ['電話番号', '電話'], at: 12 },
-  comment: { names: ['ご要望など'], at: 16 },
+  comment: { names: ['ご要望など', 'メッセージ'], at: 16 },
 };
 
 function opsImportOld() {
+  opsRun_(opsImportOld_);
+}
+
+function opsImportOld_() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = { jp: ss.getSheetByName(OPS.SHEET_JP), intl: ss.getSheetByName(OPS.SHEET_INTL) };
@@ -1153,18 +1184,17 @@ function opsImportOld() {
   }
   const ok = ui.alert('旧名簿から今の生徒を取り込みます',
     '旧名簿のクラス別シート（クラス一覧にあるクラスだけ）から、空の行までの生徒を読み、生徒_JP・生徒_海外に「在籍」で入れます。' +
-    '申込日時・電話・経由などは Japanese Applicants から探します。すでにある生徒（メールか名前が同じ）は、クラスと席番号を書き足します。' +
+    '申込日時・電話・経由などは Japanese Applicants と Overseas Applicants から探します。すでにある生徒（メールか名前が同じ）は、クラスと席番号を書き足します。' +
     '最後に全体を申込順に並べ直し、生徒IDも申込順に振り直します（今のIDも変わります）。旧名簿は読むだけで、書き換えません。進めますか？', ui.ButtonSet.OK_CANCEL);
   if (ok !== ui.Button.OK) return;
 
   const old = opsOldFile_();
-  const ja = old.getSheetByName(OPS.OLD_APPLICANTS_SHEET);
   const ledger = {};
   ['jp', 'intl'].forEach(r => { ledger[r] = opsReadWithFormulas_(sheets[r]); });
   const res = opsImportMerge_({
     classIds: opsData_().classes.map(c => c.id),
-    sheets: old.getSheets().filter(sh => sh.getName() !== OPS.OLD_APPLICANTS_SHEET).map(sh => ({ name: sh.getName(), values: sh.getDataRange().getValues() })),
-    applicants: ja ? ja.getDataRange().getValues() : [[]],
+    sheets: old.getSheets().filter(sh => OPS.OLD_APPLICANTS_SHEETS.indexOf(sh.getName()) === -1).map(sh => ({ name: sh.getName(), values: sh.getDataRange().getValues() })),
+    applicants: OPS.OLD_APPLICANTS_SHEETS.map(n => old.getSheetByName(n)).filter(Boolean).map(sh => sh.getDataRange().getValues()),
     ledger,
   });
   ['jp', 'intl'].forEach(r => {
@@ -1176,7 +1206,7 @@ function opsImportOld() {
   const rp = res.report;
   ui.alert('取り込みました', [
     '新しく入れた生徒：' + rp.added + '人　／　すでにあった生徒に書き足した：' + rp.updated + '人',
-    rp.noDate.length ? 'Japanese Applicants に見つからず、申込日時が空の生徒（いちばん上に入れました）：' + rp.noDate.join('、') : '',
+    rp.noDate.length ? '申込の一覧に見つからず、申込日時が空の生徒（いちばん上に入れました）：' + rp.noDate.join('、') : '',
     rp.twice.length ? '2つのクラスシートにいた生徒（最初のクラスだけ入れました）：' + rp.twice.join('、') : '',
     rp.skipped.length ? 'クラス一覧に無いので読まなかったシート：' + rp.skipped.join('、') : '',
     rp.missing.length ? '旧名簿にシートが無かったクラス：' + rp.missing.join('、') : '',
@@ -1208,9 +1238,11 @@ function opsReadWithFormulas_(sheet) {
 function opsReadAs_(values, cols) {
   const head = (values[0] || []).map(h => String(h).trim());
   const idx = {};
+  const found = k => cols[k].names.map(n => head.indexOf(n)).filter(i => i !== -1)[0];
+  const byName = Object.keys(cols).filter(k => found(k) !== undefined).length >= 3; // 1行目が列名として読める表か
   Object.keys(cols).forEach(k => {
-    const i = cols[k].names.map(n => head.indexOf(n)).filter(i => i !== -1)[0];
-    idx[k] = i !== undefined ? i : cols[k].at;
+    const i = found(k);
+    idx[k] = i !== undefined ? i : byName ? -1 : cols[k].at;
   });
   return values.slice(1).map(v => {
     const o = {};
@@ -1231,7 +1263,8 @@ function opsImportMerge_(input) {
   const lower = v => String(v || '').trim().toLowerCase();
   const classOf = {};
   input.classIds.forEach(id => { classOf[lower(id)] = id; });
-  const apps = opsReadAs_(input.applicants, OPS_APPLICANT_COLS).filter(a => a.name || a.email);
+  // Japanese Applicants と Overseas Applicants の両方から探す（海外生は Overseas に無いこともある）
+  const apps = [].concat.apply([], input.applicants.map(v => opsReadAs_(v, OPS_APPLICANT_COLS))).filter(a => a.name || a.email);
   const findApps = (email, name) => apps.filter(a => (email && lower(a.email) === lower(email)) || (name && a.name === name));
   const rows = { jp: input.ledger.jp.rows.slice(), intl: input.ledger.intl.rows.slice() };
   const done = {}, seenClass = {};

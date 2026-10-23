@@ -3,18 +3,23 @@
  * スプシ「TDEN 生徒管理」の Apps Script に、Code.gs とは別のファイルとして置く。
  * テスト用のスプシでは、このファイルだけで動く（Code.gs は要らない）。
  *
+ * 台帳（生徒管理スプシ）
+ *  - 生徒_JP／生徒_海外 … 1人1行。ステータス・名前・連絡先など。「受講中のクラス」は自動
+ *  - 受講 … 1行＝1人×1クラス（生徒ID・クラス・席番号・開始日・最終日）。スタンダード2つ＋GAP など何クラスでも書ける
+ *  - クラス一覧 … 1クラス1行（Class ID＝曜日＋時刻＋講師コード、状態 active／non-active、種別 Standard／GAP、講師・アシスタント、ターム）
+ *  - 講師 … 講師・アシスタントの名前・コード・カタカナ
+ *
  * 役割
- *  1. 一覧表 … 生徒_JP・生徒_海外・クラス一覧から、Class Structure に「今月（自動）」「来月（自動）」のタブを作る。
- *               生徒の名前を押すと、生徒_JP／生徒_海外のその行が開く
- *  2. 5分おき … 一覧表を作り直す（中身が変わった時だけ）／最終日を過ぎた生徒を「退会」にする／
- *               支払待ち・在籍で「Wixパスワード」が空なら作る／海外生の「Display name」が空なら名前から作る
+ *  1. 一覧表 … あなた用（生徒管理の「一覧表_今月／来月」。名前を押すと生徒の行が開く）、Class Structure（スタッフ・講師用・リンク無し）、
+ *               スタッフ用の名簿（クラス別シート・席番号順・講師とアシスタント・(admin)・足りない情報は赤）を作る
+ *  2. 5分おき … 一覧表を作り直す（中身が変わった時だけ）／受講の席番号が空なら空いている番号を入れる／すべてのクラスを去った生徒を「退会」にする／
+ *               支払待ち・在籍で「Wixパスワード」が空なら作る（GAPだけの生徒は作らない）／海外生の「Display name」が空なら名前から作る
  *  3. 月の記録 … 月末に、今月の一覧表を「26Nov（自動）」のようなタブに写し、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）
  *  4. 見張りメール … 毎週月曜の朝、対応が要るものだけを送る
- *  5. 列の整理 … 生徒シートの列を使う場面ごとに並べ替え、ステータスで行に色を付ける。クラス一覧の「ターム・開始日」を
- *               「ターム」（1〜6）と「ターム開始日」に分ける（1回だけ。Code.gs は列名で読み書きし、ターム・開始日は使っていない）
+ *  5. 列の整理・旧名簿からの取り込み（最初に1回）
  *
  * 初回（手順は gas/README.md）
- *  - メニュー「TD台帳」→「列を整理する」→「一覧表を今すぐ作り直す」→ よければ「自動の更新を始める」
+ *  - メニュー「TD台帳」→「列を整理する」→「旧名簿から今の生徒を取り込む」→「一覧表を今すぐ作り直す」→ よければ「自動の更新を始める」
  *
  * 注意
  *  - Code.gs と同じプロジェクトに入るので、関数・定数はすべて ops／OPS で始める（名前がぶつからないように）
@@ -23,17 +28,19 @@
 
 const OPS = {
   // Class Structure のスプシID。空のあいだは「Class Structure（自動・テスト）」を新しく作って使う（テスト用）
-  // Class Structure はスタッフ・講師も見るので、生徒管理へのリンクは付けない
+  // Class Structure はスタッフ・講師も見るので、生徒管理へのリンクは付けない（生徒には見せない）
   BOARD_FILE_ID: '',
   // スタッフ用の名簿（クラス別シート。メール・パスワード入り。スタッフだけに共有）。空ならテスト用を新しく作る
   STAFF_FILE_ID: '',
-  // 旧名簿（クラス別シートと Japanese Applicants があるスプシ）。本番で取り込む時だけ入れる。空ならテスト用のダミーを読む
+  // 旧名簿（クラス別シートと申込の一覧があるスプシ）。本番で取り込む時だけ入れる。空ならテスト用のダミーを読む
   OLD_FILE_ID: '',
   // 旧名簿の申込の一覧（申込日時などを探す。クラス別シートとしては読まない）
   OLD_APPLICANTS_SHEETS: ['Japanese Applicants', 'Overseas Applicants'],
   SHEET_JP: '生徒_JP',
   SHEET_INTL: '生徒_海外',
+  SHEET_ENROLL: '受講',
   SHEET_CLASSES: 'クラス一覧',
+  SHEET_TEACHERS: '講師',
   TZ: 'Asia/Tokyo',
 
   CAPACITY: 5,       // 1クラスの定員（日本生・海外生それぞれ）
@@ -43,6 +50,7 @@ const OPS = {
 
   STATUSES: ['新規', '提案中', '支払待ち', '在籍', '休会', '退会', '見送り', '空き待ち'],
   SEAT_STATUSES: ['支払待ち', '在籍', '休会'], // 一覧表の席に出るステータス
+  CLASS_STATES: ['active', 'non-active'],     // non-active＝閉じているが、LPには満席などで出しておくクラス
 
   TAB_THIS: '今月（自動）',
   TAB_NEXT: '来月（自動）',
@@ -57,7 +65,7 @@ const OPS = {
 const OPS_COLOR = {
   ongoing: '#e3ecf7', newterm: '#dff2ec', newclass: '#f8ebd3',
   pay: '#fbe7c6', fresh: '#e2f1d5', leave: '#ecedee', none: '#f3f5f5', head: '#dce6f2',
-  ink: '#1c2528', muted: '#6b777b', alert: '#b23a3a', white: '#ffffff', line: '#d2d9da',
+  ink: '#1c2528', muted: '#6b777b', alert: '#b23a3a', white: '#ffffff', line: '#d2d9da', missing: '#f8e3e3',
 };
 
 // 生徒シートの行の色（ステータスごと）。在籍がひと目で分かるように
@@ -73,21 +81,24 @@ const OPS_STATUS_COLORS = [
 // 列の整理：使う場面ごとの並び（いつも見る → クラス分け・依頼文に使う → 申込の時だけ見る）
 const OPS_LAYOUT = {
   '生徒_JP': {
-    order: ['生徒ID', '名前', 'ステータス', 'クラス', '席番号', '開始日', '最終日', 'メモ',
+    order: ['生徒ID', '名前', 'ステータス', '受講中のクラス', '希望クラス', '希望開始日', 'メモ',
             'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', 'Wixパスワード',
             '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
     drop: ['国', 'WhatsApp'], // 日本の申込では空か Japan だけ。中身がある時は消さない
   },
   '生徒_海外': {
-    order: ['生徒ID', '名前', 'ステータス', 'クラス', '席番号', '開始日', '最終日', '支払い済み〜', 'WhatsApp', 'メモ',
+    order: ['生徒ID', '名前', 'ステータス', '受講中のクラス', '希望クラス', '希望開始日', '支払い済み〜', 'WhatsApp', 'メモ',
             'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', '国', 'Wixパスワード',
             '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '電話', '既存照合'],
     drop: [],
   },
 };
 const OPS_FOLD_FROM = '申込日時'; // ここから右（申込の時だけ見る列）を畳む
-const OPS_RENAME = { '提案クラス': 'クラス' }; // Code.gs はこの列を使っていない
-const OPS_DATE_COLS = ['開始日', '最終日', '支払い済み〜'];
+// 提案中・空き待ちの時のクラスと開始日（席が決まったら「受講」に書く）。Code.gs はこの2列を使っていない
+const OPS_RENAME = { '提案クラス': '希望クラス', '開始日': '希望開始日' };
+const OPS_STUDENT_DATES = ['希望開始日', '支払い済み〜'];
+const OPS_ENROLL_HEAD = ['生徒ID', '名前', 'クラス', '席番号', '開始日', '最終日', 'メモ']; // 名前は自動
+const OPS_TEACHER_HEAD = ['名前', 'コード', 'カタカナ', '役割'];
 const OPS_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const OPS_DAYS = [['Mon', '月曜'], ['Tue', '火曜'], ['Wed', '水曜'], ['Thu', '木曜'], ['Fri', '金曜'], ['Sat', '土曜'], ['Sun', '日曜']];
 
@@ -222,19 +233,29 @@ function opsData_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheetOf = name => {
     const sheet = ss.getSheetByName(name);
-    if (!sheet) throw new Error('シートが見つかりません: ' + name);
+    if (!sheet) throw new Error('シートが見つかりません: ' + name + '（先にメニューの「列を整理する」を押してください）');
     return sheet;
   };
-  const students = [], link = {};
+  const students = [], link = {}, byId = {};
   [['jp', OPS.SHEET_JP], ['intl', OPS.SHEET_INTL]].forEach(([region, name]) => {
     const sheet = sheetOf(name);
     // 一覧表の名前を押すと、この行が開く
     link[region] = ss.getUrl().replace(/\/edit.*$/, '') + '/edit#gid=' + sheet.getSheetId() + '&range=A';
-    opsTable_(sheet).rows.forEach(r => students.push(opsStudent_(r, region)));
+    opsTable_(sheet).rows.forEach(r => {
+      const st = opsStudent_(r, region);
+      if (!st.id && !st.name) return;
+      students.push(st);
+      if (st.id) byId[st.id] = st;
+    });
   });
+  const enrollSheet = ss.getSheetByName(OPS.SHEET_ENROLL);
+  const enrolls = enrollSheet ? opsTable_(enrollSheet).rows.map(opsEnroll_).filter(e => e.sid || e.cls) : [];
+  enrolls.forEach(e => { e.st = byId[e.sid] || null; });
+  const teacherSheet = ss.getSheetByName(OPS.SHEET_TEACHERS);
   return {
     classes: opsTable_(sheetOf(OPS.SHEET_CLASSES)).rows.map(opsClass_).filter(c => c.id),
-    students: students.filter(s => s.id || s.name),
+    teachers: teacherSheet ? opsTable_(teacherSheet).rows.map(opsTeacher_).filter(t => t.name) : [],
+    students, enrolls,
     today: opsTodayKey_(),
     link,
   };
@@ -254,8 +275,10 @@ function opsTable_(sheet) {
   return { sheet, head, col, rows };
 }
 
+const opsStr_ = v => String(v == null ? '' : v).trim();
+
 function opsStudent_(r, region) {
-  const s = v => String(v == null ? '' : v).trim();
+  const s = opsStr_;
   return {
     region, row: r._row,
     id: s(r['生徒ID']),
@@ -263,15 +286,13 @@ function opsStudent_(r, region) {
     display: s(r['Display name']) || s(r['名前']),
     hasDisplay: !!s(r['Display name']),
     status: s(r['ステータス']),
-    cls: s(r['クラス'] !== undefined ? r['クラス'] : r['提案クラス']), // 列の整理の前でも動くように
-    start: opsKey_(r['開始日']),
-    end: opsKey_(r['最終日']),
+    wish: s(r['希望クラス'] !== undefined ? r['希望クラス'] : r['提案クラス']), // 列の整理の前でも動くように
+    wishStart: opsKey_(r['希望開始日'] !== undefined ? r['希望開始日'] : r['開始日']),
     paid: opsKey_(r['支払い済み〜']),
     applied: opsKey_(r['申込日時']),
     sex: s(r['性別']),
     grade: s(r['学年']),
     level: s(r['英語レベル']),
-    seat: s(r['席番号']),
     email: s(r['Email']),
     phone: s(r['電話']),
     school: s(r['学校名']),
@@ -280,23 +301,40 @@ function opsStudent_(r, region) {
   };
 }
 
+/** 受講の1行（1人×1クラス） */
+function opsEnroll_(r) {
+  const s = opsStr_;
+  return { row: r._row, sid: s(r['生徒ID']), name: s(r['名前']), cls: s(r['クラス']), seat: s(r['席番号']),
+    start: opsKey_(r['開始日']), end: opsKey_(r['最終日']), memo: s(r['メモ']) };
+}
+
+function opsTeacher_(r) {
+  const s = opsStr_;
+  return { name: s(r['名前']), code: s(r['コード']), kana: s(r['カタカナ']), role: s(r['役割']) };
+}
+
 function opsClass_(c) {
-  const s = v => String(v == null ? '' : v).trim();
+  const s = opsStr_;
   let time = c['時間(JST)'];
   if (time instanceof Date) time = Utilities.formatDate(time, opsSheetTz_(), 'HH:mm');
   const old = s(c['ターム・開始日']); // 列の整理の前の書き方（例「Oct - Dec Term 2」）
   const no = s(c['ターム']) || ((old.match(/Term\s*(\d+)/i) || [])[1] || '');
+  const memo = s(c['メモ']);
+  const state = s(c['状態']) || (/non-?active/i.test(memo) ? 'non-active' : 'active'); // 列の整理の前はメモ欄の「non-active」
   return {
-    id: s(c['Group ID']),
+    id: s(c['Class ID'] !== undefined ? c['Class ID'] : c['Group ID']),
+    state, active: state !== 'non-active',
+    type: s(c['種別']),
     day: opsDay_(c['曜日']),
     time: s(time).replace(/^(\d):/, '0$1:'),
     teacher: s(c['講師']),
+    assistant: s(c['アシスタント']),
     lpJp: s(c['空き_JP']),
     lpIntl: s(c['空き_海外']),
     termNo: no.replace(/\D/g, ''),
     termStart: opsKey_(c['ターム開始日']),
     termText: old,
-    memo: s(c['メモ']),
+    memo,
   };
 }
 
@@ -304,6 +342,11 @@ function opsDay_(v) {
   const t = String(v == null ? '' : v).trim();
   const hit = OPS_DAYS.find(([en, ja]) => t.toLowerCase().indexOf(en.toLowerCase()) === 0 || t.indexOf(ja.charAt(0)) === 0);
   return hit ? hit[0] : '';
+}
+
+/** この受講は今も続いているか（ステータスが席に出るもので、最終日を過ぎていない） */
+function opsLiveEnroll_(e, today) {
+  return !!(e.st && OPS.SEAT_STATUSES.indexOf(e.st.status) !== -1 && !(e.end && e.end < today));
 }
 
 
@@ -361,41 +404,45 @@ function opsFindDate_(text, month) {
 
 /* ======================= 席の割り当て ======================= */
 
-/** 表示する月に、どのクラスの席に誰が出るか */
+/** 表示する月に、どのクラスの席に誰が出るか（active のクラスだけ） */
 function opsPlace_(data, month) {
-  const slots = {};
-  data.classes.forEach(c => { slots[c.id] = { cls: c, jp: [], intl: [], prop: 0, waitJp: 0, waitIntl: 0 }; });
+  const slots = {}, known = {};
+  data.classes.forEach(c => { known[c.id] = c; });
+  data.classes.filter(c => c.active).forEach(c => { slots[c.id] = { cls: c, jp: [], intl: [], prop: 0, waitJp: 0, waitIntl: 0 }; });
   const problems = [];
   const ref = Math.max(data.today, month.start); // 海外の支払いはこの日で見る
+  // 提案中・空き待ちは、生徒シートの「希望クラス」で数える（席には出さない）
   data.students.forEach(st => {
-    const seated = OPS.SEAT_STATUSES.indexOf(st.status) !== -1;
-    if (!st.cls) {
-      if (seated) problems.push({ st, why: 'クラスが空' });
-      return;
-    }
-    const slot = slots[st.cls];
+    if ((st.status !== '提案中' && st.status !== '空き待ち') || !st.wish) return;
+    const slot = slots[st.wish];
     if (!slot) {
-      if (seated || st.status === '提案中' || st.status === '空き待ち') problems.push({ st, why: 'クラス一覧に無いクラス' });
+      if (!known[st.wish]) problems.push({ st, why: '希望クラスがクラス一覧に無い' });
       return;
     }
-    if (st.status === '提案中') {
-      if (!st.start || st.start <= month.end) slot.prop++;
-      return;
-    }
-    if (st.status === '空き待ち') {
-      slot[st.region === 'jp' ? 'waitJp' : 'waitIntl']++;
-      return;
-    }
-    if (!seated) return;
-    if (st.start && st.start > month.end) return;
-    if (st.end && st.end < month.start) return;
+    if (st.status === '提案中') { if (!st.wishStart || st.wishStart <= month.end) slot.prop++; }
+    else slot[st.region === 'jp' ? 'waitJp' : 'waitIntl']++;
+  });
+  data.enrolls.forEach(en => {
+    const st = en.st;
+    if (!st) { problems.push({ st: { name: en.name || '（名前なし）', id: en.sid, cls: en.cls }, why: '受講の生徒IDが生徒シートに無い' }); return; }
+    if (OPS.SEAT_STATUSES.indexOf(st.status) === -1) return;
+    if (!known[en.cls]) { problems.push({ st: Object.assign({}, st, { cls: en.cls }), why: '受講のクラスがクラス一覧に無い' }); return; }
+    const slot = slots[en.cls];
+    if (!slot) return; // non-active のクラス（見張りメールで別に知らせる）
+    if (en.start && en.start > month.end) return;
+    if (en.end && en.end < month.start) return;
     slot[st.region].push({
-      st,
-      leaving: !!(st.end && st.end <= month.end),
-      fresh: !!(st.start && st.start >= month.start),
+      st, en,
+      leaving: !!(en.end && en.end <= month.end),
+      fresh: !!(en.start && en.start >= month.start),
       unpaid: st.status === '支払待ち' || (st.region === 'intl' && st.status === '在籍' && (!st.paid || st.paid < ref)),
       paused: st.status === '休会',
     });
+  });
+  const has = {};
+  data.enrolls.forEach(e => { if (opsLiveEnroll_(e, data.today)) has[e.sid] = true; });
+  data.students.forEach(st => {
+    if ((st.status === '在籍' || st.status === '休会') && st.id && !has[st.id]) problems.push({ st, why: '在籍なのに受講にクラスが無い' });
   });
   Object.keys(slots).forEach(id => ['jp', 'intl'].forEach(r => { slots[id][r] = opsSeatOrder_(slots[id][r]); }));
   return { slots, problems };
@@ -404,10 +451,10 @@ function opsPlace_(data, month) {
 /** 席番号（JP-03 なら3番目）の位置に並べる。番号が無い・重なる生徒は空いている所へ。空席は undefined */
 function opsSeatOrder_(list) {
   const out = [];
-  const byStart = list.slice().sort((a, b) => (a.st.start || 0) - (b.st.start || 0) || (a.st.id < b.st.id ? -1 : a.st.id > b.st.id ? 1 : 0));
+  const byStart = list.slice().sort((a, b) => (a.en.start || 0) - (b.en.start || 0) || (a.st.id < b.st.id ? -1 : a.st.id > b.st.id ? 1 : 0));
   const rest = [];
   byStart.forEach(x => {
-    const n = opsSeatNo_(x.st.seat);
+    const n = opsSeatNo_(x.en.seat);
     if (n && !out[n - 1]) out[n - 1] = x; else rest.push(x);
   });
   rest.forEach(x => { let i = 0; while (out[i]) i++; out[i] = x; });
@@ -471,11 +518,12 @@ function opsBreakdown_(slot) {
 
 /** 一覧表のマス目を作る（シートには書かない）。cells[行][列] = {v, bg, color, bold, strike, size, align, wrap, note, link} */
 function opsBoardGrid_(data, month, title) {
+  const classes = data.classes.filter(c => c.active); // non-active のクラスは出さない
   const place = opsPlace_(data, month);
   const C = OPS_COLOR, CAP = OPS.CAPACITY;
-  const days = OPS_DAYS.filter(([en], i) => i < 5 || data.classes.some(c => c.day === en));
-  const times = Array.from(new Set(data.classes.map(c => c.time).filter(Boolean))).sort();
-  const seen = Array.from(new Set(data.classes.map(c => c.teacher).filter(Boolean)));
+  const days = OPS_DAYS.filter(([en], i) => i < 5 || classes.some(c => c.day === en));
+  const times = Array.from(new Set(classes.map(c => c.time).filter(Boolean))).sort();
+  const seen = Array.from(new Set(classes.map(c => c.teacher).filter(Boolean)));
   const teachers = OPS.TEACHER_ORDER.filter(t => seen.indexOf(t) !== -1).concat(seen.filter(t => OPS.TEACHER_ORDER.indexOf(t) === -1));
   const width = 1 + days.length * 2;
   const cells = [], merges = [];
@@ -505,7 +553,7 @@ function opsBoardGrid_(data, month, title) {
   push(blank());
 
   const byKey = {};
-  data.classes.forEach(c => { byKey[c.teacher + '|' + c.day + '|' + c.time] = c; });
+  classes.forEach(c => { byKey[c.teacher + '|' + c.day + '|' + c.time] = c; });
 
   teachers.forEach(teacher => {
     row = blank();
@@ -585,7 +633,7 @@ function opsSeatCell_(seat, k, linkBase) {
   const C = OPS_COLOR;
   if (!seat) return k < OPS.CAPACITY ? { v: '空席', color: C.muted, size: 9 } : { v: '' };
   const st = seat.st;
-  const name = st.display + (seat.leaving ? '（' + opsMd_(st.end) + 'まで）' : '') + (seat.paused ? '（休会）' : '');
+  const name = st.display + (seat.leaving ? '（' + opsMd_(seat.en.end) + 'まで）' : '') + (seat.paused ? '（休会）' : '');
   const cell = { v: name, link: linkBase ? linkBase + st.row : '' };
   if (seat.leaving) return Object.assign(cell, { bg: C.leave, strike: true, color: C.muted });
   if (seat.unpaid) return Object.assign(cell, { bg: C.pay });
@@ -641,37 +689,58 @@ function opsStripLinks_(grid) {
 
 /* ======================= スタッフ用の名簿（旧名簿のクラス別シートの代わり） ======================= */
 
-const OPS_ROSTER_HEAD = ['Group ID', 'Student ID', 'Display name', 'Full name', 'Gender', 'Email (Google Account)', 'Notes (if any)',
+const OPS_ROSTER_HEAD = ['Class ID', 'Student ID', 'Display name', 'Full name', 'Gender', 'Email (Google Account)', 'Notes (if any)',
   '学年', 'School', '海外生WA', 'Password', 'Wix DB削除確認'];
 const OPS_ROSTER_CHECK = ['未確認', '確認済み']; // Wix DB削除確認の選択肢（スタッフが選ぶ）
 
 /**
- * 1クラス分の行（席番号順。日本生→海外生。空けて、やめた生徒）。
- * {v: 11列, fresh: 1か月以内に入った（B・C列を緑に）, check: Wix DB削除確認の最初の値, key: 書き換えを残すための目印}
+ * 1クラス分の行。日本生→海外生（席番号順）、人数が少ない側は (admin)、講師・アシスタント、空けて、このクラスを去った生徒。
+ * {v: 11列, fresh: 1か月以内に入った（B・C列を緑に）, check: Wix DB削除確認の最初の値, key: 書き換えを残すための目印, missing: 足りない列}
  */
 function opsRosterRows_(data, cls) {
-  const T = data.today, recent = opsAddDays_(T, -30);
-  const mine = data.students.filter(s => s.cls === cls.id);
+  const T = data.today, recent = opsAddDays_(T, -30), gap = /gap/i.test(cls.type);
+  const mine = data.enrolls.filter(e => e.cls === cls.id && e.st);
   // 載せるのは入会した生徒（在籍・休会）だけ。支払待ちの生徒は、席番号は押さえるが、名簿にはまだ出さない
-  const now = mine.filter(s => (s.status === '在籍' || s.status === '休会') && !(s.end && s.end < T));
-  const row = s => ({
-    v: [cls.id, s.seat, s.display, s.name, s.sex, s.email, s.level, s.grade, s.school, s.region === 'intl' ? s.phone : '', s.password],
-    fresh: !!(s.start && s.start >= recent), // 1か月以内に入った・クラスを替えた（これから始まる生徒も）
-    check: /旧名簿から取り込み/.test(s.memo) ? '確認済み' : '未確認', // 旧名簿から移した生徒は確認済み、新しく入った生徒は未確認
-    key: (s.email || s.name).toLowerCase(),
-  });
-  const blank = text => ({ v: [text || ''].concat(OPS_ROSTER_HEAD.slice(1, 11).map(() => '')), fresh: false, check: '', key: '' });
+  const live = mine.filter(e => (e.st.status === '在籍' || e.st.status === '休会') && !(e.end && e.end < T));
+  const blank = (a, b, c) => ({ v: [a || '', b || '', c || ''].concat(OPS_ROSTER_HEAD.slice(3, 11).map(() => '')), fresh: false, check: '', key: '', missing: [] });
+  const row = e => {
+    const s = e.st;
+    const v = [cls.id, e.seat, s.display, s.name, s.sex, s.email, s.level, s.grade, s.school, s.region === 'intl' ? s.phone : '', s.password];
+    // 足りない情報は赤に（GAPのクラスはメール・パスワードが無くてよい。WAは海外生だけ）
+    const need = [1, 2, 3, 4, 6, 7, 8].concat(gap ? [] : [5, 10]).concat(s.region === 'intl' ? [9] : []);
+    return {
+      v,
+      fresh: !!(e.start && e.start >= recent), // 1か月以内に入った・クラスを替えた（これから始まる生徒も）
+      check: /旧名簿から取り込み/.test(e.memo + s.memo) ? '確認済み' : '未確認', // 旧名簿から移した生徒は確認済み、新しく入った生徒は未確認
+      key: (s.email || s.name).toLowerCase(),
+      missing: need.filter(i => !String(v[i] || '').trim()),
+    };
+  };
   const bySeat = (a, b) => (opsSeatNo_(a.seat) || 99) - (opsSeatNo_(b.seat) || 99) || (a.start || 0) - (b.start || 0);
-  const rows = ['jp', 'intl'].reduce((acc, r) => acc.concat(now.filter(s => s.region === r).sort(bySeat).map(row)), []);
-  const past = mine.filter(s => s.status === '退会').sort((a, b) => (b.end || 0) - (a.end || 0)).map(row);
-  return past.length ? rows.concat([blank(), blank('（やめた生徒）')], past) : rows;
+  const lists = { jp: live.filter(e => e.st.region === 'jp'), intl: live.filter(e => e.st.region === 'intl') };
+  const n = Math.max(lists.jp.length, lists.intl.length);
+  const out = [];
+  [['jp', 'JP-'], ['intl', 'ID-']].forEach(([r, prefix]) => {
+    const list = lists[r].slice();
+    // 人数が少ない側は、空いている席番号に (admin)（アシスタントが1対1で代わりに入る）
+    for (let k = 1; k <= n && list.length < n; k++) {
+      if (!list.some(e => opsSeatNo_(e.seat) === k)) list.push({ admin: true, seat: prefix + ('0' + k).slice(-2) });
+    }
+    list.sort(bySeat).forEach(e => out.push(e.admin ? blank(cls.id, e.seat, '(admin)') : row(e)));
+  });
+  // 講師・アシスタント（スタッフが Class Slide に書く）
+  const kana = name => (data.teachers.filter(t => t.name === name)[0] || {}).kana || '';
+  out.push(blank(), blank('Instructor', cls.teacher, kana(cls.teacher)), blank('Assistant', cls.assistant, kana(cls.assistant)));
+  const past = mine.filter(e => e.end && e.end < T).sort((a, b) => (b.end || 0) - (a.end || 0))
+    .map(e => Object.assign(row(e), { fresh: false, missing: [] }));
+  return past.length ? out.concat([blank(), blank('（このクラスを去った生徒）')], past) : out;
 }
 
 function opsBuildRoster_(data, force) {
   const ss = opsStaffFile_();
   const props = PropertiesService.getScriptProperties();
   const W = OPS_ROSTER_HEAD.length;
-  data.classes.forEach(cls => {
+  data.classes.filter(c => c.active).forEach(cls => {
     const rows = opsRosterRows_(data, cls);
     const key = 'OPS_HASH_R_' + cls.id, hash = opsHash_(rows);
     let sheet = ss.getSheetByName(cls.id);
@@ -686,12 +755,13 @@ function opsBuildRoster_(data, force) {
     }
     if (!sheet) sheet = ss.insertSheet(cls.id, ss.getSheets().length);
     sheet.clear();
-    sheet.getRange(2, W, Math.max(sheet.getMaxRows() - 1, 1), 1).clearDataValidations();
+    sheet.getRange(1, 1, sheet.getMaxRows(), W).clearDataValidations();
     const values = [OPS_ROSTER_HEAD].concat(rows.map(r => r.v.concat([r.key ? (kept[r.key] || r.check) : ''])));
     sheet.getRange(1, 1, values.length, W).setNumberFormat('@').setValues(values);
     sheet.getRange(1, 1, 1, W).setFontWeight('bold').setBackground(OPS_COLOR.head);
     rows.forEach((r, i) => {
       if (r.fresh) sheet.getRange(i + 2, 2, 1, 2).setBackground(OPS_COLOR.fresh); // B・C列（Student ID・Display name）を緑
+      r.missing.forEach(c => sheet.getRange(i + 2, c + 1).setBackground(OPS_COLOR.missing));
       if (r.key) sheet.getRange(i + 2, W).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(OPS_ROSTER_CHECK, true).build());
     });
     sheet.setFrozenRows(1);
@@ -827,43 +897,78 @@ function opsSheetPdf_(ss, sheet, name) {
 }
 
 
-/* ======================= 生徒シートの自動の書き込み ======================= */
+/* ======================= 台帳の自動の書き込み ======================= */
 
-/** 最終日を過ぎた生徒のステータスを「退会」にする */
+/** すべてのクラスを去った生徒（受講があり、どれも最終日を過ぎた）のステータスを「退会」にする */
 function opsRetirePast_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const enrollSheet = ss.getSheetByName(OPS.SHEET_ENROLL);
+  if (!enrollSheet) return;
   const today = opsTodayKey_();
+  const any = {}, live = {};
+  opsTable_(enrollSheet).rows.map(opsEnroll_).forEach(e => {
+    if (!e.sid) return;
+    any[e.sid] = true;
+    if (!(e.end && e.end < today)) live[e.sid] = true;
+  });
   [OPS.SHEET_JP, OPS.SHEET_INTL].forEach(name => {
     const t = opsTable_(ss.getSheetByName(name));
     const cs = t.col['ステータス'];
-    if (cs === undefined || t.col['最終日'] === undefined) return;
+    if (cs === undefined) return;
     t.rows.forEach(r => {
-      const end = opsKey_(r['最終日']);
-      if (end && end < today && OPS.SEAT_STATUSES.indexOf(String(r['ステータス']).trim()) !== -1) {
-        t.sheet.getRange(r._row, cs + 1).setValue('退会');
-      }
+      const id = opsStr_(r['生徒ID']);
+      if (id && any[id] && !live[id] && OPS.SEAT_STATUSES.indexOf(opsStr_(r['ステータス'])) !== -1) t.sheet.getRange(r._row, cs + 1).setValue('退会');
     });
   });
 }
 
-/** 支払待ち・在籍で Wixパスワード が空なら作る／海外生の Display name が空なら名前から作る／席番号が空なら空いている番号を入れる */
+/**
+ * 受講：席番号が空なら空いている番号、名前は生徒シートから。
+ * 生徒シート：受講中のクラス、支払待ち・在籍で Wixパスワード が空なら作る（GAPだけの生徒は作らない）、海外生の Display name が空なら名前から作る
+ */
 function opsFillDefaults_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const active = ['新規', '提案中', '支払待ち', '在籍', '休会', '空き待ち'];
   const today = opsTodayKey_();
-  [[OPS.SHEET_JP, 'jp'], [OPS.SHEET_INTL, 'intl']].forEach(([name, region]) => {
-    const t = opsTable_(ss.getSheetByName(name));
-    const cp = t.col['Wixパスワード'], cd = t.col['Display name'], cs = t.col['席番号'];
-    if (cs !== undefined) {
-      opsAssignSeats_(t.rows, region, today).forEach(([r, seat]) => t.sheet.getRange(r._row, cs + 1).setValue(seat));
+  const active = ['新規', '提案中', '支払待ち', '在籍', '休会', '空き待ち'];
+  const gapClass = {};
+  opsTable_(ss.getSheetByName(OPS.SHEET_CLASSES)).rows.map(opsClass_).forEach(c => { gapClass[c.id] = /gap/i.test(c.type); });
+  const sheets = {}, byId = {};
+  [['jp', OPS.SHEET_JP], ['intl', OPS.SHEET_INTL]].forEach(([region, name]) => {
+    sheets[region] = opsTable_(ss.getSheetByName(name));
+    sheets[region].rows.forEach(r => { const id = opsStr_(r['生徒ID']); if (id) byId[id] = { r, region }; });
+  });
+  const enrollSheet = ss.getSheetByName(OPS.SHEET_ENROLL);
+  const classesOf = {};
+  if (enrollSheet) {
+    const t = opsTable_(enrollSheet);
+    const isLive = r => {
+      const who = byId[opsStr_(r['生徒ID'])];
+      return !!who && OPS.SEAT_STATUSES.indexOf(opsStr_(who.r['ステータス'])) !== -1 && !(opsKey_(r['最終日']) && opsKey_(r['最終日']) < today);
+    };
+    if (t.col['席番号'] !== undefined) {
+      opsAssignSeats_(t.rows, r => (byId[opsStr_(r['生徒ID'])] || {}).region, isLive)
+        .forEach(([r, seat]) => t.sheet.getRange(r._row, t.col['席番号'] + 1).setValue(seat));
     }
     t.rows.forEach(r => {
-      const st = String(r['ステータス'] || '').trim();
-      if (cp !== undefined && (st === '支払待ち' || st === '在籍') && !String(r['Wixパスワード'] || '').trim()) {
+      const who = byId[opsStr_(r['生徒ID'])];
+      if (!who) return;
+      const name = opsStr_(who.r['Display name']) || opsStr_(who.r['名前']);
+      if (t.col['名前'] !== undefined && name && opsStr_(r['名前']) !== name) t.sheet.getRange(r._row, t.col['名前'] + 1).setValue(name);
+      if (isLive(r)) (classesOf[opsStr_(r['生徒ID'])] = classesOf[opsStr_(r['生徒ID'])] || []).push(opsStr_(r['クラス']));
+    });
+  }
+  ['jp', 'intl'].forEach(region => {
+    const t = sheets[region];
+    const cp = t.col['Wixパスワード'], cd = t.col['Display name'], cc = t.col['受講中のクラス'];
+    t.rows.forEach(r => {
+      const id = opsStr_(r['生徒ID']), st = opsStr_(r['ステータス']);
+      const list = classesOf[id] || [];
+      if (cc !== undefined && opsStr_(r['受講中のクラス']) !== list.join('、')) t.sheet.getRange(r._row, cc + 1).setValue(list.join('、'));
+      const onlyGap = list.length > 0 && list.every(c => gapClass[c]);
+      if (cp !== undefined && (st === '支払待ち' || st === '在籍') && !onlyGap && !opsStr_(r['Wixパスワード'])) {
         t.sheet.getRange(r._row, cp + 1).setNumberFormat('@').setValue(opsNewPassword_());
       }
-      if (region === 'intl' && cd !== undefined && active.indexOf(st) !== -1 &&
-          !String(r['Display name'] || '').trim() && String(r['名前'] || '').trim()) {
+      if (region === 'intl' && cd !== undefined && active.indexOf(st) !== -1 && !opsStr_(r['Display name']) && opsStr_(r['名前'])) {
         t.sheet.getRange(r._row, cd + 1).setValue(opsShortName_(r['名前']));
       }
     });
@@ -871,28 +976,26 @@ function opsFillDefaults_() {
 }
 
 /**
- * 席番号が空の生徒に、そのクラスで空いている一番小さい番号を割り当てる（日本生 JP-01〜、海外生 ID-01〜）。
- * 対象は席に出るステータスで、最終日を過ぎていない生徒。[行, 席番号] の並びを返す
+ * 受講の席番号が空の行に、そのクラスで空いている一番小さい番号を割り当てる（日本生 JP-01〜、海外生 ID-01〜）。
+ * regionOf(行) で日本／海外、isLive(行) で今も続いている受講か。[行, 席番号] の並びを返す
  */
-function opsAssignSeats_(rows, region, today) {
-  const prefix = region === 'jp' ? 'JP-' : 'ID-';
-  const live = rows.filter(r => OPS.SEAT_STATUSES.indexOf(String(r['ステータス'] || '').trim()) !== -1 &&
-    String(r['クラス'] || '').trim() && !(opsKey_(r['最終日']) && opsKey_(r['最終日']) < today));
+function opsAssignSeats_(rows, regionOf, isLive) {
+  const live = rows.filter(r => opsStr_(r['クラス']) && regionOf(r) && isLive(r));
   const used = {};
+  const key = r => opsStr_(r['クラス']) + '|' + regionOf(r);
   live.forEach(r => {
     const n = opsSeatNo_(r['席番号']);
-    if (n) (used[String(r['クラス']).trim()] = used[String(r['クラス']).trim()] || {})[n] = true;
+    if (n) (used[key(r)] = used[key(r)] || {})[n] = true;
   });
   const out = [];
-  live.filter(r => !String(r['席番号'] || '').trim())
+  live.filter(r => !opsStr_(r['席番号']))
     .sort((a, b) => (opsKey_(a['開始日']) || 0) - (opsKey_(b['開始日']) || 0) || a._row - b._row)
     .forEach(r => {
-      const cls = String(r['クラス']).trim();
-      const u = used[cls] = used[cls] || {};
+      const u = used[key(r)] = used[key(r)] || {};
       let n = 1;
       while (u[n]) n++;
       u[n] = true;
-      out.push([r, prefix + ('0' + n).slice(-2)]);
+      out.push([r, (regionOf(r) === 'jp' ? 'JP-' : 'ID-') + ('0' + n).slice(-2)]);
     });
   return out;
 }
@@ -917,21 +1020,25 @@ function opsShortName_(name) {
 
 /** 対応が要るものを {title, lines} の並びで返す（無い項目は出さない） */
 function opsWatchItems_(data) {
-  const T = data.today, S = data.students, CAP = OPS.CAPACITY, md = opsMd_;
-  const who = s => s.name + '（' + s.id + (s.cls ? '・' + s.cls : '') + '）';
+  const T = data.today, S = data.students, E = data.enrolls, CAP = OPS.CAPACITY, md = opsMd_;
+  const who = s => s.name + '（' + s.id + ((s.cls || s.wish) ? '・' + (s.cls || s.wish) : '') + '）';
   const items = [];
   const add = (title, lines) => { if (lines.length) items.push({ title, lines }); };
   const live = s => s.status === '支払待ち' || s.status === '在籍';
+  const liveE = e => opsLiveEnroll_(e, T);
+  const firstStart = s => E.filter(e => e.st === s && liveE(e) && e.start).map(e => e.start).sort()[0] || s.wishStart || 0;
+  const m0 = opsMonth_(T, 0);
 
   add('新規のまま3日以上（受付の返信がまだ）',
     S.filter(s => s.status === '新規' && s.applied && s.applied <= opsAddDays_(T, -3)).map(s => who(s) + ' 申込 ' + md(s.applied)));
   add('提案中で、開始日まで7日を切った（返事を確かめる）',
-    S.filter(s => s.status === '提案中' && (!s.start || s.start <= opsAddDays_(T, 7))).map(s => who(s) + ' ' + (s.start ? md(s.start) + 'から' : '開始日が空')));
+    S.filter(s => s.status === '提案中' && (!s.wishStart || s.wishStart <= opsAddDays_(T, 7))).map(s => who(s) + ' ' + (s.wishStart ? md(s.wishStart) + 'から' : '希望開始日が空')));
   add('支払待ちのまま開始日を過ぎた（日本生）',
-    S.filter(s => s.region === 'jp' && s.status === '支払待ち' && s.start && s.start < T).map(s => who(s) + ' ' + md(s.start) + 'から'));
+    S.filter(s => s.region === 'jp' && s.status === '支払待ち' && firstStart(s) && firstStart(s) < T).map(s => who(s) + ' ' + md(firstStart(s)) + 'から'));
   add('海外生の支払い',
-    S.filter(s => s.region === 'intl' && live(s) && !(s.end && s.end < T)).map(s => {
-      if (!s.paid) return s.start && s.start <= opsAddDays_(T, -14) ? who(s) + ' ' + md(s.start) + 'から・まだ' : '';
+    S.filter(s => s.region === 'intl' && live(s) && E.some(e => e.st === s && liveE(e))).map(s => {
+      const start = firstStart(s);
+      if (!s.paid) return start && start <= opsAddDays_(T, -14) ? who(s) + ' ' + md(start) + 'から・まだ' : '';
       if (s.paid < T) return who(s) + ' ' + md(s.paid) + 'で切れた';
       if (s.paid <= opsAddDays_(T, 14)) return who(s) + ' ' + md(s.paid) + 'で切れる';
       return '';
@@ -947,6 +1054,7 @@ function opsWatchItems_(data) {
       if (add1 !== 1) return;
       if (sl.waitJp && n.jp < CAP) waits.push(id + '：日本生の空き' + (CAP - n.jp) + '・空き待ち' + sl.waitJp + '人');
       if (sl.waitIntl && n.intl < CAP) waits.push(id + '：海外生の空き' + (CAP - n.intl) + '・空き待ち' + sl.waitIntl + '人');
+      // LPの空き状況のずれ（non-active のクラスは、生徒0人でも満席に見せているので調べない。p.slots は active だけ）
       [['lpJp', '日本', n.jp], ['lpIntl', '海外', n.intl]].forEach(([k, lab, cnt]) => {
         const v = sl.cls[k];
         if (!v || v === '非表示') return;
@@ -958,27 +1066,36 @@ function opsWatchItems_(data) {
   add('日本生と海外生の差が' + OPS.DIFF_ALERT + '名以上', diffs);
   add('空き待ちの人がいて、来月空きがあるクラス', waits);
   add('来週が初回（日本生にはリマインド）',
-    S.filter(s => live(s) && s.start && s.start > T && s.start <= opsAddDays_(T, 7)).map(s => who(s) + ' ' + md(s.start)));
-  add('この1週間に、最終日を過ぎて「退会」にした',
-    S.filter(s => s.status === '退会' && s.end && s.end < T && s.end >= opsAddDays_(T, -7)).map(s => who(s) + ' 最終日 ' + md(s.end)));
+    E.filter(e => liveE(e) && e.start && e.start > T && e.start <= opsAddDays_(T, 7)).map(e => who(Object.assign({}, e.st, { cls: e.cls })) + ' ' + md(e.start)));
+  add('この1週間に、クラスを去った（最終日を過ぎた）',
+    E.filter(e => e.st && e.end && e.end < T && e.end >= opsAddDays_(T, -7)).map(e => who(Object.assign({}, e.st, { cls: e.cls })) + ' 最終日 ' + md(e.end)));
   add('LPの空き状況が人数と合っていない（来月の人数で比べています）', lp);
   // タームは12回。11回目の週を過ぎたら、次のタームの番号と開始日をクラス一覧に入れてもらう
-  const m0 = opsMonth_(T, 0);
   add('そろそろ次のターム（クラス一覧の「ターム」と「ターム開始日」を直す）',
-    data.classes.map(c => {
+    data.classes.filter(c => c.active).map(c => {
       const d = opsTermStart_(c, m0);
       if (!d || opsAddDays_(d, (OPS.TERM_WEEKS - 2) * 7) > T) return '';
       return c.id + '：Term ' + (c.termNo || '?') + '（' + md(d) + '〜）→ 次は Term ' + (c.termNo ? Number(c.termNo) + 1 : '?');
     }).filter(Boolean));
-  add('クラス一覧のタームか開始日が空', data.classes.filter(c => !c.termNo || !opsTermStart_(c, m0)).map(c => c.id));
-  add('クラスの欄を確かめる', opsPlace_(data, m0).problems.map(p => who(p.st) + ' ' + p.why));
+  add('クラス一覧のタームか開始日が空', data.classes.filter(c => c.active && (!c.termNo || !opsTermStart_(c, m0))).map(c => c.id));
+  // Class ID は「曜日＋時刻＋講師コード」（例 Mon2030NM）。講師のコードは「講師」シートから
+  const codeOf = {};
+  data.teachers.forEach(t => { if (t.code) codeOf[t.name] = t.code; });
+  add('Class ID が「曜日＋時刻＋講師コード」になっていない', data.classes.map(c => {
+    if (!c.day || !c.time || !codeOf[c.teacher]) return '';
+    const want = c.day + c.time.replace(':', '') + codeOf[c.teacher];
+    return c.id === want ? '' : c.id + '（曜日・時刻・講師から見ると ' + want + '）';
+  }).filter(Boolean));
+  add('non-active のクラスに生徒がいる（クラス一覧の状態を active にする）',
+    data.classes.filter(c => !c.active && E.some(e => e.cls === c.id && liveE(e))).map(c => c.id));
+  add('確かめてほしい行', opsPlace_(data, m0).problems.map(p => who(p.st) + ' ' + p.why));
   // 同じクラス・同じ席番号の生徒が2人いる（スライドの交流テーブルがずれる）
   const seen = {}, dup = [];
-  S.filter(s => OPS.SEAT_STATUSES.indexOf(s.status) !== -1 && s.cls && s.seat && !(s.end && s.end < T)).forEach(s => {
-    const k = s.cls + '|' + s.region + '|' + opsSeatNo_(s.seat);
-    if (seen[k]) dup.push(s.cls + ' ' + s.seat + '：' + seen[k].name + ' と ' + s.name); else seen[k] = s;
+  E.filter(e => liveE(e) && e.seat).forEach(e => {
+    const k = e.cls + '|' + e.st.region + '|' + opsSeatNo_(e.seat);
+    if (seen[k]) dup.push(e.cls + ' ' + e.seat + '：' + seen[k].st.name + ' と ' + e.st.name); else seen[k] = e;
   });
-  add('同じ席番号の生徒が2人いる（どちらかの席番号を直す）', dup);
+  add('同じ席番号の生徒が2人いる（受講の席番号を直す）', dup);
   return items;
 }
 
@@ -994,6 +1111,7 @@ function opsSendWatch_(items) {
 }
 
 
+
 /* ======================= 列の整理（最初に1回） ======================= */
 
 function opsSetupColumns() {
@@ -1003,26 +1121,37 @@ function opsSetupColumns() {
 function opsSetupColumns_() {
   const ui = SpreadsheetApp.getUi();
   const ok = ui.alert('列を整理します',
-    '生徒_JP・生徒_海外の列を、使う場面ごとに並べ替えます。足りない列（最終日など）は足し、申込の時だけ見る列は畳み、ステータスで行に色を付けます。' +
-    'クラス一覧の「ターム・開始日」は「ターム」と「ターム開始日」に分けます。' +
+    'クラス一覧（Class ID・状態・アシスタント・ターム）、講師シート、生徒_JP・生徒_海外（並べ替え・畳む・行の色）、受講シートを整えます。' +
     '中身は消しません（日本の「国」「WhatsApp」は、空か Japan だけの時に限り列ごと消します）。進めますか？', ui.ButtonSet.OK_CANCEL);
   if (ok !== ui.Button.OK) return;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const report = Object.keys(OPS_LAYOUT).map(name => {
-    const sheet = ss.getSheetByName(name);
-    return sheet ? name + '：' + opsArrangeSheet_(sheet, OPS_LAYOUT[name], ss).join('、') : name + '：シートが無い';
-  });
+  const report = [];
   const classes = ss.getSheetByName(OPS.SHEET_CLASSES);
-  if (classes) report.push(OPS.SHEET_CLASSES + '：' + opsArrangeClasses_(classes).join('、'));
+  report.push(OPS.SHEET_CLASSES + '：' + opsArrangeClasses_(classes).join('、'));
+  report.push(OPS.SHEET_TEACHERS + '：' + opsEnsureTeacherSheet_(ss).join('、'));
+  opsClassValidations_(ss);
+  Object.keys(OPS_LAYOUT).forEach(name => {
+    const sheet = ss.getSheetByName(name);
+    report.push(sheet ? name + '：' + opsArrangeSheet_(sheet, OPS_LAYOUT[name], ss).join('、') : name + '：シートが無い');
+  });
+  report.push(OPS.SHEET_ENROLL + '：' + opsEnsureEnrollSheet_(ss).join('、'));
   // 結果は右下の通知で出す（Googleアカウントに複数ログインしていると、画面を出したところで止まることがあるため）
-  SpreadsheetApp.getActiveSpreadsheet().toast(report.join(' ／ ').slice(0, 300), '列を整理しました', 20);
+  ss.toast(report.join(' ／ ').slice(0, 300), '列を整理しました', 20);
 }
 
 function opsHead_(sheet) {
   return sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getDisplayValues()[0].map(h => String(h).trim());
 }
 
-/** 1枚のシートの列を整理する。やったことを短い文の並びで返す */
+/** クラス一覧の Class ID の範囲（プルダウンに使う） */
+function opsClassIdRange_(ss) {
+  const classes = ss.getSheetByName(OPS.SHEET_CLASSES);
+  const head = opsHead_(classes);
+  const c = (head.indexOf('Class ID') + 1) || (head.indexOf('Group ID') + 1);
+  return c ? classes.getRange(2, c, Math.max(classes.getMaxRows() - 1, 1), 1) : null;
+}
+
+/** 生徒シートの列を整理する。やったことを短い文の並びで返す */
 function opsArrangeSheet_(sheet, layout, ss) {
   const notes = [];
   let head = opsHead_(sheet);
@@ -1031,10 +1160,10 @@ function opsArrangeSheet_(sheet, layout, ss) {
     const to = OPS_RENAME[from], i = head.indexOf(from);
     if (i !== -1 && head.indexOf(to) === -1) {
       sheet.getRange(1, i + 1).setValue(to);
+      head[i] = to;
       notes.push('「' + from + '」を「' + to + '」に');
     }
   });
-  head = opsHead_(sheet);
 
   layout.drop.forEach(name => {
     const i = head.indexOf(name);
@@ -1088,14 +1217,12 @@ function opsArrangeSheet_(sheet, layout, ss) {
     sheet.getRange(2, col('ステータス'), rows, 1).setDataValidation(
       SpreadsheetApp.newDataValidation().requireValueInList(OPS.STATUSES, true).setAllowInvalid(false).build());
   }
-  const classes = ss.getSheetByName(OPS.SHEET_CLASSES);
-  const gid = classes ? opsHead_(classes).indexOf('Group ID') + 1 : 0;
-  if (col('クラス') && gid) {
-    // コンボ（2クラス）を書けるよう、一覧に無い値も警告だけで受け付ける
-    sheet.getRange(2, col('クラス'), rows, 1).setDataValidation(
-      SpreadsheetApp.newDataValidation().requireValueInRange(classes.getRange(2, gid, Math.max(classes.getMaxRows() - 1, 1), 1), true).setAllowInvalid(true).build());
+  const ids = opsClassIdRange_(ss);
+  if (col('希望クラス') && ids) {
+    sheet.getRange(2, col('希望クラス'), rows, 1).setDataValidation(
+      SpreadsheetApp.newDataValidation().requireValueInRange(ids, true).setAllowInvalid(true).build());
   }
-  OPS_DATE_COLS.forEach(h => {
+  OPS_STUDENT_DATES.forEach(h => {
     if (!col(h)) return;
     const fixed = opsDateColumn_(sheet, col(h));
     if (fixed) notes.push('「' + h + '」の文字の日付' + fixed + '件を日付に');
@@ -1103,6 +1230,74 @@ function opsArrangeSheet_(sheet, layout, ss) {
   if (col('Wixパスワード')) sheet.getRange(2, col('Wixパスワード'), rows, 1).setNumberFormat('@');
   if (opsStatusColors_(sheet)) notes.push('ステータスで行に色を付けた');
   return notes.length ? notes : ['変更なし'];
+}
+
+/** 受講シートが無ければ作る。席が決まっている生徒（支払待ち・在籍・休会で希望クラスがある）の行を最初に入れる */
+function opsEnsureEnrollSheet_(ss) {
+  let sheet = ss.getSheetByName(OPS.SHEET_ENROLL);
+  const notes = [];
+  if (!sheet) {
+    const after = ss.getSheetByName(OPS.SHEET_INTL) || ss.getSheetByName(OPS.SHEET_JP);
+    sheet = ss.insertSheet(OPS.SHEET_ENROLL, after ? after.getIndex() : ss.getSheets().length);
+    sheet.getRange(1, 1, 1, OPS_ENROLL_HEAD.length).setValues([OPS_ENROLL_HEAD]).setFontWeight('bold').setBackground(OPS_COLOR.head);
+    sheet.setFrozenRows(1);
+    notes.push('受講シートを作った');
+    const seed = [];
+    [OPS.SHEET_JP, OPS.SHEET_INTL].forEach(name => {
+      opsTable_(ss.getSheetByName(name)).rows.forEach(r => {
+        const st = opsStr_(r['ステータス']), cls = opsStr_(r['希望クラス']), id = opsStr_(r['生徒ID']);
+        if (id && cls && OPS.SEAT_STATUSES.indexOf(st) !== -1) {
+          const d = opsKey_(r['希望開始日']);
+          seed.push([id, opsStr_(r['Display name']) || opsStr_(r['名前']), cls, '', d ? Math.floor(d / 10000) + '/' + (Math.floor(d / 100) % 100) + '/' + (d % 100) : '', '', '']);
+        }
+      });
+    });
+    if (seed.length) {
+      sheet.getRange(2, 1, seed.length, OPS_ENROLL_HEAD.length).setValues(seed);
+      notes.push('席が決まっている生徒' + seed.length + '人の行を入れた');
+    }
+  }
+  const head = opsHead_(sheet), rows = Math.max(sheet.getMaxRows() - 1, 1);
+  const col = h => head.indexOf(h) + 1;
+  const ids = opsClassIdRange_(ss);
+  if (col('クラス') && ids) sheet.getRange(2, col('クラス'), rows, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInRange(ids, true).setAllowInvalid(true).build());
+  ['開始日', '最終日'].forEach(h => { if (col(h)) opsDateColumn_(sheet, col(h)); });
+  if (col('席番号')) sheet.getRange(2, col('席番号'), rows, 1).setNumberFormat('@');
+  return notes.length ? notes : ['変更なし'];
+}
+
+/** 講師シート（名前・コード・カタカナ・役割）が無ければ作る。クラス一覧の講師と Class ID の末尾のコードから最初の行を入れる */
+function opsEnsureTeacherSheet_(ss) {
+  if (ss.getSheetByName(OPS.SHEET_TEACHERS)) return ['変更なし'];
+  const after = ss.getSheetByName(OPS.SHEET_CLASSES);
+  const sheet = ss.insertSheet(OPS.SHEET_TEACHERS, after ? after.getIndex() : ss.getSheets().length);
+  sheet.getRange(1, 1, 1, OPS_TEACHER_HEAD.length).setValues([OPS_TEACHER_HEAD]).setFontWeight('bold').setBackground(OPS_COLOR.head);
+  sheet.setFrozenRows(1);
+  const seen = {}, rows = [];
+  opsTable_(ss.getSheetByName(OPS.SHEET_CLASSES)).rows.map(opsClass_).forEach(c => {
+    if (c.teacher && !seen[c.teacher]) {
+      seen[c.teacher] = true;
+      rows.push([c.teacher, c.id.slice(7), '', '講師']); // Mon2030NM → NM
+    }
+    if (c.assistant && !seen[c.assistant]) { seen[c.assistant] = true; rows.push([c.assistant, '', '', 'アシスタント']); }
+  });
+  if (rows.length) sheet.getRange(2, 1, rows.length, OPS_TEACHER_HEAD.length).setValues(rows);
+  sheet.getRange(2, 4, Math.max(sheet.getMaxRows() - 1, 1), 1).setDataValidation(
+    SpreadsheetApp.newDataValidation().requireValueInList(['講師', 'アシスタント'], true).build());
+  return ['講師シートを作った（' + rows.length + '人。カタカナは取り込みで入る）'];
+}
+
+/** クラス一覧の講師・アシスタントを、講師シートの名前から選べるようにする */
+function opsClassValidations_(ss) {
+  const classes = ss.getSheetByName(OPS.SHEET_CLASSES), teachers = ss.getSheetByName(OPS.SHEET_TEACHERS);
+  if (!classes || !teachers) return;
+  const head = opsHead_(classes), rows = Math.max(classes.getMaxRows() - 1, 1);
+  const names = teachers.getRange(2, 1, Math.max(teachers.getMaxRows() - 1, 1), 1);
+  ['講師', 'アシスタント'].forEach(h => {
+    const c = head.indexOf(h) + 1;
+    if (c) classes.getRange(2, c, rows, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInRange(names, true).setAllowInvalid(true).build());
+  });
 }
 
 /** 日付の列にする（文字で入っている日付は入れ直す。カレンダーで選べるように）。直した件数を返す */
@@ -1145,14 +1340,52 @@ function opsStatusColors_(sheet) {
   return true;
 }
 
-/** クラス一覧の「ターム・開始日」を「ターム」（1〜6）と「ターム開始日」に分ける */
+/**
+ * クラス一覧を整える：Group ID → Class ID、状態（active／non-active。メモ欄の「non-active」から移す）、アシスタント、
+ * 「ターム・開始日」→「ターム」（1〜6）と「ターム開始日」
+ */
 function opsArrangeClasses_(sheet) {
   const notes = [];
   let head = opsHead_(sheet);
+  const gi = head.indexOf('Group ID');
+  if (gi !== -1 && head.indexOf('Class ID') === -1) {
+    sheet.getRange(1, gi + 1).setValue('Class ID');
+    notes.push('「Group ID」を「Class ID」に');
+    head = opsHead_(sheet);
+  }
+  const last = () => sheet.getLastRow();
+  const column = name => { const i = head.indexOf(name); return i === -1 ? [] : last() > 1 ? sheet.getRange(2, i + 1, last() - 1, 1).getDisplayValues().map(r => String(r[0]).trim()) : []; };
+
+  // 状態（Class ID の右）
+  if (head.indexOf('状態') === -1) {
+    const idc = head.indexOf('Class ID') + 1;
+    const memos = column('メモ');
+    sheet.insertColumnsAfter(idc, 1);
+    sheet.getRange(1, idc + 1).setValue('状態');
+    head = opsHead_(sheet);
+    const mc = head.indexOf('メモ') + 1;
+    const ids = column('Class ID');
+    let off = 0;
+    ids.forEach((id, i) => {
+      if (!id) return;
+      const memo = memos[i] || '';
+      const non = /non-?active/i.test(memo);
+      sheet.getRange(i + 2, idc + 1).setValue(non ? 'non-active' : 'active');
+      if (non) { off++; if (mc) sheet.getRange(i + 2, mc).setValue(memo.replace(/[、,／\/\s]*non-?active[、,／\/\s]*/i, ' ').trim()); }
+    });
+    notes.push('「状態」を足した（non-active ' + off + 'クラス）');
+  }
+  // アシスタント（講師の右）
+  if (head.indexOf('アシスタント') === -1 && head.indexOf('講師') !== -1) {
+    sheet.insertColumnsAfter(head.indexOf('講師') + 1, 1);
+    sheet.getRange(1, head.indexOf('講師') + 2).setValue('アシスタント');
+    head = opsHead_(sheet);
+    notes.push('「アシスタント」を足した');
+  }
+  // ターム
   const old = head.indexOf('ターム・開始日');
   if (head.indexOf('ターム') === -1 && head.indexOf('ターム開始日') === -1 && old !== -1) {
-    const last = sheet.getLastRow();
-    const texts = last > 1 ? sheet.getRange(2, old + 1, last - 1, 1).getDisplayValues().map(r => String(r[0]).trim()) : [];
+    const texts = column('ターム・開始日');
     sheet.insertColumnsAfter(old + 1, 1); // 古い列の右に「ターム開始日」
     sheet.getRange(1, old + 1).setValue('ターム');
     sheet.getRange(1, old + 2).setValue('ターム開始日');
@@ -1170,11 +1403,13 @@ function opsArrangeClasses_(sheet) {
     notes.push('「ターム・開始日」を「ターム」と「ターム開始日」に分けた' + (unread ? '（読めなかった' + unread + '行は、ターム開始日を入れてください）' : ''));
     head = opsHead_(sheet);
   }
-  const ct = head.indexOf('ターム') + 1, cd = head.indexOf('ターム開始日') + 1;
   const rows = Math.max(sheet.getMaxRows() - 1, 1);
-  if (ct) sheet.getRange(2, ct, rows, 1).setDataValidation(
+  const col = h => head.indexOf(h) + 1;
+  if (col('状態')) sheet.getRange(2, col('状態'), rows, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(OPS.CLASS_STATES, true).build());
+  if (col('種別')) sheet.getRange(2, col('種別'), rows, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['Standard', 'GAP'], true).setAllowInvalid(true).build());
+  if (col('ターム')) sheet.getRange(2, col('ターム'), rows, 1).setDataValidation(
     SpreadsheetApp.newDataValidation().requireValueInList(['1', '2', '3', '4', '5', '6'], true).setAllowInvalid(true).build());
-  if (cd) opsDateColumn_(sheet, cd);
+  if (col('ターム開始日')) opsDateColumn_(sheet, col('ターム開始日'));
   return notes.length ? notes : ['変更なし'];
 }
 
@@ -1183,11 +1418,12 @@ function opsArrangeClasses_(sheet) {
 
 // 旧名簿のクラス別シートの列（1行目の名前で探し、見つからなければこの位置）
 const OPS_OLD_COLS = {
+  cls: { names: ['Group ID', 'Class ID'], at: 0 },
   seat: { names: ['Student ID'], at: 1 }, display: { names: ['Display name'], at: 2 }, full: { names: ['Full name'], at: 3 },
   sex: { names: ['Gender'], at: 4 }, email: { names: ['Email (Google Account)', 'Email'], at: 5 }, notes: { names: ['Notes (if any)', 'Notes'], at: 6 },
   grade: { names: ['学年'], at: 7 }, school: { names: ['School'], at: 8 }, wa: { names: ['海外生WA'], at: 9 }, password: { names: ['Password'], at: 10 },
 };
-// Japanese Applicants（旧GASの転記先。日本生も海外生も入っている）の列
+// 申込の一覧（Japanese Applicants・Overseas Applicants。列の並びが違うので列名で読む）
 const OPS_APPLICANT_COLS = {
   applied: { names: ['申込日時'], at: 3 }, via: { names: ['経由'], at: 4 }, name: { names: ['名前'], at: 5 }, country: { names: ['国名'], at: 6 },
   sex: { names: ['性別'], at: 7 }, email: { names: ['Eメール', 'Email', 'メール'], at: 8 }, level: { names: ['英語レベル'], at: 9 },
@@ -1203,39 +1439,63 @@ function opsImportOld_() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = { jp: ss.getSheetByName(OPS.SHEET_JP), intl: ss.getSheetByName(OPS.SHEET_INTL) };
-  if (['jp', 'intl'].some(r => ['クラス', '席番号'].some(h => opsHead_(sheets[r]).indexOf(h) === -1))) {
-    ui.alert('先にメニューの「列を整理する（最初に1回）」を押してください（「クラス」「席番号」の列が要ります）。');
+  const enrollSheet = ss.getSheetByName(OPS.SHEET_ENROLL), teacherSheet = ss.getSheetByName(OPS.SHEET_TEACHERS);
+  const classSheet = ss.getSheetByName(OPS.SHEET_CLASSES);
+  if (!enrollSheet || !teacherSheet || opsHead_(classSheet).indexOf('Class ID') === -1 || ['jp', 'intl'].some(r => opsHead_(sheets[r]).indexOf('希望クラス') === -1)) {
+    ui.alert('先にメニューの「列を整理する（最初に1回）」を押してください。');
     return;
   }
   const ok = ui.alert('旧名簿から今の生徒を取り込みます',
-    '旧名簿のクラス別シート（クラス一覧にあるクラスだけ）から、空の行までの生徒を読み、生徒_JP・生徒_海外に「在籍」で入れます。' +
-    '申込日時・電話・経由などは Japanese Applicants と Overseas Applicants から探します。すでにある生徒（メールか名前が同じ）は、クラスと席番号を書き足します。' +
-    '最後に全体を申込順に並べ直し、生徒IDも申込順に振り直します（今のIDも変わります）。旧名簿は読むだけで、書き換えません。進めますか？', ui.ButtonSet.OK_CANCEL);
+    '旧名簿のクラス別シート（クラス一覧で active のクラスだけ。シート名の「-GAP」は外して読む）から、空の行までの生徒を読みます。' +
+    '生徒は生徒_JP・生徒_海外に「在籍」で、クラスと席番号は受講シートに入れます。申込日時・電話・経由などは Japanese Applicants と Overseas Applicants から探します。' +
+    'Instructor・Assistant の行は、クラス一覧と講師シートに入れます。最後に生徒を申込順に並べ直し、生徒IDも申込順に振り直します（今のIDも変わります）。' +
+    '旧名簿は読むだけで、書き換えません。進めますか？', ui.ButtonSet.OK_CANCEL);
   if (ok !== ui.Button.OK) return;
 
   const old = opsOldFile_();
   const ledger = {};
   ['jp', 'intl'].forEach(r => { ledger[r] = opsReadWithFormulas_(sheets[r]); });
+  const enrolls = opsReadWithFormulas_(enrollSheet);
   const res = opsImportMerge_({
-    classIds: opsData_().classes.map(c => c.id),
+    classes: opsTable_(classSheet).rows.map(opsClass_).filter(c => c.id),
     sheets: old.getSheets().filter(sh => OPS.OLD_APPLICANTS_SHEETS.indexOf(sh.getName()) === -1).map(sh => ({ name: sh.getName(), values: sh.getDataRange().getValues() })),
     applicants: OPS.OLD_APPLICANTS_SHEETS.map(n => old.getSheetByName(n)).filter(Boolean).map(sh => sh.getDataRange().getValues()),
-    ledger,
+    ledger, enrolls: enrolls.rows,
   });
-  ['jp', 'intl'].forEach(r => {
-    const head = ledger[r].head, sheet = sheets[r];
-    const out = res[r].map(row => head.map(h => row[h] === undefined || row[h] === null ? '' : row[h]));
+  const writeRows = (sheet, head, rows) => {
+    const out = rows.map(row => head.map(h => row[h] === undefined || row[h] === null ? '' : row[h]));
     if (sheet.getLastRow() > 1) sheet.getRange(2, 1, sheet.getLastRow() - 1, head.length).clearContent();
     if (out.length) sheet.getRange(2, 1, out.length, head.length).setValues(out);
+  };
+  ['jp', 'intl'].forEach(r => writeRows(sheets[r], ledger[r].head, res[r]));
+  writeRows(enrollSheet, enrolls.head.length > 1 ? enrolls.head : OPS_ENROLL_HEAD, res.enrolls);
+  // クラス一覧の講師・アシスタント・種別
+  const ct = opsTable_(classSheet);
+  ct.rows.forEach(r => {
+    const id = opsStr_(r['Class ID']), u = res.classUpdates[id];
+    if (!u) return;
+    Object.keys(u).forEach(h => { if (ct.col[h] !== undefined) classSheet.getRange(r._row, ct.col[h] + 1).setValue(u[h]); });
+  });
+  // 講師シート（無い人は足し、カタカナ・役割が空なら入れる）
+  const tt = opsTable_(teacherSheet);
+  res.teachers.forEach(t => {
+    const hit = tt.rows.filter(r => opsStr_(r['名前']) === t.name)[0];
+    if (hit) {
+      if (!opsStr_(hit['カタカナ']) && t.kana) teacherSheet.getRange(hit._row, tt.col['カタカナ'] + 1).setValue(t.kana);
+      if (!opsStr_(hit['役割']) && t.role) teacherSheet.getRange(hit._row, tt.col['役割'] + 1).setValue(t.role);
+    } else {
+      teacherSheet.appendRow(OPS_TEACHER_HEAD.map(h => ({ '名前': t.name, 'コード': '', 'カタカナ': t.kana, '役割': t.role })[h]));
+    }
   });
   const rp = res.report;
   ui.alert('取り込みました', [
-    '新しく入れた生徒：' + rp.added + '人　／　すでにあった生徒に書き足した：' + rp.updated + '人',
+    '新しく入れた生徒：' + rp.added + '人　／　すでにあった生徒に書き足した：' + rp.updated + '人　／　受講に入れたクラス：' + rp.enrolled + '件',
     rp.noDate.length ? '申込の一覧に見つからず、申込日時が空の生徒（いちばん上に入れました）：' + rp.noDate.join('、') : '',
-    rp.twice.length ? '2つのクラスシートにいた生徒（最初のクラスだけ入れました）：' + rp.twice.join('、') : '',
+    rp.inactive.length ? 'non-active なので読まなかったシート：' + rp.inactive.join('、') : '',
     rp.skipped.length ? 'クラス一覧に無いので読まなかったシート：' + rp.skipped.join('、') : '',
-    rp.missing.length ? '旧名簿にシートが無かったクラス：' + rp.missing.join('、') : '',
-    '次は「一覧表を今すぐ作り直す」。取り込んだ生徒は、開始日・最終日（海外は支払い済み〜も）が空なので、分かる所から入れてください。',
+    rp.missing.length ? '旧名簿にシートが無かった active のクラス：' + rp.missing.join('、') : '',
+    rp.teacherDiff.length ? '旧名簿の Instructor とクラス一覧の講師が違うクラス（旧名簿の方を入れました）：' + rp.teacherDiff.join('、') : '',
+    '次は「一覧表を今すぐ作り直す」。取り込んだ受講は開始日・最終日（海外は支払い済み〜も）が空なので、分かる所から入れてください。',
   ].filter(Boolean).join('\n\n'), ui.ButtonSet.OK);
 }
 
@@ -1246,7 +1506,7 @@ function opsOldFile_() {
   return SpreadsheetApp.openById(id);
 }
 
-/** 生徒シートを {列名: 値} で読む。数式（WhatsApp のリンク）は数式のまま持つ */
+/** シートを {列名: 値} で読む。数式（WhatsApp のリンク）は数式のまま持つ */
 function opsReadWithFormulas_(sheet) {
   const range = sheet.getDataRange();
   const values = range.getValues(), formulas = range.getFormulas();
@@ -1275,64 +1535,92 @@ function opsReadAs_(values, cols) {
       const x = v[idx[k]];
       o[k] = x instanceof Date ? Utilities.formatDate(x, OPS.TZ, 'yyyy/MM/dd HH:mm:ss') : String(x == null ? '' : x).trim();
     });
+    o._first = String(v[0] == null ? '' : v[0]).trim();
+    o._row = v;
     return o;
   });
 }
 
 /**
- * 旧名簿の今の生徒を、生徒シートの行に合わせる（シートには書かない）。
- * 返す行は申込順（申込日時が分からない生徒がいちばん上）で、生徒IDも申込順に振り直してある
+ * 旧名簿の今の生徒を、生徒シートと受講シートの行に合わせる（シートには書かない）。
+ * 返す生徒の行は申込順（申込日時が分からない生徒がいちばん上）で、生徒IDも申込順に振り直し、受講の生徒IDも付け替えてある
  */
 function opsImportMerge_(input) {
-  const report = { added: 0, updated: 0, noDate: [], twice: [], skipped: [], missing: [] };
+  const report = { added: 0, updated: 0, enrolled: 0, noDate: [], skipped: [], inactive: [], missing: [], teacherDiff: [] };
   const lower = v => String(v || '').trim().toLowerCase();
   const classOf = {};
-  input.classIds.forEach(id => { classOf[lower(id)] = id; });
+  input.classes.forEach(c => { classOf[lower(c.id)] = c; });
   // Japanese Applicants と Overseas Applicants の両方から探す（海外生は Overseas に無いこともある）
   const apps = [].concat.apply([], input.applicants.map(v => opsReadAs_(v, OPS_APPLICANT_COLS))).filter(a => a.name || a.email);
   const findApps = (email, name) => apps.filter(a => (email && lower(a.email) === lower(email)) || (name && a.name === name));
   const rows = { jp: input.ledger.jp.rows.slice(), intl: input.ledger.intl.rows.slice() };
-  const done = {}, seenClass = {};
+  const byOldId = {};
+  ['jp', 'intl'].forEach(r => rows[r].forEach(row => { if (row['生徒ID']) byOldId[String(row['生徒ID']).trim()] = row; }));
+  const enrolls = input.enrolls.slice();
+  enrolls.forEach(e => { e._st = byOldId[String(e['生徒ID'] || '').trim()] || null; });
+  const classUpdates = {}, teachers = {}, seen = {}, found = {};
+  const upd = (id, h, v) => { (classUpdates[id] = classUpdates[id] || {})[h] = v; };
 
   input.sheets.forEach(sh => {
-    const id = classOf[lower(sh.name)];
-    if (!id) { report.skipped.push(sh.name); return; }
-    seenClass[id] = true;
+    const gap = /-\s*GAP\s*$/i.test(sh.name);
+    const cls = classOf[lower(sh.name.replace(/\s*-\s*GAP\s*$/i, ''))];
+    if (!cls) { report.skipped.push(sh.name); return; }
+    if (!cls.active) { report.inactive.push(sh.name); return; }
+    found[cls.id] = true;
+    if (gap && !/gap/i.test(cls.type)) upd(cls.id, '種別', 'GAP');
     const list = opsReadAs_(sh.values, OPS_OLD_COLS);
+    // 講師・アシスタント（生徒の下の「Instructor／名前／カタカナ」「Assistant／名前／カタカナ」）
+    list.forEach(o => {
+      const role = /^instructor$/i.test(o._first) ? '講師' : /^assistant$/i.test(o._first) ? 'アシスタント' : '';
+      if (!role) return;
+      const name = String(o._row[1] || '').trim(), kana = String(o._row[2] || '').trim();
+      if (!name) return;
+      teachers[name] = { name, kana: kana || (teachers[name] || {}).kana || '', role };
+      if (role === '講師') {
+        if (cls.teacher && cls.teacher !== name) report.teacherDiff.push(cls.id + '（' + cls.teacher + '→' + name + '）');
+        if (cls.teacher !== name) upd(cls.id, '講師', name);
+      } else if (cls.assistant !== name) upd(cls.id, 'アシスタント', name);
+    });
     for (const o of list) {
-      if (!o.display && !o.full) break; // 空の行から下は、やめた生徒
-      const found = findApps(o.email, o.full);
-      const first = found.slice().sort((a, b) => (a.applied < b.applied ? -1 : 1))[0] || {};
-      const last = found[found.length - 1] || {};
+      if (/^(instructor|assistant)$/i.test(o._first)) break;
+      if (!o.display && !o.full) break; // 空の行から下は、このクラスを去った生徒（退会・休会・移動などのメモは読まない）
+      const got = findApps(o.email, o.full);
+      const first = got.slice().sort((a, b) => (a.applied < b.applied ? -1 : 1))[0] || {};
+      const last = got[got.length - 1] || {};
       const region = /^JP/i.test(o.seat) ? 'jp' : /^ID/i.test(o.seat) ? 'intl' : (last.country && last.country !== 'Japan' ? 'intl' : 'jp');
       const key = lower(o.email) || o.full || o.display;
-      if (done[key]) { report.twice.push((o.full || o.display) + '（' + done[key] + '・' + id + '）'); continue; }
-      done[key] = id;
-      const hit = rows[region].filter(r => (o.email && lower(r['Email']) === lower(o.email)) || (o.full && r['名前'] === o.full))[0];
-      if (hit) {
-        hit['クラス'] = id;
-        hit['席番号'] = o.seat;
-        if (['', '新規', '提案中', '支払待ち', '空き待ち', '見送り'].indexOf(String(hit['ステータス'] || '')) !== -1) hit['ステータス'] = '在籍';
-        if (!hit['Display name']) hit['Display name'] = o.display;
-        if (!hit['Wixパスワード']) hit['Wixパスワード'] = o.password;
-        if (!hit['英語レベル']) hit['英語レベル'] = o.notes || last.level || '';
+      let st = seen[key] || rows[region].filter(r => (o.email && lower(r['Email']) === lower(o.email)) || (o.full && r['名前'] === o.full))[0];
+      if (st && !seen[key]) {
+        if (['', '新規', '提案中', '支払待ち', '空き待ち', '見送り'].indexOf(String(st['ステータス'] || '')) !== -1) st['ステータス'] = '在籍';
+        if (!st['Display name']) st['Display name'] = o.display;
+        if (!st['Wixパスワード']) st['Wixパスワード'] = o.password;
+        if (!st['英語レベル']) st['英語レベル'] = o.notes || last.level || '';
         report.updated++;
-        continue;
+      } else if (!st) {
+        st = {
+          '申込日時': first.applied || '', '経由': last.via || '旧名簿', 'ステータス': '在籍',
+          '国': region === 'intl' ? (last.country || '') : 'Japan',
+          '名前': o.full || last.name || o.display, 'Display name': o.display, '性別': o.sex || last.sex, '学年': o.grade || last.grade,
+          '学校名': o.school || last.school, 'Email': o.email || last.email,
+          '電話': region === 'intl' ? (o.wa || last.phone || '') : (last.phone || ''),
+          '英語レベル': o.notes || last.level || '', 'コメント': last.comment || '',
+          'Wixパスワード': o.password, 'メモ': '旧名簿から取り込み',
+        };
+        rows[region].push(st);
+        report.added++;
+        if (!first.applied) report.noDate.push(o.full || o.display);
       }
-      rows[region].push({
-        '申込日時': first.applied || '', '経由': last.via || '旧名簿', 'ステータス': '在籍',
-        '国': region === 'intl' ? (last.country || '') : 'Japan',
-        '名前': o.full || last.name || o.display, 'Display name': o.display, '性別': o.sex || last.sex, '学年': o.grade || last.grade,
-        '学校名': o.school || last.school, 'Email': o.email || last.email,
-        '電話': region === 'intl' ? (o.wa || last.phone || '') : (last.phone || ''),
-        '英語レベル': o.notes || last.level || '', 'コメント': last.comment || '',
-        'クラス': id, '席番号': o.seat, 'Wixパスワード': o.password, 'メモ': '旧名簿から取り込み',
-      });
-      report.added++;
-      if (!first.applied) report.noDate.push(o.full || o.display);
+      seen[key] = st;
+      // 受講（同じ生徒・同じクラスの行があれば席番号を足すだけ）
+      const hit = enrolls.filter(e => e._st === st && String(e['クラス'] || '').trim() === cls.id && !e['最終日'])[0];
+      if (hit) { if (!hit['席番号']) hit['席番号'] = o.seat; }
+      else {
+        enrolls.push({ '名前': o.display, 'クラス': cls.id, '席番号': o.seat, '開始日': '', '最終日': '', 'メモ': '旧名簿から取り込み', _st: st });
+        report.enrolled++;
+      }
     }
   });
-  input.classIds.forEach(id => { if (!seenClass[id]) report.missing.push(id); });
+  input.classes.forEach(c => { if (c.active && !found[c.id]) report.missing.push(c.id); });
 
   const key = r => r['申込日時'] instanceof Date ? Utilities.formatDate(r['申込日時'], OPS.TZ, 'yyyy/MM/dd HH:mm:ss') : String(r['申込日時'] || '');
   const out = {};
@@ -1340,7 +1628,14 @@ function opsImportMerge_(input) {
     out[r] = rows[r].slice().sort((a, b) => key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0)
       .map((row, i) => Object.assign(row, { '生徒ID': prefix + ('000' + (i + 1)).slice(-4) }));
   });
+  out.enrolls = enrolls.map(e => {
+    const row = Object.assign({}, e);
+    if (e._st) { row['生徒ID'] = e._st['生徒ID']; row['名前'] = e._st['Display name'] || e._st['名前'] || row['名前']; }
+    delete row._st;
+    return row;
+  });
+  out.classUpdates = classUpdates;
+  out.teachers = Object.keys(teachers).map(k => teachers[k]);
   out.report = report;
   return out;
 }
-

@@ -105,10 +105,12 @@ function readClasses_() {
     const i = head.indexOf(name);
     return i === -1 ? '' : String(r[i]).trim();
   };
+  // 列名は Class ID（Phase 3 で Group ID から名前を変えた。変える前のシートでも動くように両方見る）
+  const id = r => at(r, 'Class ID') || at(r, 'Group ID');
   return rows
-    .filter(r => at(r, 'Group ID'))
+    .filter(r => id(r))
     .map(r => ({
-      groupId: at(r, 'Group ID'),
+      groupId: id(r),
       type: at(r, '種別'),
       day: at(r, '曜日'),
       time: at(r, '時間(JST)').replace(/\D/g, '').padStart(4, '0'), // "20:30" → "2030"

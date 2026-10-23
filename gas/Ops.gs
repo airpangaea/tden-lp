@@ -276,6 +276,7 @@ function opsStudent_(r, region) {
     phone: s(r['電話']),
     school: s(r['学校名']),
     password: s(r['Wixパスワード']),
+    memo: s(r['メモ']),
   };
 }
 
@@ -641,35 +642,58 @@ function opsStripLinks_(grid) {
 /* ======================= スタッフ用の名簿（旧名簿のクラス別シートの代わり） ======================= */
 
 const OPS_ROSTER_HEAD = ['Group ID', 'Student ID', 'Display name', 'Full name', 'Gender', 'Email (Google Account)', 'Notes (if any)',
-  '学年', 'School', '海外生WA', 'Password'];
+  '学年', 'School', '海外生WA', 'Password', 'Wix DB削除確認'];
+const OPS_ROSTER_CHECK = ['未確認', '確認済み']; // Wix DB削除確認の選択肢（スタッフが選ぶ）
 
-/** 1クラス分の行（席番号順。日本生→海外生。空けて、やめた生徒） */
+/**
+ * 1クラス分の行（席番号順。日本生→海外生。空けて、やめた生徒）。
+ * {v: 11列, fresh: 1か月以内に入った（B・C列を緑に）, check: Wix DB削除確認の最初の値, key: 書き換えを残すための目印}
+ */
 function opsRosterRows_(data, cls) {
-  const T = data.today;
+  const T = data.today, recent = opsAddDays_(T, -30);
   const mine = data.students.filter(s => s.cls === cls.id);
   // 載せるのは入会した生徒（在籍・休会）だけ。支払待ちの生徒は、席番号は押さえるが、名簿にはまだ出さない
   const now = mine.filter(s => (s.status === '在籍' || s.status === '休会') && !(s.end && s.end < T));
-  const row = s => [cls.id, s.seat, s.display, s.name, s.sex, s.email, s.level, s.grade, s.school,
-    s.region === 'intl' ? s.phone : '', s.password];
+  const row = s => ({
+    v: [cls.id, s.seat, s.display, s.name, s.sex, s.email, s.level, s.grade, s.school, s.region === 'intl' ? s.phone : '', s.password],
+    fresh: !!(s.start && s.start >= recent), // 1か月以内に入った・クラスを替えた（これから始まる生徒も）
+    check: /旧名簿から取り込み/.test(s.memo) ? '確認済み' : '未確認', // 旧名簿から移した生徒は確認済み、新しく入った生徒は未確認
+    key: (s.email || s.name).toLowerCase(),
+  });
+  const blank = text => ({ v: [text || ''].concat(OPS_ROSTER_HEAD.slice(1, 11).map(() => '')), fresh: false, check: '', key: '' });
   const bySeat = (a, b) => (opsSeatNo_(a.seat) || 99) - (opsSeatNo_(b.seat) || 99) || (a.start || 0) - (b.start || 0);
   const rows = ['jp', 'intl'].reduce((acc, r) => acc.concat(now.filter(s => s.region === r).sort(bySeat).map(row)), []);
   const past = mine.filter(s => s.status === '退会').sort((a, b) => (b.end || 0) - (a.end || 0)).map(row);
-  return past.length ? rows.concat([OPS_ROSTER_HEAD.map(() => ''), ['（やめた生徒）'].concat(OPS_ROSTER_HEAD.slice(1).map(() => ''))], past) : rows;
+  return past.length ? rows.concat([blank(), blank('（やめた生徒）')], past) : rows;
 }
 
 function opsBuildRoster_(data, force) {
   const ss = opsStaffFile_();
   const props = PropertiesService.getScriptProperties();
+  const W = OPS_ROSTER_HEAD.length;
   data.classes.forEach(cls => {
     const rows = opsRosterRows_(data, cls);
     const key = 'OPS_HASH_R_' + cls.id, hash = opsHash_(rows);
     let sheet = ss.getSheetByName(cls.id);
     if (!force && sheet && props.getProperty(key) === hash) return;
+    // スタッフが選んだ「Wix DB削除確認」は、作り直しても残す（メールか名前で引き継ぐ）
+    const kept = {};
+    if (sheet && sheet.getLastRow() > 1) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, W).getValues().forEach(v => {
+        const k = String(v[5] || v[3] || '').trim().toLowerCase();
+        if (k && v[11]) kept[k] = v[11];
+      });
+    }
     if (!sheet) sheet = ss.insertSheet(cls.id, ss.getSheets().length);
     sheet.clear();
-    const values = [OPS_ROSTER_HEAD].concat(rows);
-    sheet.getRange(1, 1, values.length, OPS_ROSTER_HEAD.length).setNumberFormat('@').setValues(values);
-    sheet.getRange(1, 1, 1, OPS_ROSTER_HEAD.length).setFontWeight('bold').setBackground(OPS_COLOR.head);
+    sheet.getRange(2, W, Math.max(sheet.getMaxRows() - 1, 1), 1).clearDataValidations();
+    const values = [OPS_ROSTER_HEAD].concat(rows.map(r => r.v.concat([r.key ? (kept[r.key] || r.check) : ''])));
+    sheet.getRange(1, 1, values.length, W).setNumberFormat('@').setValues(values);
+    sheet.getRange(1, 1, 1, W).setFontWeight('bold').setBackground(OPS_COLOR.head);
+    rows.forEach((r, i) => {
+      if (r.fresh) sheet.getRange(i + 2, 2, 1, 2).setBackground(OPS_COLOR.fresh); // B・C列（Student ID・Display name）を緑
+      if (r.key) sheet.getRange(i + 2, W).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(OPS_ROSTER_CHECK, true).build());
+    });
     sheet.setFrozenRows(1);
     props.setProperty(key, hash);
   });
@@ -990,7 +1014,8 @@ function opsSetupColumns_() {
   });
   const classes = ss.getSheetByName(OPS.SHEET_CLASSES);
   if (classes) report.push(OPS.SHEET_CLASSES + '：' + opsArrangeClasses_(classes).join('、'));
-  ui.alert('列を整理しました', report.join('\n\n'), ui.ButtonSet.OK);
+  // 結果は右下の通知で出す（Googleアカウントに複数ログインしていると、画面を出したところで止まることがあるため）
+  SpreadsheetApp.getActiveSpreadsheet().toast(report.join(' ／ ').slice(0, 300), '列を整理しました', 20);
 }
 
 function opsHead_(sheet) {

@@ -68,7 +68,7 @@ const OPS = {
 const OPS_COLOR = {
   ongoing: '#c9dcf5', newterm: '#ddd0f2', newclass: '#f7cfe0',
   pay: '#fbd3a2', fresh: '#cfeac0', leave: '#e3e5e6', none: '#f6f7f7', head: '#eceeef',
-  staff: '#eef1f5', gap: '#7a3db8',
+  staff: '#eef1f5', gap: '#7a3db8', open: '#eeeff0', // open＝空席と人数の欄（名前のある席と見分ける）
   ink: '#1c2528', muted: '#6b777b', alert: '#b23a3a', white: '#ffffff', line: '#d2d9da', missing: '#f8e3e3',
 };
 
@@ -562,7 +562,7 @@ function opsBoardGrid_(data, month, title) {
   const legend = [
     { v: 'Class', bold: true }, { v: 'Ongoing Term', bg: C.ongoing }, { v: 'New Term', bg: C.newterm }, { v: 'New Class', bg: C.newclass },
     { v: 'GAP class', color: C.gap, bold: true },
-    { v: 'Student', bold: true }, { v: 'Open seat', color: C.muted }, { v: 'Before Payment', bg: C.pay }, { v: 'New User', bg: C.fresh },
+    { v: 'Student', bold: true }, { v: 'Open seat', bg: C.open, color: C.muted }, { v: 'Before Payment', bg: C.pay }, { v: 'New User', bg: C.fresh },
     { v: 'Leaving', bg: C.leave, strike: true, color: C.muted }, { v: 'Gap ≥' + OPS.DIFF_ALERT + ' in red', color: C.alert, bold: true },
   ];
   legend.slice(0, width).forEach((l, i) => { row[i] = Object.assign({ size: 9 }, l); });
@@ -640,8 +640,8 @@ function opsBoardGrid_(data, month, title) {
         const text = 'JP ' + n.jp + '/' + CAP + ' · OS ' + n.intl + '/' + CAP + ' · Gap ' + diff +
           (sl.prop ? ' · Proposed ' + sl.prop : '') + (wait ? ' · Waitlist ' + wait : '');
         const note = opsBreakdown_(sl);
-        row[1 + i * 2] = diff >= OPS.DIFF_ALERT ? { v: text, size: 9, color: C.alert, bold: true, note } : { v: text, size: 9, color: C.muted, note };
-        row[2 + i * 2] = { v: '' };
+        row[1 + i * 2] = diff >= OPS.DIFF_ALERT ? { v: text, bg: C.open, size: 9, color: C.alert, bold: true, note } : { v: text, bg: C.open, size: 9, color: C.muted, note };
+        row[2 + i * 2] = { v: '', bg: C.open };
       });
       const rc = push(row);
       here.forEach((c, i) => span(rc, 2 + i * 2, 2));
@@ -653,7 +653,7 @@ function opsBoardGrid_(data, month, title) {
 
 function opsSeatCell_(seat, k, linkBase) {
   const C = OPS_COLOR;
-  if (!seat) return k < OPS.CAPACITY ? { v: 'Open', color: C.muted, size: 9 } : { v: '' };
+  if (!seat) return k < OPS.CAPACITY ? { v: 'Open', bg: C.open, color: C.muted, size: 9 } : { v: '' };
   const st = seat.st;
   const name = st.display + (seat.leaving ? ' (until ' + opsMd_(seat.en.end) + ')' : '') + (seat.paused ? ' (on break)' : '');
   const cell = { v: name, link: linkBase ? linkBase + st.row : '' };
@@ -767,7 +767,7 @@ function opsRosterRows_(data, cls) {
   // コース・講師・アシスタント（スタッフが Class Slide に書く）。枠と色で囲む
   const kana = name => (data.teachers.filter(t => t.name === name)[0] || {}).kana || '';
   const staff = (a, b, c) => Object.assign(blank(a, b, c), { staff: true });
-  out.push(blank(), staff('Course', gap ? 'GAP' : 'Standard', gap ? 'Global Academic Pass' : ''),
+  out.push(blank(), staff('Course', gap ? 'Global Academic Pass' : 'Standard'),
     staff('Instructor', cls.teacher, kana(cls.teacher)), staff('Assistant', cls.assistant, kana(cls.assistant)));
   const past = mine.filter(e => e.end && e.end < T).sort((a, b) => (b.end || 0) - (a.end || 0))
     .map(e => Object.assign(row(e), { fresh: false, missing: [], past: true }));

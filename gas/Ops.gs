@@ -1581,9 +1581,21 @@ function opsImportMerge_(input) {
         if (cls.teacher !== name) upd(cls.id, '講師', name);
       } else if (cls.assistant !== name) upd(cls.id, 'アシスタント', name);
     });
-    for (const o of list) {
+    for (let li = 0; li < list.length; li++) {
+      const o = list[li];
       if (/^(instructor|assistant)$/i.test(o._first)) break;
-      if (!o.display && !o.full) break; // 空の行から下は、このクラスを去った生徒（退会・休会・移動などのメモは読まない）
+      if (!o.display && !o.full) {
+        // 空席（JP-05 などの席番号だけの行）は飛ばす。日本生と海外生の間に空きがあっても、あとに席番号付きの生徒が続くなら読み続ける。
+        // 席番号の無い空の行のあと、席番号付きの生徒がもういなければ、そこから下は去った生徒（退会・休会・移動などのメモは読まない）
+        if (o.seat) continue;
+        let more = false;
+        for (let k = li + 1; k < list.length; k++) {
+          if (/^(instructor|assistant)$/i.test(list[k]._first)) break;
+          if ((list[k].display || list[k].full) && /^(JP|ID)\s*-?\s*\d/i.test(list[k].seat)) { more = true; break; }
+        }
+        if (more) continue;
+        break;
+      }
       const got = findApps(o.email, o.full);
       const first = got.slice().sort((a, b) => (a.applied < b.applied ? -1 : 1))[0] || {};
       const last = got[got.length - 1] || {};

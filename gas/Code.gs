@@ -76,6 +76,7 @@ function doPost(e) {
       name: d.name, gender: d.gender, grade: d.grade, school: d.school,
       email: d.email, phone: d.phone, englishLevel: d.englishLevel, course: d.course,
       pref1: d.pref1, pref2: d.pref2, pref3: d.pref3, message: d.message,
+      referral: d.referral,
     });
   } catch (err) {
     console.error('doPost addApplicant: ' + err);
@@ -254,6 +255,7 @@ function addApplicant_(region, a) {
       '第2希望': a.pref2,
       '第3希望': a.pref3,
       'コメント': a.message,
+      '知ったきっかけ': a.referral, // 列が無いシートでは書かない
       '既存照合': existing ? '既存: ' + existing : '',
     };
 
@@ -399,6 +401,7 @@ function notifyAdmin_(region, added) {
     '■ 第1希望: ' + (a.pref1 || ''),
     '■ 第2希望: ' + (a.pref2 || ''),
     '■ 第3希望: ' + (a.pref3 || ''),
+    '■ 知ったきっかけ: ' + (a.referral || ''),
     '■ コメント:',
     a.message || '',
     '',

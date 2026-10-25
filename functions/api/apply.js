@@ -65,6 +65,10 @@ export async function onRequestPost(context) {
   const englishLevel    = rawForm.englishLevel || '';
   const preferredCourse = rawForm.preferredCourse || '';
   const message         = rawForm.message || '';
+  // 何で知ったか（日本語LPのみ・任意）。選択肢以外の値は捨てる
+  const REFERRALS = ['Instagramの広告', 'Instagramの投稿（フォロー中など）', 'Google検索', '知人・紹介',
+                     '学校・塾', 'AirPangaeaのプログラムに参加したことがある', 'その他'];
+  const referral        = REFERRALS.includes(rawForm.referral) ? rawForm.referral : '';
 
   // c. バリデーション: 名前の長さチェック
   if (!firstName || firstName.length > 100) {
@@ -114,6 +118,7 @@ export async function onRequestPost(context) {
     pref2: prefs[1],
     pref3: prefs[2],
     message,
+    referral,
   };
 
   // スプシの「経由」列：日本のLPは LP、海外は LP(EN)／LP(ID)
@@ -188,6 +193,7 @@ async function saveToAirtable(env, application, raw) {
   [application.pref1, application.pref2, application.pref3].forEach((p, i) => {
     if (p) commentParts.push(`【第${i + 1}希望】${p}`);
   });
+  if (application.referral) commentParts.push(`【知ったきっかけ】${application.referral}`);
   if (application.message) commentParts.push(application.message);
 
   const fields = {

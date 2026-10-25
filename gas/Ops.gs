@@ -103,8 +103,17 @@ const OPS_FOLD_FROM = '申込日時'; // ここから右（申込の時だけ見
 // 提案中・空き待ちの時のクラスと開始日（席が決まったら「受講」に書く）。Code.gs はこの2列を使っていない
 const OPS_RENAME = { '提案クラス': '希望クラス', '開始日': '希望開始日', '支払い済み〜': '支払い済みの最終日' };
 const OPS_STUDENT_DATES = ['希望開始日', '支払い済みの最終日'];
+// 手で生徒を足す時に必ず書く列（見出しを濃い色に）。スタッフ用の名簿で赤になる列と同じ
+const OPS_REQUIRED_HEAD = {
+  '生徒_JP': ['名前', 'ステータス', 'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', '電話'],
+  '生徒_海外': ['名前', 'ステータス', '性別', '学年', '英語レベル', '学校名', 'Email', '電話', '国'],
+};
+// 自動で入る列（見出しを緑に）
+const OPS_AUTO_HEAD = { '生徒_JP': ['生徒ID', '受講中のクラス', 'Wixパスワード'], '生徒_海外': ['生徒ID', '受講中のクラス', 'Display name', 'WhatsApp', 'Wixパスワード'] };
+const OPS_HEAD_COLOR = { required: '#a9bfd8', auto: '#cfe8d8' };
 // 1行目にカーソルを置くと出る説明
 const OPS_HEAD_NOTES = {
+  '生徒ID': '空なら自動（名前を書くと、次の番号 J0001／G0001… が入る）',
   '受講中のクラス': '自動（受講シートから）。直す時は受講シートを直す',
   '支払い済みの最終日': '払ってもらった期間の最後の日（3か月払いなら3か月後の前日、月払いならその月末など）。ダブルクリックでカレンダーから選べる。空か過ぎていると一覧表でオレンジ',
   'WhatsApp': '押すと定型文入りでWhatsAppが開く（申込の時に自動で作る）。番号は左の「電話」',
@@ -491,16 +500,36 @@ function opsTermStart_(cls, month) {
   return cls.termStart || opsFindDate_(cls.termText, month);
 }
 
+/** k の n か月後の同じ日（月末を超える日は月末に） */
+function opsAddMonths_(k, n) {
+  const mo = opsMonth_(k, n);
+  return Math.min(mo.start - 1 + (k % 100), mo.end);
+}
+
+/**
+ * その月のターム（番号と開始日）。クラス一覧のターム開始日から3か月ごとに次のタームとして数える
+ * （例 Aug-Oct Term 1 のクラスは、11月の表では Nov-Jan Term 2・New Term）。実際の開始日が違う時はクラス一覧を直す
+ */
+function opsTermAt_(cls, month) {
+  let d = opsTermStart_(cls, month), no = cls.termNo ? Number(cls.termNo) : 0;
+  if (!d) return { start: 0, no };
+  for (let next = opsAddMonths_(d, 3); next <= month.end; next = opsAddMonths_(d, 3)) {
+    d = next;
+    if (no) no++;
+  }
+  return { start: d, no };
+}
+
 function opsClassState_(cls, month) {
-  const d = opsTermStart_(cls, month);
+  const d = opsTermAt_(cls, month).start;
   if (d) return d > month.end ? 'newclass' : d >= month.start ? 'newterm' : 'ongoing';
   return /recruit|募集/i.test(cls.termText) ? 'newclass' : 'ongoing';
 }
 
 /** 一覧表のクラス名の横に出す文字（例「Oct-Dec Term 2」「Recruiting Class · Term 1 · from 11/3」） */
 function opsTermLabel_(cls, month) {
-  const d = opsTermStart_(cls, month);
-  const term = cls.termNo ? 'Term ' + cls.termNo : '';
+  const at = opsTermAt_(cls, month), d = at.start;
+  const term = at.no ? 'Term ' + at.no : '';
   if (opsClassState_(cls, month) === 'newclass') return ['Recruiting Class', term, d ? 'from ' + opsMd_(d) : ''].filter(Boolean).join(' · ');
   if (!d) return term || cls.termText;
   const m = Math.floor(d / 100) % 100 - 1;
@@ -1019,6 +1048,25 @@ function opsFillDefaults_() {
       if (isLive(r)) (classesOf[opsStr_(r['生徒ID'])] = classesOf[opsStr_(r['生徒ID'])] || []).push(opsStr_(r['クラス']));
     });
   }
+  // 手で足した生徒の生徒IDが空なら、次の番号を入れる（Code.gs の申込と番号がぶつからないよう、Code.gs と同じロックを取る）
+  const idLock = LockService.getScriptLock();
+  if (idLock.tryLock(10000)) {
+    try {
+      [['jp', 'J'], ['intl', 'G']].forEach(([region, prefix]) => {
+        const t = sheets[region], ci = t.col['生徒ID'];
+        if (ci === undefined || t.col['名前'] === undefined) return;
+        let max = 0;
+        t.rows.forEach(r => { const m = opsStr_(r['生徒ID']).match(new RegExp('^' + prefix + '(\\d+)$')); if (m) max = Math.max(max, Number(m[1])); });
+        t.rows.filter(r => !opsStr_(r['生徒ID']) && opsStr_(r['名前'])).forEach(r => {
+          const id = prefix + String(++max).padStart(4, '0');
+          t.sheet.getRange(r._row, ci + 1).setValue(id);
+          r['生徒ID'] = id;
+        });
+      });
+    } finally {
+      idLock.releaseLock();
+    }
+  }
   ['jp', 'intl'].forEach(region => {
     const t = sheets[region];
     const cp = t.col['Wixパスワード'], cd = t.col['Display name'], cc = t.col['受講中のクラス'];
@@ -1132,12 +1180,14 @@ function opsWatchItems_(data) {
   add('この1週間に、クラスを去った（最終日を過ぎた）',
     E.filter(e => e.st && e.end && e.end < T && e.end >= opsAddDays_(T, -7)).map(e => who(Object.assign({}, e.st, { cls: e.cls })) + ' 最終日 ' + md(e.end)));
   add('LPの空き状況が人数と合っていない（来月の人数で比べています）', lp);
-  // タームは12回。11回目の週を過ぎたら、次のタームの番号と開始日をクラス一覧に入れてもらう
-  add('そろそろ次のターム（クラス一覧の「ターム」と「ターム開始日」を直す）',
+  // 次のタームは、一覧表では今のタームの開始日から3か月後として出している。2週間前になったら、実際の開始日と合っているか確かめてもらう
+  add('2週間以内に次のターム（一覧表は3か月後として表示。違う時はクラス一覧の「ターム」「ターム開始日」を直す）',
     data.classes.filter(c => c.active).map(c => {
-      const d = opsTermStart_(c, m0);
-      if (!d || opsAddDays_(d, (OPS.TERM_WEEKS - 2) * 7) > T) return '';
-      return c.id + '：Term ' + (c.termNo || '?') + '（' + md(d) + '〜）→ 次は Term ' + (c.termNo ? Number(c.termNo) + 1 : '?');
+      const at = opsTermAt_(c, m0);
+      if (!at.start) return '';
+      const next = opsAddMonths_(at.start, 3);
+      if (next < T || next > opsAddDays_(T, 14)) return '';
+      return c.id + '：Term ' + (at.no ? at.no + 1 : '?') + ' が ' + md(next) + ' から';
     }).filter(Boolean));
   add('クラス一覧のタームか開始日が空', data.classes.filter(c => c.active && (!c.termNo || !opsTermStart_(c, m0))).map(c => c.id));
   // Class ID は「曜日＋時刻＋講師コード」（例 Mon2030NM）。講師のコードは「講師」シートから
@@ -1307,9 +1357,17 @@ function opsArrangeSheet_(sheet, layout, ss) {
   });
   if (col('Wixパスワード')) sheet.getRange(2, col('Wixパスワード'), rows, 1).setNumberFormat('@');
   if (col('電話')) sheet.getRange(2, col('電話'), rows, 1).setNumberFormat('@'); // 先頭の0や+を残す
-  // 足した列の見出しも、ほかの見出しと同じ見た目に（A1の書式を写す）。説明はメモで
-  sheet.getRange(1, 1).copyFormatToRange(sheet, 2, head.length, 1, 1);
+  // 足した列の見出しも、ほかの見出しと同じ見た目に（色を付けない列「メモ」の書式を写す）。説明はメモで
+  const plain = col('メモ') || col('経由') || 1;
+  sheet.getRange(1, plain).copyFormatToRange(sheet, 1, head.length, 1, 1);
   Object.keys(OPS_HEAD_NOTES).forEach(h => { if (col(h)) sheet.getRange(1, col(h)).setNote(OPS_HEAD_NOTES[h]); });
+  // 手で足す時に必ず書く列は濃い色、自動の列は緑
+  (OPS_REQUIRED_HEAD[sheet.getName()] || []).forEach(h => {
+    if (!col(h)) return;
+    const r = sheet.getRange(1, col(h)).setBackground(OPS_HEAD_COLOR.required).setFontWeight('bold');
+    if (!OPS_HEAD_NOTES[h]) r.setNote('手で生徒を足す時に必ず書く列');
+  });
+  (OPS_AUTO_HEAD[sheet.getName()] || []).forEach(h => { if (col(h)) sheet.getRange(1, col(h)).setBackground(OPS_HEAD_COLOR.auto); });
   if (opsStatusColors_(sheet)) notes.push('ステータスで行に色を付けた');
   return notes.length ? notes : ['変更なし'];
 }

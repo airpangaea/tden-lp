@@ -500,6 +500,11 @@ function opsTermStart_(cls, month) {
   return cls.termStart || opsFindDate_(cls.termText, month);
 }
 
+/** タームは 1〜6 をくり返す（6 の次は 1） */
+function opsNextTermNo_(no) {
+  return no >= 6 ? 1 : no + 1;
+}
+
 /** k の n か月後の同じ日（月末を超える日は月末に） */
 function opsAddMonths_(k, n) {
   const mo = opsMonth_(k, n);
@@ -508,14 +513,14 @@ function opsAddMonths_(k, n) {
 
 /**
  * その月のターム（番号と開始日）。クラス一覧のターム開始日から3か月ごとに次のタームとして数える
- * （例 Aug-Oct Term 1 のクラスは、11月の表では Nov-Jan Term 2・New Term）。実際の開始日が違う時はクラス一覧を直す
+ * （例 Aug-Oct Term 1 のクラスは、11月の表では Nov-Jan Term 2・New Term。Term 6 の次は Term 1）。実際の開始日が違う時はクラス一覧を直す
  */
 function opsTermAt_(cls, month) {
   let d = opsTermStart_(cls, month), no = cls.termNo ? Number(cls.termNo) : 0;
   if (!d) return { start: 0, no };
   for (let next = opsAddMonths_(d, 3); next <= month.end; next = opsAddMonths_(d, 3)) {
     d = next;
-    if (no) no++;
+    if (no) no = opsNextTermNo_(no);
   }
   return { start: d, no };
 }
@@ -1187,7 +1192,7 @@ function opsWatchItems_(data) {
       if (!at.start) return '';
       const next = opsAddMonths_(at.start, 3);
       if (next < T || next > opsAddDays_(T, 14)) return '';
-      return c.id + '：Term ' + (at.no ? at.no + 1 : '?') + ' が ' + md(next) + ' から';
+      return c.id + '：Term ' + (at.no ? opsNextTermNo_(at.no) : '?') + ' が ' + md(next) + ' から';
     }).filter(Boolean));
   add('クラス一覧のタームか開始日が空', data.classes.filter(c => c.active && (!c.termNo || !opsTermStart_(c, m0))).map(c => c.id));
   // Class ID は「曜日＋時刻＋講師コード」（例 Mon2030NM）。講師のコードは「講師」シートから

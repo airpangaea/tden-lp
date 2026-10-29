@@ -1092,27 +1092,36 @@ function opsFillDefaults_() {
 
 /**
  * 受講の席番号が空の行に、そのクラスで空いている一番小さい番号を割り当てる（日本生 JP-01〜、海外生 ID-01〜）。
+ * 開始日〜最終日が重ならなければ同じ番号を使える（10/27 で去る生徒の席に 11/3 から入る生徒を入れる）。
  * regionOf(行) で日本／海外、isLive(行) で今も続いている受講か。[行, 席番号] の並びを返す
  */
 function opsAssignSeats_(rows, regionOf, isLive) {
   const live = rows.filter(r => opsStr_(r['クラス']) && regionOf(r) && isLive(r));
-  const used = {};
+  const used = {}; // クラス|地域 → 席番号 → [期間…]
   const key = r => opsStr_(r['クラス']) + '|' + regionOf(r);
-  live.forEach(r => {
-    const n = opsSeatNo_(r['席番号']);
-    if (n) (used[key(r)] = used[key(r)] || {})[n] = true;
-  });
+  const take = (r, n) => { const u = used[key(r)] = used[key(r)] || {}; (u[n] = u[n] || []).push(opsSpan_(r['開始日'], r['最終日'])); };
+  live.forEach(r => { const n = opsSeatNo_(r['席番号']); if (n) take(r, n); });
   const out = [];
   live.filter(r => !opsStr_(r['席番号']))
     .sort((a, b) => (opsKey_(a['開始日']) || 0) - (opsKey_(b['開始日']) || 0) || a._row - b._row)
     .forEach(r => {
-      const u = used[key(r)] = used[key(r)] || {};
+      const u = used[key(r)] || {}, span = opsSpan_(r['開始日'], r['最終日']);
       let n = 1;
-      while (u[n]) n++;
-      u[n] = true;
+      while ((u[n] || []).some(p => opsOverlap_(p, span))) n++;
+      take(r, n);
       out.push([r, (regionOf(r) === 'jp' ? 'JP-' : 'ID-') + ('0' + n).slice(-2)]);
     });
   return out;
+}
+
+/** 受講の期間（開始日・最終日が空なら、ずっと前から・ずっと先まで） */
+function opsSpan_(start, end) {
+  return [opsKey_(start) || 0, opsKey_(end) || 99999999];
+}
+
+/** 2つの期間が1日でも重なるか */
+function opsOverlap_(a, b) {
+  return a[0] <= b[1] && b[0] <= a[1];
 }
 
 /** 打ち間違えにくい文字だけで8文字（td＋6文字） */
@@ -1206,11 +1215,14 @@ function opsWatchItems_(data) {
   add('non-active のクラスに生徒がいる（クラス一覧の状態を active にする）',
     data.classes.filter(c => !c.active && E.some(e => e.cls === c.id && liveE(e))).map(c => c.id));
   add('確かめてほしい行', opsPlace_(data, m0).problems.map(p => who(p.st) + ' ' + p.why));
-  // 同じクラス・同じ席番号の生徒が2人いる（スライドの交流テーブルがずれる）
+  // 同じクラス・同じ席番号の生徒が同じ時期に2人いる（スライドの交流テーブルがずれる）。期間が重ならない入れ替わりはよい
   const seen = {}, dup = [];
   E.filter(e => liveE(e) && e.seat).forEach(e => {
     const k = e.cls + '|' + e.st.region + '|' + opsSeatNo_(e.seat);
-    if (seen[k]) dup.push(e.cls + ' ' + e.seat + '：' + seen[k].st.name + ' と ' + e.st.name); else seen[k] = e;
+    const span = [e.start || 0, e.end || 99999999];
+    const hit = (seen[k] || []).find(x => opsOverlap_([x.start || 0, x.end || 99999999], span));
+    if (hit) dup.push(e.cls + ' ' + e.seat + '：' + hit.st.name + ' と ' + e.st.name);
+    (seen[k] = seen[k] || []).push(e);
   });
   add('同じ席番号の生徒が2人いる（受講の席番号を直す）', dup);
   return items;

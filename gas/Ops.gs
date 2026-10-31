@@ -786,7 +786,7 @@ function opsSeatCell_(seat, k, linkBase) {
   if (!seat) return k < OPS.CAPACITY ? { v: 'Open', bg: C.open, color: C.muted, size: 9 } : { v: '' };
   const st = seat.st;
   const name = st.display + (seat.leaving ? ' (until ' + opsMd_(seat.en.end) + ')' : '') + (seat.paused ? ' (on break)' : '');
-  const cell = { v: name, link: linkBase ? linkBase + st.row : '' };
+  const cell = { v: name, link: linkBase ? linkBase + st.row : '', align: 'left' }; // 「(until 10/23)」が付いても名前が切れないよう左寄せ
   if (seat.leaving) return Object.assign(cell, { bg: C.leave, strike: true, color: C.muted });
   if (seat.unpaid) return Object.assign(cell, { bg: C.pay });
   if (seat.fresh) return Object.assign(cell, { bg: C.fresh });

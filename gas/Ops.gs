@@ -536,7 +536,9 @@ function opsPlace_(data, month) {
   data.enrolls.forEach(en => {
     const st = en.st;
     if (!st) { problems.push({ st: { name: en.name || '（名前なし）', id: en.sid, cls: en.cls }, why: '受講の生徒IDが生徒シートに無い' }); return; }
-    if (OPS.SEAT_STATUSES.indexOf(st.status) === -1) return;
+    // 退会にした生徒も、最終日がこの月の中なら取り消し線で出す（先に退会にしておけるように）
+    const leftThisMonth = st.status === '退会' && en.end && en.end >= month.start;
+    if (OPS.SEAT_STATUSES.indexOf(st.status) === -1 && !leftThisMonth) return;
     if (!known[en.cls]) { problems.push({ st: Object.assign({}, st, { cls: en.cls }), why: '受講のクラスがクラス一覧に無い' }); return; }
     const slot = slots[en.cls];
     if (!slot) return; // non-active のクラス（見張りメールで別に知らせる）

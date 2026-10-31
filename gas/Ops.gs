@@ -10,11 +10,13 @@
  *  - 講師 … 講師・アシスタントの名前・コード・カタカナ
  *
  * 役割
- *  1. 一覧表 … あなた用（生徒管理の「一覧表_今月／来月」。名前を押すと生徒の行が開く）、Class Structure（スタッフ・講師用・リンク無し）、
+ *  1. 一覧表 … あなた用（生徒管理の「一覧表_今月(10月)／来月(11月)」。名前を押すと生徒の行が開く）、Class Structure（スタッフ・講師用・リンク無し）、
  *               スタッフ用の名簿（クラス別シート・席番号順・講師とアシスタント・(admin)・足りない情報は赤）を作る
  *  2. 5分おき … 一覧表を作り直す（中身が変わった時だけ）／受講の席番号が空なら空いている番号を入れる／すべてのクラスを去った生徒を「退会」にする／
- *               支払待ち・在籍で「Wixパスワード」が空なら作る（GAPだけの生徒は作らない）／海外生の「Display name」が空なら名前から作る
- *  3. 月の記録 … 月末に、今月の一覧表を「26Nov」のようなタブに写し（Class Structure の自動のタブは「26Nov (live)」）、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）
+ *               支払待ち・在籍で「Wixパスワード」が空なら作る（GAPだけの生徒は作らない）／「Display name」が空でアルファベットの名前なら作る（Go A.）
+ *  3. 月の記録 … 月末に、今月の一覧表を「26Nov」のようなタブに写し（Class Structure の自動のタブは「26Nov (live)」）、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）。
+ *               毎晩、受講を曜日・時刻・クラス・席番号の順に並べ替える
+ *  受講に生徒を足す時は、生徒_JP／生徒_海外で行を選んでメニュー「選んだ生徒を受講に追加」
  *  4. 見張りメール … 毎週月曜の朝、対応が要るものだけを送る
  *  5. 列の整理・旧名簿からの取り込み（最初に1回）
  *
@@ -56,7 +58,7 @@ const OPS = {
 
   // Class Structure の自動のタブは「26Oct (live)」のように月の名前で作る。月末の記録は「26Oct」（あとから変わらない）
   LIVE_SUFFIX: ' (live)',
-  LEDGER_TAB_THIS: '一覧表_今月', // 生徒管理スプシの中の、あなた用の一覧表（名前を押すと生徒の行が開く）
+  LEDGER_TAB_THIS: '一覧表_今月', // 生徒管理スプシの中の、あなた用の一覧表（名前を押すと生徒の行が開く）。タブ名は「一覧表_今月(10月)」
   LEDGER_TAB_NEXT: '一覧表_来月',
   RECORD_FOLDER: 'TD 月の記録',
   // 見張りメールの件名の頭。Code.gs の SEARCH_QUERY に一致しない文言にしておくこと
@@ -118,7 +120,7 @@ const OPS_HEAD_NOTES = {
   '支払い済みの最終日': '払ってもらった期間の最後の日（3か月払いなら3か月後の前日、月払いならその月末など）。ダブルクリックでカレンダーから選べる。空か過ぎていると一覧表でオレンジ',
   'WhatsApp': '押すと定型文入りでWhatsAppが開く（申込の時に自動で作る）。番号は左の「電話」',
 };
-const OPS_ENROLL_HEAD = ['生徒ID', '名前', 'クラス', '席番号', '開始日', '最終日', 'メモ']; // 名前は自動
+const OPS_ENROLL_HEAD = ['生徒ID', 'Display name', 'クラス', '席番号', '開始日', '最終日', 'メモ']; // Display name は自動（前の列名「名前」も読む）
 const OPS_TEACHER_HEAD = ['名前', 'コード', 'カタカナ', '役割', 'Zoom URL']; // Zoom URL は講師だけ（クラス一覧の Zoom URL に自動で写す）
 const OPS_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const OPS_DAYS = [['Mon', '月曜'], ['Tue', '火曜'], ['Wed', '水曜'], ['Thu', '木曜'], ['Fri', '金曜'], ['Sat', '土曜'], ['Sun', '日曜']];
@@ -132,6 +134,9 @@ function onOpen() {
     .addItem('一覧表を今すぐ作り直す', 'opsRefreshNow')
     .addItem('今の一覧表を記録する（タブとPDF）', 'opsRecordNow')
     .addItem('見張りメールを今すぐ送る', 'opsWeeklyNow')
+    .addSeparator()
+    .addItem('選んだ生徒を受講に追加', 'opsAddToEnroll')
+    .addItem('受講を並べ替える', 'opsSortEnrollNow')
     .addSeparator()
     .addItem('列を整理する（最初に1回）', 'opsSetupColumns')
     .addItem('旧名簿から今の生徒を取り込む（最初に1回）', 'opsImportOld')
@@ -148,9 +153,10 @@ function opsRefreshNow() {
 
 function opsRefreshNow_() {
   opsRefresh(true);
-  const ledger = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(OPS.LEDGER_TAB_THIS);
+  const tab = opsLedgerTab_(OPS.LEDGER_TAB_THIS, opsMonth_(opsTodayKey_(), 0));
+  const ledger = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(tab);
   opsShowLinks_('一覧表を作り直しました', [
-    [SpreadsheetApp.getActiveSpreadsheet().getUrl() + '#gid=' + ledger.getSheetId(), 'あなた用の一覧表（このスプシの「' + OPS.LEDGER_TAB_THIS + '」）'],
+    [SpreadsheetApp.getActiveSpreadsheet().getUrl() + '#gid=' + ledger.getSheetId(), 'あなた用の一覧表（このスプシの「' + tab + '」）'],
     [opsBoardFile_().getUrl(), 'Class Structure（スタッフ・講師用）'],
     [opsStaffFile_().getUrl(), 'スタッフ用の名簿（クラス別シート）'],
   ]);
@@ -172,6 +178,89 @@ function opsWeeklyNow() {
 function opsWeeklyNow_() {
   const to = opsSendWatch_(opsWatchItems_(opsData_()));
   SpreadsheetApp.getActiveSpreadsheet().toast(to + ' に送りました', '見張りメール', 5);
+}
+
+/**
+ * 生徒_JP／生徒_海外で選んだ行（セルをどれか選べばよい。Shift・⌘で複数）の生徒を、受講の一番下に足す。
+ * 生徒ID と Display name が入るので、あとはクラスと開始日を選ぶ
+ */
+function opsAddToEnroll() {
+  opsRun_(opsAddToEnroll_);
+}
+
+function opsAddToEnroll_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getActiveSheet();
+  if ([OPS.SHEET_JP, OPS.SHEET_INTL].indexOf(sh.getName()) === -1) {
+    throw new Error(OPS.SHEET_JP + ' か ' + OPS.SHEET_INTL + ' で、足したい生徒の行を選んでから押してください');
+  }
+  const rowNos = [];
+  sh.getActiveRangeList().getRanges().forEach(rg => {
+    for (let i = rg.getRow(); i < rg.getRow() + rg.getNumRows(); i++) if (i > 1 && rowNos.indexOf(i) === -1) rowNos.push(i);
+  });
+  const byRow = {};
+  opsTable_(sh).rows.forEach(r => { byRow[r._row] = r; });
+  const picked = rowNos.sort((a, b) => a - b).map(i => byRow[i]).filter(r => r && opsStr_(r['生徒ID']));
+  if (!picked.length) throw new Error('生徒IDのある行を選んでください（手で足したばかりの生徒は、生徒IDが入るまで5分ほど待つ）');
+  const es = ss.getSheetByName(OPS.SHEET_ENROLL);
+  const head = opsHead_(es);
+  const nk = head.indexOf('Display name') !== -1 ? 'Display name' : '名前';
+  const values = picked.map(r => head.map(h =>
+    h === '生徒ID' ? opsStr_(r['生徒ID']) : h === nk ? (opsStr_(r['Display name']) || opsStr_(r['名前'])) : ''));
+  const start = es.getLastRow() + 1;
+  es.getRange(start, 1, values.length, head.length).setValues(values);
+  es.activate();
+  es.getRange(start, head.indexOf('クラス') + 1).activate();
+  ss.toast(values.length + '人を受講に足しました。クラスと開始日を選んでください（席番号は5分以内に入ります）', '受講', 6);
+}
+
+function opsSortEnrollNow() {
+  opsRun_(() => {
+    const lock = LockService.getDocumentLock();
+    if (!lock.tryLock(30000)) throw new Error('ほかの処理が動いています。少し待ってからもう一度押してください');
+    try {
+      opsSortEnroll_();
+    } finally {
+      lock.releaseLock();
+    }
+    SpreadsheetApp.getActiveSpreadsheet().toast('受講を曜日・時刻・クラス・席番号の順に並べ替えました', '受講', 5);
+  });
+}
+
+/**
+ * 受講を、曜日（月→日）・時刻・Class ID・席番号（JP→ID）の順に並べる。最終日を過ぎた行は下にまとめて灰色の文字に。
+ * 毎晩と、メニューから
+ */
+function opsSortEnroll_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet(), es = ss.getSheetByName(OPS.SHEET_ENROLL);
+  if (!es || es.getLastRow() < 3) return;
+  const head = opsHead_(es), ix = h => head.indexOf(h);
+  const range = es.getRange(2, 1, es.getLastRow() - 1, head.length);
+  const values = range.getValues();
+  const classes = {};
+  opsTable_(ss.getSheetByName(OPS.SHEET_CLASSES)).rows.map(opsClass_).forEach(c => { classes[c.id] = c; });
+  const today = opsTodayKey_();
+  const dayNo = d => { const i = OPS_DAYS.findIndex(x => x[0] === d); return i < 0 ? 9 : i; };
+  const keyOf = v => {
+    const id = opsStr_(v[ix('クラス')]), c = classes[id] || {}, seat = opsStr_(v[ix('席番号')]);
+    const end = opsKey_(v[ix('最終日')]);
+    return [
+      !opsStr_(v[ix('生徒ID')]) && !id ? 2 : (end && end < today ? 1 : 0), // 空の行は一番下、過ぎた行はその上
+      dayNo(c.day || id.slice(0, 3)),
+      String(c.time || id.slice(3, 7)).replace(':', ''),
+      id,
+      /^ID/i.test(seat) ? 1 : 0,
+      opsSeatNo_(seat) || 99,
+      opsKey_(v[ix('開始日')]) || 0,
+    ];
+  };
+  const keyed = values.map(v => ({ v, k: keyOf(v) }));
+  keyed.sort((a, b) => {
+    for (let i = 0; i < a.k.length; i++) if (a.k[i] !== b.k[i]) return a.k[i] < b.k[i] ? -1 : 1;
+    return 0;
+  });
+  range.setValues(keyed.map(x => x.v));
+  range.setFontColor(null);
+  keyed.forEach((x, i) => { if (x.k[0] === 1) es.getRange(i + 2, 1, 1, head.length).setFontColor('#9aa0a6'); });
 }
 
 /** 自動の更新：5分おきに一覧表、毎晩（月末だけ）月の記録、毎週月曜の朝に見張りメール */
@@ -231,13 +320,13 @@ function opsRefresh(force) {
   }
 }
 
-/** 毎晩23時台。月末の日だけ、今月の一覧表を記録する */
+/** 毎晩23時台。受講を並べ替え、月末の日だけ今月の一覧表を記録する */
 function opsDaily() {
-  if (opsAddDays_(opsTodayKey_(), 1) % 100 !== 1) return;
   const lock = LockService.getDocumentLock();
   if (!lock.tryLock(30000)) return;
   try {
-    opsRecordMonth_(false);
+    opsSortEnroll_();
+    if (opsAddDays_(opsTodayKey_(), 1) % 100 === 1) opsRecordMonth_(false);
   } finally {
     lock.releaseLock();
   }
@@ -326,7 +415,7 @@ function opsStudent_(r, region) {
 /** 受講の1行（1人×1クラス） */
 function opsEnroll_(r) {
   const s = opsStr_;
-  return { row: r._row, sid: s(r['生徒ID']), name: s(r['名前']), cls: s(r['クラス']), seat: s(r['席番号']),
+  return { row: r._row, sid: s(r['生徒ID']), name: s(r['Display name'] !== undefined ? r['Display name'] : r['名前']), cls: s(r['クラス']), seat: s(r['席番号']),
     start: opsKey_(r['開始日']), end: opsKey_(r['最終日']), memo: s(r['メモ']) };
 }
 
@@ -470,16 +559,21 @@ function opsPlace_(data, month) {
   return { slots, problems };
 }
 
-/** 席番号（JP-03 なら3番目）の位置に並べる。番号が無い・重なる生徒は空いている所へ。空席は undefined */
+/**
+ * 席番号（JP-03 なら3番目）の位置に並べる。番号が無い・重なる生徒は空いている所へ。空席は undefined。
+ * 同じ番号に、その月で去る人と続ける人がいれば、続ける人を番号の位置に、去る人（取り消し線）を一番下に出す
+ */
 function opsSeatOrder_(list) {
   const out = [];
-  const byStart = list.slice().sort((a, b) => (a.en.start || 0) - (b.en.start || 0) || (a.st.id < b.st.id ? -1 : a.st.id > b.st.id ? 1 : 0));
-  const rest = [];
+  const byStart = list.slice().sort((a, b) => (a.leaving ? 1 : 0) - (b.leaving ? 1 : 0) ||
+    (a.en.start || 0) - (b.en.start || 0) || (a.st.id < b.st.id ? -1 : a.st.id > b.st.id ? 1 : 0));
+  const rest = [], gone = [];
   byStart.forEach(x => {
     const n = opsSeatNo_(x.en.seat);
-    if (n && !out[n - 1]) out[n - 1] = x; else rest.push(x);
+    if (n && !out[n - 1]) out[n - 1] = x; else (x.leaving && n ? gone : rest).push(x);
   });
   rest.forEach(x => { let i = 0; while (out[i]) i++; out[i] = x; });
+  gone.forEach(x => { out[out.length] = x; });
   return out;
 }
 
@@ -708,9 +802,11 @@ function opsBuildBoards_(force) {
   const board = opsBoardFile_();
   const ledger = SpreadsheetApp.getActiveSpreadsheet();
   const stamp = Utilities.formatDate(new Date(), OPS.TZ, 'M/d HH:mm');
-  const liveTabs = [];
-  [[0, 'This month', OPS.LEDGER_TAB_THIS], [1, 'Next month', OPS.LEDGER_TAB_NEXT]].forEach(([add, label, ledgerTab]) => {
+  const liveTabs = [], ledgerTabs = [];
+  [[0, 'This month', OPS.LEDGER_TAB_THIS], [1, 'Next month', OPS.LEDGER_TAB_NEXT]].forEach(([add, label, ledgerBase]) => {
     const month = opsMonth_(data.today, add);
+    const ledgerTab = opsLedgerTab_(ledgerBase, month); // 例「一覧表_今月(10月)」
+    ledgerTabs.push(ledgerTab);
     const tab = opsMonthTab_(month) + OPS.LIVE_SUFFIX; // 例「26Oct (live)」
     liveTabs.push(tab);
     const grid = opsBoardGrid_(data, month, OPS_MONTHS[month.m - 1] + ' ' + month.y + ' (' + label + ')');
@@ -727,8 +823,19 @@ function opsBuildBoards_(force) {
     const old = n === '今月（自動）' || n === '来月（自動）' || (n.slice(-OPS.LIVE_SUFFIX.length) === OPS.LIVE_SUFFIX && liveTabs.indexOf(n) === -1);
     if (old && board.getSheets().length > 1) board.deleteSheet(sh);
   });
+  // 生徒管理スプシの一覧表も、月が替わったら前の月の名前のタブを消す（「一覧表_今月」だけの古い名前も）
+  ledger.getSheets().forEach(sh => {
+    const n = sh.getName();
+    const mine = [OPS.LEDGER_TAB_THIS, OPS.LEDGER_TAB_NEXT].some(b => n === b || n.indexOf(b + '(') === 0);
+    if (mine && ledgerTabs.indexOf(n) === -1) ledger.deleteSheet(sh);
+  });
   opsDropBlankFirstSheet_(board);
   opsBuildRoster_(data, force);
+}
+
+/** 生徒管理スプシの一覧表のタブ名（例「一覧表_今月(10月)」） */
+function opsLedgerTab_(base, month) {
+  return base + '(' + month.m + '月)';
 }
 
 /** タブの名前の月（例「26Oct」） */
@@ -1045,11 +1152,14 @@ function opsFillDefaults_() {
       opsAssignSeats_(t.rows, r => (byId[opsStr_(r['生徒ID'])] || {}).region, isLive)
         .forEach(([r, seat]) => t.sheet.getRange(r._row, t.col['席番号'] + 1).setValue(seat));
     }
+    // 列名「名前」は「Display name」に変える（中身は生徒シートの Display name）
+    const nk = t.col['Display name'] !== undefined ? 'Display name' : '名前';
+    if (nk === '名前' && t.col['名前'] !== undefined) t.sheet.getRange(1, t.col['名前'] + 1).setValue('Display name');
     t.rows.forEach(r => {
       const who = byId[opsStr_(r['生徒ID'])];
       if (!who) return;
       const name = opsStr_(who.r['Display name']) || opsStr_(who.r['名前']);
-      if (t.col['名前'] !== undefined && name && opsStr_(r['名前']) !== name) t.sheet.getRange(r._row, t.col['名前'] + 1).setValue(name);
+      if (t.col[nk] !== undefined && name && opsStr_(r[nk]) !== name) t.sheet.getRange(r._row, t.col[nk] + 1).setValue(name);
       if (isLive(r)) (classesOf[opsStr_(r['生徒ID'])] = classesOf[opsStr_(r['生徒ID'])] || []).push(opsStr_(r['クラス']));
     });
   }
@@ -1083,7 +1193,8 @@ function opsFillDefaults_() {
       if (cp !== undefined && (st === '支払待ち' || st === '在籍') && !onlyGap && !opsStr_(r['Wixパスワード'])) {
         t.sheet.getRange(r._row, cp + 1).setNumberFormat('@').setValue(opsNewPassword_());
       }
-      if (region === 'intl' && cd !== undefined && active.indexOf(st) !== -1 && !opsStr_(r['Display name']) && opsStr_(r['名前'])) {
+      // Display name が空なら名前から作る（日本生も海外生も。LPの申込のようにアルファベットの名前だけ。activo の漢字の名前は作らない）
+      if (cd !== undefined && active.indexOf(st) !== -1 && !opsStr_(r['Display name']) && /^[A-Za-z][A-Za-z .'\-]*$/.test(opsStr_(r['名前']))) {
         t.sheet.getRange(r._row, cd + 1).setValue(opsShortName_(r['名前']));
       }
     });
@@ -1132,11 +1243,11 @@ function opsNewPassword_() {
   return s;
 }
 
-/** "Putri Anggraini" → "Putri A." */
+/** "Putri Anggraini" → "Putri A."、"Braian Alex Garcia Gomez" → "Braian A. G. G."（最初の語のあとは頭文字） */
 function opsShortName_(name) {
-  const p = String(name).trim().split(/\s+/);
+  const p = String(name).trim().split(/\s+/).filter(Boolean);
   if (p.length < 2) return p[0] || '';
-  return p[0] + ' ' + p[p.length - 1].charAt(0).toUpperCase() + '.';
+  return p[0] + ' ' + p.slice(1).map(w => w.charAt(0).toUpperCase() + '.').join(' ');
 }
 
 
@@ -1795,7 +1906,7 @@ function opsImportMerge_(input) {
       const hit = enrolls.filter(e => e._st === st && String(e['クラス'] || '').trim() === cls.id && !e['最終日'])[0];
       if (hit) { if (!hit['席番号']) hit['席番号'] = o.seat; }
       else {
-        enrolls.push({ '名前': o.display, 'クラス': cls.id, '席番号': o.seat, '開始日': '', '最終日': '', 'メモ': '旧名簿から取り込み', _st: st });
+        enrolls.push({ 'Display name': o.display, '名前': o.display, 'クラス': cls.id, '席番号': o.seat, '開始日': '', '最終日': '', 'メモ': '旧名簿から取り込み', _st: st });
         report.enrolled++;
       }
     }
@@ -1810,7 +1921,7 @@ function opsImportMerge_(input) {
   });
   out.enrolls = enrolls.map(e => {
     const row = Object.assign({}, e);
-    if (e._st) { row['生徒ID'] = e._st['生徒ID']; row['名前'] = e._st['Display name'] || e._st['名前'] || row['名前']; }
+    if (e._st) { row['生徒ID'] = e._st['生徒ID']; row['名前'] = row['Display name'] = e._st['Display name'] || e._st['名前'] || row['名前']; }
     delete row._st;
     return row;
   });

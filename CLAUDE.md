@@ -30,7 +30,7 @@
 - `js/local-time.js` — 授業時刻（日本時間）を閲覧者のタイムゾーンで表示する（`data-jst-range` 等。英語・インドネシア語LPとGAP英語ページで共用。表示言語は `<html lang>` で切り替え）
 - `404.html` — 存在しないURL用（これが無いとPagesは全URLにトップページを200で返し、検索上は重複ページになる）
 - `sitemap.xml` — 公開ページの一覧。ページを追加・削除したら更新する（URLは `.html` なしの形。Pagesは `.html` を付けたURLを308で転送する）
-- `images/tden-og.jpg` — 日本語LPと体験記のSNS共有画像（1200×630）。英語・インドネシア語LPは `images/en/hero-zoom.jpg`、GAPは `global-academic-pass/images/GAP_hero.jpg`
+- `images/tden-og.jpg` — 日本語LPと体験記のSNS共有画像（1200×630）。英語LP `images/og-en.jpg`・インドネシア語LP `og-id.jpg`・GAP英語 `og-gap-en.jpg`・GAP日本語 `og-gap-ja.jpg`（いずれも1200×630。文言を変えたら作り直す）
 - `_redirects` — 先頭で `CLAUDE.md`・`activo-update-guide.md`・`gas/*` をサイトから見えなくしている（Pagesはリポジトリ直下をそのまま配信するため）
 
 ---

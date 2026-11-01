@@ -13,7 +13,7 @@
  *  1. 一覧表 … あなた用（生徒管理の「一覧表_今月(10月)／来月(11月)」。名前を押すと生徒の行が開く）、Class Structure（スタッフ・講師用・リンク無し）、
  *               スタッフ用の名簿（クラス別シート・席番号順・講師とアシスタント・(admin)・足りない情報は赤）を作る
  *  2. 5分おき … 一覧表を作り直す（中身が変わった時だけ）／受講の席番号が空なら空いている番号を入れる／すべてのクラスを去った生徒を「退会」にする／
- *               支払待ち・在籍で「Wixパスワード」が空なら作る（GAPだけの生徒は作らない）／「Display name」が空でアルファベットの名前なら作る（Go A.）
+ *               「Wixパスワード」が空なら作る（ステータス・コースに関係なく全員。TDE＋数字4桁）／「Display name」が空でアルファベットの名前なら作る（Go A.）
  *  3. 月の記録 … 月末に、今月の一覧表を「26Nov」のようなタブに写し（Class Structure の自動のタブは「26Nov (live)」）、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）。
  *               毎晩、受講を曜日・時刻・クラス・席番号の順に並べ替える
  *  受講に生徒を足す時は、生徒_JP／生徒_海外で行を選んでメニュー「選んだ生徒を受講に追加」
@@ -140,6 +140,7 @@ function onOpen() {
     .addSeparator()
     .addItem('列を整理する（最初に1回）', 'opsSetupColumns')
     .addItem('旧名簿から今の生徒を取り込む（最初に1回）', 'opsImportOld')
+    .addItem('空の電話を旧名簿から埋める', 'opsFillPhones')
     .addItem('自動の更新を始める', 'opsInstallTriggers')
     .addItem('自動の更新を止める', 'opsRemoveTriggers');
   // テスト用のスプシ（OpsTestData.gs を貼ったもの）だけに出る
@@ -1117,15 +1118,13 @@ function opsRetirePast_() {
 
 /**
  * 受講：席番号が空なら空いている番号、名前は生徒シートから。
- * 生徒シート：受講中のクラス、支払待ち・在籍で Wixパスワード が空なら作る（GAPだけの生徒は作らない）、海外生の Display name が空なら名前から作る
+ * 生徒シート：受講中のクラス、Wixパスワード が空なら作る（全員）、海外生の Display name が空なら名前から作る
  */
 function opsFillDefaults_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const today = opsTodayKey_();
   const active = ['新規', '提案中', '支払待ち', '在籍', '休会', '空き待ち'];
-  const gapClass = {};
   const classT = opsTable_(ss.getSheetByName(OPS.SHEET_CLASSES));
-  classT.rows.map(opsClass_).forEach(c => { gapClass[c.id] = /gap/i.test(c.type); });
   // クラス一覧の Zoom URL は、講師シートの講師の Zoom URL から（講師で決まるため）
   const teacherSheet = ss.getSheetByName(OPS.SHEET_TEACHERS);
   const zc = classT.col['Zoom URL'];
@@ -1191,8 +1190,8 @@ function opsFillDefaults_() {
       const id = opsStr_(r['生徒ID']), st = opsStr_(r['ステータス']);
       const list = classesOf[id] || [];
       if (cc !== undefined && opsStr_(r['受講中のクラス']) !== list.join('、')) t.sheet.getRange(r._row, cc + 1).setValue(list.join('、'));
-      const onlyGap = list.length > 0 && list.every(c => gapClass[c]);
-      if (cp !== undefined && (st === '支払待ち' || st === '在籍') && !onlyGap && !opsStr_(r['Wixパスワード'])) {
+      // Wixパスワードは、ステータスやコース（GAPだけでも）に関係なく、名前のある生徒全員に入れる
+      if (cp !== undefined && opsStr_(r['名前']) && !opsStr_(r['Wixパスワード'])) {
         t.sheet.getRange(r._row, cp + 1).setNumberFormat('@').setValue(opsNewPassword_());
       }
       // Display name が空なら名前から作る（日本生も海外生も。LPの申込のようにアルファベットの名前だけ。activo の漢字の名前は作らない）
@@ -1776,6 +1775,61 @@ function opsImportOld_() {
     rp.teacherDiff.length ? '旧名簿の Instructor とクラス一覧の講師が違うクラス（旧名簿の方を入れました）：' + rp.teacherDiff.join('、') : '',
     '次は「一覧表を今すぐ作り直す」。取り込んだ受講は開始日・最終日（海外は支払い済み〜も）が空なので、分かる所から入れてください。',
   ].filter(Boolean).join('\n\n'), ui.ButtonSet.OK);
+}
+
+function opsFillPhones() {
+  opsRun_(opsFillPhones_);
+}
+
+/**
+ * 生徒シートの「電話」が空の生徒だけ、旧名簿から電話を入れる（ほかの列・ほかの生徒は触らない。旧名簿は読むだけ）。
+ * 申込の一覧（Japanese／Overseas Applicants）の電話番号を、メールか名前で探す。海外生はクラス別シートの「海外生WA」も見る
+ */
+function opsFillPhones_() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const old = opsOldFile_();
+  const appSheets = OPS.OLD_APPLICANTS_SHEETS.map(n => old.getSheetByName(n)).filter(Boolean);
+  const apps = [].concat.apply([], appSheets.map(sh => opsReadAs_(sh.getDataRange().getValues(), OPS_APPLICANT_COLS)));
+  const was = [].concat.apply([], old.getSheets().filter(sh => OPS.OLD_APPLICANTS_SHEETS.indexOf(sh.getName()) === -1)
+    .map(sh => opsReadAs_(sh.getDataRange().getValues(), OPS_OLD_COLS)));
+  const res = opsPhoneMatches_(
+    { jp: opsTable_(ss.getSheetByName(OPS.SHEET_JP)).rows, intl: opsTable_(ss.getSheetByName(OPS.SHEET_INTL)).rows },
+    apps, was);
+  let filled = 0;
+  [['jp', OPS.SHEET_JP], ['intl', OPS.SHEET_INTL]].forEach(([region, name]) => {
+    const t = opsTable_(ss.getSheetByName(name)), pc = t.col['電話'];
+    if (pc === undefined) return;
+    res[region].forEach(([row, phone]) => {
+      t.sheet.getRange(row, pc + 1).setNumberFormat('@').setValue(phone);
+      filled++;
+    });
+  });
+  ui.alert('電話を入れました', '旧名簿から入れた生徒：' + filled + '人' +
+    (res.missing.length ? '\n\n旧名簿にも無く、空のままの生徒：' + res.missing.join('、') : ''), ui.ButtonSet.OK);
+}
+
+/** 電話が空の生徒ごとに、旧名簿で見つけた番号を返す（シートには書かない）。{ jp: [[行, 番号]…], intl: […], missing: [名前…] } */
+function opsPhoneMatches_(ledger, apps, was) {
+  const lower = v => String(v || '').trim().toLowerCase();
+  // 数字で保存されて先頭の0が落ちた日本の番号（9012345678）は 0 を戻す
+  const fix = v => { const s = String(v || '').trim(); return /^[1-9]\d{8,9}$/.test(s) ? '0' + s : s; };
+  const out = { jp: [], intl: [], missing: [] };
+  ['jp', 'intl'].forEach(region => {
+    ledger[region].forEach(r => {
+      if (!opsStr_(r['名前']) || opsStr_(r['電話'])) return;
+      const email = lower(r['Email']), name = opsStr_(r['名前']), disp = opsStr_(r['Display name']);
+      const hit = (email && apps.filter(a => lower(a.email) === email && a.phone)[0]) || apps.filter(a => a.name === name && a.phone)[0];
+      let phone = hit ? hit.phone : '';
+      if (!phone && region === 'intl') {
+        const w = was.filter(o => o.wa && ((email && lower(o.email) === email) || (o.full && o.full === name)))[0];
+        phone = w ? w.wa : '';
+      }
+      if (phone) out[region].push([r._row, fix(phone)]);
+      else out.missing.push(disp || name);
+    });
+  });
+  return out;
 }
 
 function opsOldFile_() {

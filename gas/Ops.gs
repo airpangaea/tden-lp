@@ -140,7 +140,6 @@ function onOpen() {
     .addSeparator()
     .addItem('列を整理する（最初に1回）', 'opsSetupColumns')
     .addItem('旧名簿から今の生徒を取り込む（最初に1回）', 'opsImportOld')
-    .addItem('空の電話を旧名簿から埋める', 'opsFillPhones')
     .addItem('自動の更新を始める', 'opsInstallTriggers')
     .addItem('自動の更新を止める', 'opsRemoveTriggers');
   // テスト用のスプシ（OpsTestData.gs を貼ったもの）だけに出る
@@ -1448,6 +1447,8 @@ function opsArrangeSheet_(sheet, layout, ss) {
       d = sheet.getColumnGroupDepth(c);
     }
   }
+  // 畳んだ範囲から前へ動かした列は、隠れたまま動くことがある（10/25 の「電話」）。畳む範囲より左は必ず表示する
+  sheet.showColumns(1, fold !== -1 ? fold : head.length);
   if (fold !== -1) {
     const n = layout.order.length - fold;
     sheet.setColumnGroupControlPosition(SpreadsheetApp.GroupControlTogglePosition.BEFORE);
@@ -1775,61 +1776,6 @@ function opsImportOld_() {
     rp.teacherDiff.length ? '旧名簿の Instructor とクラス一覧の講師が違うクラス（旧名簿の方を入れました）：' + rp.teacherDiff.join('、') : '',
     '次は「一覧表を今すぐ作り直す」。取り込んだ受講は開始日・最終日（海外は支払い済み〜も）が空なので、分かる所から入れてください。',
   ].filter(Boolean).join('\n\n'), ui.ButtonSet.OK);
-}
-
-function opsFillPhones() {
-  opsRun_(opsFillPhones_);
-}
-
-/**
- * 生徒シートの「電話」が空の生徒だけ、旧名簿から電話を入れる（ほかの列・ほかの生徒は触らない。旧名簿は読むだけ）。
- * 申込の一覧（Japanese／Overseas Applicants）の電話番号を、メールか名前で探す。海外生はクラス別シートの「海外生WA」も見る
- */
-function opsFillPhones_() {
-  const ui = SpreadsheetApp.getUi();
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const old = opsOldFile_();
-  const appSheets = OPS.OLD_APPLICANTS_SHEETS.map(n => old.getSheetByName(n)).filter(Boolean);
-  const apps = [].concat.apply([], appSheets.map(sh => opsReadAs_(sh.getDataRange().getValues(), OPS_APPLICANT_COLS)));
-  const was = [].concat.apply([], old.getSheets().filter(sh => OPS.OLD_APPLICANTS_SHEETS.indexOf(sh.getName()) === -1)
-    .map(sh => opsReadAs_(sh.getDataRange().getValues(), OPS_OLD_COLS)));
-  const res = opsPhoneMatches_(
-    { jp: opsTable_(ss.getSheetByName(OPS.SHEET_JP)).rows, intl: opsTable_(ss.getSheetByName(OPS.SHEET_INTL)).rows },
-    apps, was);
-  let filled = 0;
-  [['jp', OPS.SHEET_JP], ['intl', OPS.SHEET_INTL]].forEach(([region, name]) => {
-    const t = opsTable_(ss.getSheetByName(name)), pc = t.col['電話'];
-    if (pc === undefined) return;
-    res[region].forEach(([row, phone]) => {
-      t.sheet.getRange(row, pc + 1).setNumberFormat('@').setValue(phone);
-      filled++;
-    });
-  });
-  ui.alert('電話を入れました', '旧名簿から入れた生徒：' + filled + '人' +
-    (res.missing.length ? '\n\n旧名簿にも無く、空のままの生徒：' + res.missing.join('、') : ''), ui.ButtonSet.OK);
-}
-
-/** 電話が空の生徒ごとに、旧名簿で見つけた番号を返す（シートには書かない）。{ jp: [[行, 番号]…], intl: […], missing: [名前…] } */
-function opsPhoneMatches_(ledger, apps, was) {
-  const lower = v => String(v || '').trim().toLowerCase();
-  // 数字で保存されて先頭の0が落ちた日本の番号（9012345678）は 0 を戻す
-  const fix = v => { const s = String(v || '').trim(); return /^[1-9]\d{8,9}$/.test(s) ? '0' + s : s; };
-  const out = { jp: [], intl: [], missing: [] };
-  ['jp', 'intl'].forEach(region => {
-    ledger[region].forEach(r => {
-      if (!opsStr_(r['名前']) || opsStr_(r['電話'])) return;
-      const email = lower(r['Email']), name = opsStr_(r['名前']), disp = opsStr_(r['Display name']);
-      const hit = (email && apps.filter(a => lower(a.email) === email && a.phone)[0]) || apps.filter(a => a.name === name && a.phone)[0];
-      let phone = hit ? hit.phone : '';
-      if (!phone && region === 'intl') {
-        const w = was.filter(o => o.wa && ((email && lower(o.email) === email) || (o.full && o.full === name)))[0];
-        phone = w ? w.wa : '';
-      }
-      if (phone) out[region].push([r._row, fix(phone)]);
-      else out.missing.push(disp || name);
-    });
-  });
-  return out;
 }
 
 function opsOldFile_() {

@@ -1239,10 +1239,8 @@ function opsOverlap_(a, b) {
 
 /** 打ち間違えにくい文字だけで8文字（td＋6文字） */
 function opsNewPassword_() {
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-  let s = 'td';
-  for (let i = 0; i < 6; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
-  return s;
+  // TDE＋数字4桁（他の生徒と重なってもよい）
+  return 'TDE' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 }
 
 /** "Putri Anggraini" → "Putri A."、"Braian Alex Garcia Gomez" → "Braian A. G. G."（最初の語のあとは頭文字） */

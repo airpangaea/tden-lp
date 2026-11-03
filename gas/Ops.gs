@@ -12,10 +12,11 @@
  * 役割
  *  1. 一覧表 … あなた用（生徒管理の「一覧表_今月(10月)／来月(11月)」。名前を押すと生徒の行が開く）、Class Structure（スタッフ・講師用・リンク無し）、
  *               スタッフ用の名簿（クラス別シート・席番号順・講師とアシスタント・(admin)・足りない情報は赤）を作る
- *  2. 5分おき … 一覧表を作り直す（中身が変わった時だけ）／受講の席番号が空なら空いている番号を入れる／すべてのクラスを去った生徒を「退会」にする／
+ *  2. 5分おき（メニューの「一覧表を今すぐ作り直す」も同じ） … 一覧表を作り直す（中身が変わった時だけ）／
+ *               受講の席番号をクラスごとに 01 から詰めて振る（最終日を過ぎた生徒が抜けたら繰り上げ。空の行には空いている番号）／
+ *               受講を曜日・時刻・クラス・席番号の順に並べ替え、最終日を過ぎた行は下にまとめて灰色の文字に／すべてのクラスを去った生徒を「退会」にする／
  *               「Wixパスワード」が空なら作る（ステータス・コースに関係なく全員。TDE＋数字4桁）／「Display name」が空でアルファベットの名前なら作る（Go A.）
  *  3. 月の記録 … 月末に、今月の一覧表を「26Nov」のようなタブに写し（Class Structure の自動のタブは「26Nov (live)」）、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）。
- *               毎晩、受講を曜日・時刻・クラス・席番号の順に並べ替える
  *  受講に生徒を足す時は、生徒_JP／生徒_海外で行を選んでメニュー「選んだ生徒を受講に追加」
  *  4. 見張りメール … 毎週月曜の朝、対応が要るものだけを送る
  *  5. 列の整理・旧名簿からの取り込み（最初に1回）
@@ -136,7 +137,6 @@ function onOpen() {
     .addItem('見張りメールを今すぐ送る', 'opsWeeklyNow')
     .addSeparator()
     .addItem('選んだ生徒を受講に追加', 'opsAddToEnroll')
-    .addItem('受講を並べ替える', 'opsSortEnrollNow')
     .addSeparator()
     .addItem('列を整理する（最初に1回）', 'opsSetupColumns')
     .addItem('旧名簿から今の生徒を取り込む（最初に1回）', 'opsImportOld')
@@ -213,22 +213,10 @@ function opsAddToEnroll_() {
   ss.toast(values.length + '人を受講に足しました。クラスと開始日を選んでください（席番号は5分以内に入ります）', '受講', 6);
 }
 
-function opsSortEnrollNow() {
-  opsRun_(() => {
-    const lock = LockService.getDocumentLock();
-    if (!lock.tryLock(30000)) throw new Error('ほかの処理が動いています。少し待ってからもう一度押してください');
-    try {
-      opsSortEnroll_();
-    } finally {
-      lock.releaseLock();
-    }
-    SpreadsheetApp.getActiveSpreadsheet().toast('受講を曜日・時刻・クラス・席番号の順に並べ替えました', '受講', 5);
-  });
-}
-
 /**
  * 受講を、曜日（月→日）・時刻・Class ID・席番号（JP→ID）の順に並べる。最終日を過ぎた行は下にまとめて灰色の文字に。
- * 毎晩と、メニューから
+ * クラスがまだ空の行（「選んだ生徒を受講に追加」の直後など）は一番下のまま（選んでいる途中で動かないように）。
+ * 一覧表の作り直し（5分おき・メニュー）で動く。並びも灰色も変わらなければ何も書かない
  */
 function opsSortEnroll_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet(), es = ss.getSheetByName(OPS.SHEET_ENROLL);
@@ -236,6 +224,8 @@ function opsSortEnroll_() {
   const head = opsHead_(es), ix = h => head.indexOf(h);
   const range = es.getRange(2, 1, es.getLastRow() - 1, head.length);
   const values = range.getValues();
+  const GREY = '#9aa0a6';
+  const greyNow = es.getRange(2, 1, values.length, 1).getFontColors().map(c => String(c[0]).toLowerCase() === GREY);
   const classes = {};
   opsTable_(ss.getSheetByName(OPS.SHEET_CLASSES)).rows.map(opsClass_).forEach(c => { classes[c.id] = c; });
   const today = opsTodayKey_();
@@ -244,7 +234,7 @@ function opsSortEnroll_() {
     const id = opsStr_(v[ix('クラス')]), c = classes[id] || {}, seat = opsStr_(v[ix('席番号')]);
     const end = opsKey_(v[ix('最終日')]);
     return [
-      !opsStr_(v[ix('生徒ID')]) && !id ? 2 : (end && end < today ? 1 : 0), // 空の行は一番下、過ぎた行はその上
+      !id ? 2 : (end && end < today ? 1 : 0), // クラスが空の行は一番下、過ぎた行はその上
       dayNo(c.day || id.slice(0, 3)),
       String(c.time || id.slice(3, 7)).replace(':', ''),
       id,
@@ -253,14 +243,17 @@ function opsSortEnroll_() {
       opsKey_(v[ix('開始日')]) || 0,
     ];
   };
-  const keyed = values.map(v => ({ v, k: keyOf(v) }));
+  const keyed = values.map((v, i) => ({ v, i, k: keyOf(v).concat([i]) }));
   keyed.sort((a, b) => {
     for (let i = 0; i < a.k.length; i++) if (a.k[i] !== b.k[i]) return a.k[i] < b.k[i] ? -1 : 1;
     return 0;
   });
-  range.setValues(keyed.map(x => x.v));
+  const moved = keyed.some((x, i) => x.i !== i);
+  const greyChanged = keyed.some((x, i) => (x.k[0] === 1) !== greyNow[i]);
+  if (!moved && !greyChanged) return;
+  if (moved) range.setValues(keyed.map(x => x.v));
   range.setFontColor(null);
-  keyed.forEach((x, i) => { if (x.k[0] === 1) es.getRange(i + 2, 1, 1, head.length).setFontColor('#9aa0a6'); });
+  keyed.forEach((x, i) => { if (x.k[0] === 1) es.getRange(i + 2, 1, 1, head.length).setFontColor(GREY); });
 }
 
 /** 自動の更新：5分おきに一覧表、毎晩（月末だけ）月の記録、毎週月曜の朝に見張りメール */
@@ -314,19 +307,20 @@ function opsRefresh(force) {
   try {
     opsRetirePast_();
     opsFillDefaults_();
+    opsSortEnroll_();
     opsBuildBoards_(force === true);
   } finally {
     lock.releaseLock();
   }
 }
 
-/** 毎晩23時台。受講を並べ替え、月末の日だけ今月の一覧表を記録する */
+/** 毎晩23時台。月末の日だけ今月の一覧表を記録する（受講の並べ替えは5分おきの作り直しでする） */
 function opsDaily() {
+  if (opsAddDays_(opsTodayKey_(), 1) % 100 !== 1) return;
   const lock = LockService.getDocumentLock();
   if (!lock.tryLock(30000)) return;
   try {
-    opsSortEnroll_();
-    if (opsAddDays_(opsTodayKey_(), 1) % 100 === 1) opsRecordMonth_(false);
+    opsRecordMonth_(false);
   } finally {
     lock.releaseLock();
   }
@@ -1116,7 +1110,7 @@ function opsRetirePast_() {
 }
 
 /**
- * 受講：席番号が空なら空いている番号、名前は生徒シートから。
+ * 受講：席番号はクラスごとに 01 から詰めて振る（opsAssignSeats_）、名前は生徒シートから。
  * 生徒シート：受講中のクラス、Wixパスワード が空なら作る（全員）、海外生の Display name が空なら名前から作る
  */
 function opsFillDefaults_() {
@@ -1148,8 +1142,15 @@ function opsFillDefaults_() {
       const who = byId[opsStr_(r['生徒ID'])];
       return !!who && OPS.SEAT_STATUSES.indexOf(opsStr_(who.r['ステータス'])) !== -1 && !(opsKey_(r['最終日']) && opsKey_(r['最終日']) < today);
     };
+    // 席を押さえている行：席に出るステータスか、先に「退会」にしたが最終日がまだ来ていない行（最終日の授業までは席に座っている）
+    const holdsSeat = r => {
+      const who = byId[opsStr_(r['生徒ID'])], end = opsKey_(r['最終日']);
+      if (!who || (end && end < today)) return false;
+      const st = opsStr_(who.r['ステータス']);
+      return OPS.SEAT_STATUSES.indexOf(st) !== -1 || (st === '退会' && !!end);
+    };
     if (t.col['席番号'] !== undefined) {
-      opsAssignSeats_(t.rows, r => (byId[opsStr_(r['生徒ID'])] || {}).region, isLive)
+      opsAssignSeats_(t.rows, r => (byId[opsStr_(r['生徒ID'])] || {}).region, holdsSeat)
         .forEach(([r, seat]) => t.sheet.getRange(r._row, t.col['席番号'] + 1).setValue(seat));
     }
     // 列名「名前」は「Display name」に変える（中身は生徒シートの Display name）
@@ -1202,26 +1203,33 @@ function opsFillDefaults_() {
 }
 
 /**
- * 受講の席番号が空の行に、そのクラスで空いている一番小さい番号を割り当てる（日本生 JP-01〜、海外生 ID-01〜）。
- * 開始日〜最終日が重ならなければ同じ番号を使える（10/27 で去る生徒の席に 11/3 から入る生徒を入れる）。
- * regionOf(行) で日本／海外、isLive(行) で今も続いている受講か。[行, 席番号] の並びを返す
+ * クラスごと・日本／海外ごとに、席番号を 01 から詰めて振り直す（日本生 JP-01〜、海外生 ID-01〜）。
+ *  - 今の席番号の順を保つ（番号が空の行は後ろ、開始日の早い順）。最終日を過ぎた生徒が抜けると、次の日から後ろの生徒が繰り上がる
+ *  - 開始日〜最終日が重ならなければ同じ番号を使う（11/4 で去る生徒の番号に 11/11 から入る生徒を入れる）。
+ *    最終日をあとで早めた時も、次に入る生徒をその番号へ入れ直す
+ * regionOf(行) で日本／海外、holds(行) でその行が席を押さえているか。変わる行だけ [行, 席番号] で返す
  */
-function opsAssignSeats_(rows, regionOf, isLive) {
-  const live = rows.filter(r => opsStr_(r['クラス']) && regionOf(r) && isLive(r));
-  const used = {}; // クラス|地域 → 席番号 → [期間…]
-  const key = r => opsStr_(r['クラス']) + '|' + regionOf(r);
-  const take = (r, n) => { const u = used[key(r)] = used[key(r)] || {}; (u[n] = u[n] || []).push(opsSpan_(r['開始日'], r['最終日'])); };
-  live.forEach(r => { const n = opsSeatNo_(r['席番号']); if (n) take(r, n); });
+function opsAssignSeats_(rows, regionOf, holds) {
+  const groups = {}; // クラス|地域 → 行
+  rows.filter(r => opsStr_(r['クラス']) && regionOf(r) && holds(r)).forEach(r => {
+    const k = opsStr_(r['クラス']) + '|' + regionOf(r);
+    (groups[k] = groups[k] || []).push(r);
+  });
   const out = [];
-  live.filter(r => !opsStr_(r['席番号']))
-    .sort((a, b) => (opsKey_(a['開始日']) || 0) - (opsKey_(b['開始日']) || 0) || a._row - b._row)
-    .forEach(r => {
-      const u = used[key(r)] || {}, span = opsSpan_(r['開始日'], r['最終日']);
-      let n = 1;
-      while ((u[n] || []).some(p => opsOverlap_(p, span))) n++;
-      take(r, n);
-      out.push([r, (regionOf(r) === 'jp' ? 'JP-' : 'ID-') + ('0' + n).slice(-2)]);
-    });
+  Object.keys(groups).forEach(k => {
+    const used = {}; // 席番号 → [期間…]
+    groups[k]
+      .sort((a, b) => (opsSeatNo_(a['席番号']) || 99) - (opsSeatNo_(b['席番号']) || 99) ||
+        (opsKey_(a['開始日']) || 0) - (opsKey_(b['開始日']) || 0) || a._row - b._row)
+      .forEach(r => {
+        const span = opsSpan_(r['開始日'], r['最終日']);
+        let n = 1;
+        while ((used[n] || []).some(p => opsOverlap_(p, span))) n++;
+        (used[n] = used[n] || []).push(span);
+        const seat = (regionOf(r) === 'jp' ? 'JP-' : 'ID-') + ('0' + n).slice(-2);
+        if (opsStr_(r['席番号']) !== seat) out.push([r, seat]);
+      });
+  });
   return out;
 }
 

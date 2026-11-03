@@ -224,8 +224,17 @@ function opsSortEnroll_() {
   const head = opsHead_(es), ix = h => head.indexOf(h);
   const range = es.getRange(2, 1, es.getLastRow() - 1, head.length);
   const values = range.getValues();
-  const GREY = '#9aa0a6';
-  const greyNow = es.getRange(2, 1, values.length, 1).getFontColors().map(c => String(c[0]).toLowerCase() === GREY);
+  const GREY = '#9aa0a6', BLACK = '#000000';
+  const isGrey = c => String(c).toLowerCase() === GREY;
+  // 値と一緒に、手で付けたセルの色・文字の色・太字・斜体・取り消し線・セルのメモも行ごと動かす（値だけ動かすと色がその場に残る）
+  const fmt = {
+    bg: range.getBackgrounds(), color: range.getFontColors(), weight: range.getFontWeights(),
+    style: range.getFontStyles(), line: range.getFontLines(), note: range.getNotes(),
+  };
+  // メモ欄はリンク付きの文字もあるので、書式付きの文字のまま動かす
+  const memoCol = ix('メモ');
+  const memoRich = memoCol === -1 ? null : es.getRange(2, memoCol + 1, values.length, 1).getRichTextValues();
+  const greyNow = fmt.color.map(c => isGrey(c[0]));
   const classes = {};
   opsTable_(ss.getSheetByName(OPS.SHEET_CLASSES)).rows.map(opsClass_).forEach(c => { classes[c.id] = c; });
   const today = opsTodayKey_();
@@ -251,9 +260,26 @@ function opsSortEnroll_() {
   const moved = keyed.some((x, i) => x.i !== i);
   const greyChanged = keyed.some((x, i) => (x.k[0] === 1) !== greyNow[i]);
   if (!moved && !greyChanged) return;
-  if (moved) range.setValues(keyed.map(x => x.v));
-  range.setFontColor(null);
-  keyed.forEach((x, i) => { if (x.k[0] === 1) es.getRange(i + 2, 1, 1, head.length).setFontColor(GREY); });
+  const pick = grid => keyed.map(x => grid[x.i]);
+  if (moved) {
+    range.setValues(keyed.map(x => x.v));
+    range.setBackgrounds(pick(fmt.bg));
+    range.setFontWeights(pick(fmt.weight));
+    range.setFontStyles(pick(fmt.style));
+    range.setFontLines(pick(fmt.line));
+    range.setNotes(pick(fmt.note));
+    if (memoRich) {
+      // リンクや一部だけの太字などがあるセルだけ入れ直す（ふつうの文字は setValues で入っている）
+      keyed.forEach((x, i) => {
+        const rt = memoRich[x.i][0];
+        if (rt && rt.getText() && (rt.getRuns().length > 1 || rt.getRuns().some(run => run.getLinkUrl()))) {
+          es.getRange(i + 2, memoCol + 1).setRichTextValue(rt);
+        }
+      });
+    }
+  }
+  // 文字の色：最終日を過ぎた行は灰色、それ以外は手で付けた色のまま（前に灰色だった所だけ黒に戻す）
+  range.setFontColors(keyed.map(x => fmt.color[x.i].map(c => x.k[0] === 1 ? GREY : (isGrey(c) ? BLACK : c))));
 }
 
 /** 自動の更新：5分おきに一覧表、毎晩（月末だけ）月の記録、毎週月曜の朝に見張りメール */

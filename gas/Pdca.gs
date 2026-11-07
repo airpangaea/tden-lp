@@ -6,7 +6,8 @@
  *
  * 集める数字
  *  - GA4（ストリーム「TOMODACHI留学LP」）… チャネル別セッション・generate_lead の件数
- *  - 生徒_JP … 申込日時が期間内で、経由が LP（予備経路を含む）の件数。activo は数えない
+ *  - 生徒_JP … 申込日時が期間内で、経由が LP（予備経路を含む）の件数。activo は数えない。
+ *               うち「既存照合」が入っている行（前からいる生徒がまた申込んだ＝GAPの追加など）は「うち既存」にも数える
  *  - 広告費 … 自動では取らない。広告を再開したら、その行に手で入れる（空欄＝未入力）
  *  - ファネル … 広告以外／広告に分けて、LPを25%・50%・75%まで読んだ割合と申込を、シート「PDCAファネル」に1期間1行で書き、
  *               折れ線グラフ（横軸＝期間の終了日）を作り直す。施策を打ったら、その期間の「施策メモ」に手で書く
@@ -28,7 +29,7 @@ const PDCA = {
   // まだ1行も無い時の「今回」の始まり（前回の手作業の確認 9/29〜10/24 の次の日）
   FIRST_START: 20261025,
   HEAD: ['集計日', '区分', '開始', '終了', '日数', 'セッション', '広告以外セッション', '1日あたり全体', '1日あたり広告以外',
-    'generate_lead', '申込_JP_LP', '広告費', 'チャネル内訳'],
+    'generate_lead', '申込_JP_LP', '広告費', 'チャネル内訳', 'うち既存'],
 };
 
 // 広告のチャネル（GA4の「セッションのデフォルト チャネル グループ」）
@@ -91,7 +92,7 @@ function pdcaCollect_() {
     const breakdown = Object.keys(ch).sort((a, b) => ch[b] - ch[a]).map(c => c + ' ' + ch[c]).join(' / ');
     return [today, label, pdcaText_(r.start), pdcaText_(r.end), days, total, organic,
       Math.round(total / days * 10) / 10, Math.round(organic / days * 10) / 10,
-      leads[key] || 0, apps[key] || 0, '', breakdown];
+      leads[key] || 0, (apps[key] || {}).all || 0, '', breakdown, (apps[key] || {}).existing || 0];
   });
 
   // 同じ期間をもう一度集計した時は、前の2行を書き直す（手で入れた広告費は残す）
@@ -139,9 +140,10 @@ function pdcaSheet_() {
     sheet = ss.insertSheet(PDCA.SHEET);
     // 日付は文字のまま置く（読む側が日付の形を気にしなくてよいように）
     sheet.getRange('A:D').setNumberFormat('@');
-    sheet.getRange(1, 1, 1, PDCA.HEAD.length).setValues([PDCA.HEAD]).setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
+  // 列を右に足した時も見出しをそろえる
+  sheet.getRange(1, 1, 1, PDCA.HEAD.length).setValues([PDCA.HEAD]).setFontWeight('bold');
   return sheet;
 }
 
@@ -277,21 +279,28 @@ function pdcaFunnelCharts_(sheet, count) {
 
 /* ======================= 申込（生徒_JP） ======================= */
 
-/** { now: 1, prev: 0 }。経由が LP で始まる行（LP・LP(予備経路)）だけ数える。名前などは読まない */
+/** { now: { all: 1, existing: 1 }, prev: {...} }。経由が LP で始まる行（LP・LP(予備経路)）だけ数える。名前などは読まない */
 function pdcaApplications_(ranges) {
   const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(CONFIG.SHEET_JP);
   const head = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0].map(h => String(h).trim());
-  const cDate = head.indexOf('申込日時'), cSource = head.indexOf('経由');
+  const cDate = head.indexOf('申込日時'), cSource = head.indexOf('経由'), cExisting = head.indexOf('既存照合');
   if (cDate === -1 || cSource === -1) throw new Error('生徒_JP に「申込日時」か「経由」の列がありません');
   const n = sheet.getLastRow() - 1;
   if (n < 1) return {};
   const dates = sheet.getRange(2, cDate + 1, n, 1).getDisplayValues();
   const sources = sheet.getRange(2, cSource + 1, n, 1).getDisplayValues();
+  const existing = cExisting === -1 ? [] : sheet.getRange(2, cExisting + 1, n, 1).getDisplayValues();
   const out = {};
   dates.forEach((d, i) => {
     if (!/^LP/i.test(String(sources[i][0]).trim())) return;
     const k = pdcaKey_(d[0]);
-    ranges.forEach(r => { if (k >= r.start && k <= r.end) out[r.name] = (out[r.name] || 0) + 1; });
+    const old = existing[i] && String(existing[i][0]).trim() !== '';
+    ranges.forEach(r => {
+      if (k < r.start || k > r.end) return;
+      const o = out[r.name] = out[r.name] || { all: 0, existing: 0 };
+      o.all++;
+      if (old) o.existing++;
+    });
   });
   return out;
 }

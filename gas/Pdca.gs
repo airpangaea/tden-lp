@@ -29,7 +29,7 @@ const PDCA = {
   // まだ1行も無い時の「今回」の始まり（前回の手作業の確認 9/29〜10/24 の次の日）
   FIRST_START: 20261025,
   HEAD: ['集計日', '区分', '開始', '終了', '日数', 'セッション', '広告以外セッション', '1日あたり全体', '1日あたり広告以外',
-    'generate_lead', '申込_JP_LP', '広告費', 'チャネル内訳', 'うち既存'],
+    'generate_lead', '申込_JP_LP', 'うち既存', '広告費', 'チャネル内訳'],
 };
 
 // 広告のチャネル（GA4の「セッションのデフォルト チャネル グループ」）
@@ -92,7 +92,7 @@ function pdcaCollect_() {
     const breakdown = Object.keys(ch).sort((a, b) => ch[b] - ch[a]).map(c => c + ' ' + ch[c]).join(' / ');
     return [today, label, pdcaText_(r.start), pdcaText_(r.end), days, total, organic,
       Math.round(total / days * 10) / 10, Math.round(organic / days * 10) / 10,
-      leads[key] || 0, (apps[key] || {}).all || 0, '', breakdown, (apps[key] || {}).existing || 0];
+      leads[key] || 0, (apps[key] || {}).all || 0, (apps[key] || {}).existing || 0, '', breakdown];
   });
 
   // 同じ期間をもう一度集計した時は、前の2行を書き直す（手で入れた広告費は残す）
@@ -100,8 +100,9 @@ function pdcaCollect_() {
   const endText = pdcaText_(end);
   const old = values.findIndex((v, i) => i > 1 && v[1] === '今回' && v[3] === endText);
   if (old > 1) {
-    rows[0][11] = values[old - 1][11];
-    rows[1][11] = values[old][11];
+    const cost = PDCA.HEAD.indexOf('広告費');
+    rows[0][cost] = values[old - 1][cost];
+    rows[1][cost] = values[old][cost];
     sheet.getRange(old, 1, 2, PDCA.HEAD.length).setValues(rows);
   } else {
     sheet.getRange(sheet.getLastRow() + 1, 1, 2, PDCA.HEAD.length).setValues(rows);

@@ -8,11 +8,14 @@
  *  - GA4（ストリーム「TOMODACHI留学LP」）… チャネル別セッション・generate_lead の件数
  *  - 生徒_JP … 申込日時が期間内で、経由が LP（予備経路を含む）の件数。activo は数えない
  *  - 広告費 … 自動では取らない。広告を再開したら、その行に手で入れる（空欄＝未入力）
+ *  - ファネル … 広告以外／広告に分けて、LPを25%・50%・75%まで読んだ割合と申込を、シート「PDCAファネル」に1期間1行で書き、
+ *               折れ線グラフ（横軸＝期間の終了日）を作り直す。施策を打ったら、その期間の「施策メモ」に手で書く
  *
  * 初回（手順は gas/README.md）
  *  - 左の「サービス ＋」から「Google Analytics Data API」を追加（ID は AnalyticsData のまま）
  *  - プロジェクトの設定 → スクリプト プロパティに GA4_PROPERTY_ID（GA4のプロパティID・数字）を追加
  *  - pdcaRunNow を1回実行して権限を許可 → PDCA集計 に2行出ればOK → pdcaInstallTrigger を実行
+ *  - pdcaBackfill を1回実行 → PDCAファネル に過去の14日ごとの行（12期間）とグラフが出る
  *
  * 注意
  *  - 関数・定数は pdca／PDCA で始める（Code.gs・Ops.gs と名前がぶつからないように）
@@ -30,6 +33,17 @@ const PDCA = {
 
 // 広告のチャネル（GA4の「セッションのデフォルト チャネル グループ」）
 const PDCA_PAID = ['Paid Search', 'Paid Social', 'Paid Video', 'Paid Shopping', 'Paid Other', 'Display', 'Cross-network'];
+
+// ファネル（1期間1行・広告以外と広告を分ける。率＝その段階まで来た数÷セッション）。右の施策メモは手で書く
+const PDCA_FUNNEL = {
+  SHEET: 'PDCAファネル',
+  STEPS: [25, 50, 75],
+  HEAD: ['終了', '開始', '日数',
+    '広告以外 セッション', '広告以外 25%', '広告以外 50%', '広告以外 75%', '広告以外 申込',
+    '広告 セッション', '広告 25%', '広告 50%', '広告 75%', '広告 申込',
+    '施策メモ'],
+  BACKFILL: 12, // pdcaBackfill でさかのぼる期間の数（14日ずつ）
+};
 
 
 /** トリガーから（毎週土曜の朝）。1〜7日・15〜21日の土曜だけ動く */
@@ -91,6 +105,22 @@ function pdcaCollect_() {
   } else {
     sheet.getRange(sheet.getLastRow() + 1, 1, 2, PDCA.HEAD.length).setValues(rows);
   }
+
+  pdcaFunnelPut_([pdcaFunnelRow_(propertyId, start, end)]);
+}
+
+/** エディタから1回だけ：今回の前の期間を14日ずつ PDCA_FUNNEL.BACKFILL 個さかのぼってファネルを埋める */
+function pdcaBackfill() {
+  const propertyId = PropertiesService.getScriptProperties().getProperty('GA4_PROPERTY_ID');
+  if (!propertyId) throw new Error('スクリプト プロパティ GA4_PROPERTY_ID がありません');
+  const rows = [];
+  let end = pdcaAddDays_(PDCA.FIRST_START, -1);
+  for (let i = 0; i < PDCA_FUNNEL.BACKFILL; i++) {
+    const start = pdcaAddDays_(end, -13);
+    rows.push(pdcaFunnelRow_(propertyId, start, end));
+    end = pdcaAddDays_(start, -1);
+  }
+  pdcaFunnelPut_(rows);
 }
 
 /** 今回の始まり：最後の「今回」行の終了日の次の日（同じ日にもう一度集計した時は、その行の開始日） */
@@ -162,6 +192,85 @@ function pdcaRows_(res) {
     const dims = {};
     heads.forEach((h, i) => { dims[h] = row.dimensionValues[i].value; });
     return { dims, range: dims.dateRange, value: Number(row.metricValues[0].value) || 0 };
+  });
+}
+
+
+/* ======================= ファネル ======================= */
+
+/** 1期間のファネル。スクロールは LP の scroll_depth（percent_scrolled＝25/50/75。1ページ表示で各1回）、申込は generate_lead */
+function pdcaFunnelRow_(propertyId, start, end) {
+  const range = [{ name: 'p', start, end }];
+  const kind = c => (PDCA_PAID.indexOf(c) === -1 ? 'org' : 'paid');
+  const sum = { org: { s: 0, lead: 0 }, paid: { s: 0, lead: 0 } };
+
+  pdcaRows_(pdcaGa4_(propertyId, range, {
+    dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+    metrics: [{ name: 'sessions' }],
+    dimensionFilter: pdcaStreamFilter_(),
+  })).forEach(({ dims, value }) => { sum[kind(dims.sessionDefaultChannelGroup)].s += value; });
+
+  pdcaRows_(pdcaGa4_(propertyId, range, {
+    dimensions: [{ name: 'sessionDefaultChannelGroup' }, { name: 'eventName' }, { name: 'customEvent:percent_scrolled' }],
+    metrics: [{ name: 'eventCount' }],
+    dimensionFilter: { andGroup: { expressions: [
+      pdcaStreamFilter_(),
+      { filter: { fieldName: 'eventName', inListFilter: { values: ['scroll_depth', 'generate_lead'] } } },
+    ] } },
+  })).forEach(({ dims, value }) => {
+    const g = sum[kind(dims.sessionDefaultChannelGroup)];
+    if (dims.eventName === 'generate_lead') g.lead += value;
+    else g[dims['customEvent:percent_scrolled']] = (g[dims['customEvent:percent_scrolled']] || 0) + value;
+  });
+
+  // 同じセッションで2回表示すると数が増えるので、率は100%で止める
+  const rate = (g, step) => (g.s ? Math.min(1, (g[step] || 0) / g.s) : '');
+  const part = g => [g.s].concat(PDCA_FUNNEL.STEPS.map(step => rate(g, step)), [g.lead]);
+  return [pdcaText_(end), pdcaText_(start), pdcaDiff_(start, end) + 1].concat(part(sum.org), part(sum.paid), ['']);
+}
+
+/** 終了日が同じ行は書き直し（施策メモは残す）、無ければ足す。古い順に並べ、グラフを作り直す */
+function pdcaFunnelPut_(rows) {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(PDCA_FUNNEL.SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(PDCA_FUNNEL.SHEET);
+    sheet.getRange('A:B').setNumberFormat('@');
+    sheet.getRange(1, 1, 1, PDCA_FUNNEL.HEAD.length).setValues([PDCA_FUNNEL.HEAD]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  const width = PDCA_FUNNEL.HEAD.length;
+  const n = sheet.getLastRow() - 1;
+  const old = n > 0 ? sheet.getRange(2, 1, n, width).getValues() : [];
+  const byEnd = {};
+  old.forEach(r => { byEnd[String(r[0])] = r; });
+  rows.forEach(r => {
+    const prev = byEnd[r[0]];
+    if (prev) r[width - 1] = prev[width - 1];
+    byEnd[r[0]] = r;
+  });
+  const all = Object.keys(byEnd).sort().map(k => byEnd[k]);
+  sheet.getRange(2, 1, all.length, width).setValues(all);
+  [5, 6, 7, 10, 11, 12].forEach(c => sheet.getRange(2, c, all.length, 1).setNumberFormat('0%'));
+  pdcaFunnelCharts_(sheet, all.length);
+}
+
+/** 横軸＝期間の終了日、縦軸＝25%・50%・75%まで読んだ割合。広告以外と広告の2つ */
+function pdcaFunnelCharts_(sheet, count) {
+  sheet.getCharts().forEach(c => sheet.removeChart(c));
+  const last = count + 1;
+  [['広告以外：どこまで読んだか（セッションに対する割合）', 5], ['広告：どこまで読んだか（セッションに対する割合）', 10]].forEach(([title, col], i) => {
+    const chart = sheet.newChart().asLineChart()
+      .addRange(sheet.getRange(1, 1, last, 1))
+      .addRange(sheet.getRange(1, col, last, 3))
+      .setNumHeaders(1)
+      .setTitle(title)
+      .setOption('vAxis', { format: 'percent', viewWindow: { min: 0, max: 1 } })
+      .setOption('pointSize', 5)
+      .setOption('legend', { position: 'bottom' })
+      .setPosition(last + 3 + i * 22, 1, 0, 0)
+      .build();
+    sheet.insertChart(chart);
   });
 }
 

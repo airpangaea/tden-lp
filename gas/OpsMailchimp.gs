@@ -7,8 +7,9 @@
  *    ほかのタグ（ほかのプログラム・英検など）には触らない
  *  - 見るのは生徒_JP だけ（海外生は Mailchimp に入れていない）。台帳にいない人（過去の Ex-TDEN など）には触らない
  *  - 在籍＝TDEN（GAP のクラスがあれば＋TDEN-GAP）／休会＝TDEN-Recess／退会＝Ex-TDEN。ほかのステータスは触らない
- *  - 学年タグ：在籍で、受講の開始日が OPS_MC.GRADE_FROM 以降、学年タグがまだ無い人だけ。年は年度（4月始まり）。
- *    台帳の学年は申込の時のものなので、申込日時の年度を使う（例 2027年1月に中3 → grade9-2026）。大学1年＝grade13
+ *  - 学年タグ：Mailchimp に新しく足す在籍生と、受講の開始日が OPS_MC.GRADE_FROM 以降の在籍生で、学年タグがまだ無い人だけ。
+ *    年は年度（4月始まり）。台帳の学年は申込の時のものなので、申込日時の年度を使う（例 2027年1月に中3 → grade9-2026）。
+ *    「高校2年生(25)」のように年が書いてあれば、その年度（2025年度）の学年として使う。大学1年＝grade13
  *  - Mailchimp に無い在籍生は、「合わせる」の時に連絡先を足して TDEN などを付ける（メールアドレスだけ。名前は入れない）。
  *    Email が空の在籍生は「未登録」として知らせる
  *  - 1人が別のメアドでも Mailchimp に入っていることがある。「Mailchimp照合」タブの「台帳に無い」行に生徒IDを書くと、
@@ -166,8 +167,8 @@ function opsMcPlan_(input) {
     const has = t => m.tags.some(x => low(x) === low(t));
     const add = wantTags ? wantTags.filter(t => !has(t)) : [];
     const remove = wantTags ? MANAGED.filter(t => wantTags.indexOf(t) === -1 && has(t)) : [];
-    // 学年タグ：新しく入会した在籍生で、まだ学年タグが無い人だけ
-    if (s && s.status === '在籍' && firstStart(s) >= OPS_MC.GRADE_FROM && !hasGrade(m.tags)) {
+    // 学年タグ：Mailchimp に新しく足す在籍生と、新しく入会した在籍生で、まだ学年タグが無い人だけ
+    if (s && s.status === '在籍' && (isNew || firstStart(s) >= OPS_MC.GRADE_FROM) && !hasGrade(m.tags)) {
       const g = opsMcGradeTag_(s.grade, s.applied || today);
       if (g) add.push(g);
       else if (!badGrade.some(x => x.sid === s.id)) badGrade.push({ sid: s.id, name: s.name, grade: s.grade });
@@ -213,15 +214,18 @@ function opsMcPlan_(input) {
   return { rows, missing, unknown, badGrade };
 }
 
-/** 台帳の学年（申込の時）と申込日 → 「grade9-2026」。読めなければ '' */
+/** 台帳の学年（申込の時）と申込日 → 「grade9-2026」。「高校2年生(25)」は 2025年度の学年として読む。読めなければ '' */
 function opsMcGradeTag_(grade, appliedKey) {
-  const t = String(grade || '').replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/\s+/g, '');
-  if (/[()（）]/.test(t)) return '';
+  let t = String(grade || '').replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/\s+/g, '');
+  const y = Math.floor(appliedKey / 10000), mo = Math.floor(appliedKey / 100) % 100;
+  let fy = mo >= 4 ? y : y - 1;
+  const yr = t.match(/[(（](\d{2})[)）]/);
+  if (yr) fy = 2000 + Number(yr[1]);
+  t = t.replace(/[(（][^)）]*[)）]/g, ''); // 「(無料体験)」などの注記は読まない
   const m = t.match(/^(小学|中学|高校|大学)(\d)年/) || t.match(/^(小|中|高|大)(\d)/);
   if (!m) return '';
   const base = { '小学': 0, '小': 0, '中学': 6, '中': 6, '高校': 9, '高': 9, '大学': 12, '大': 12 }[m[1]];
-  const y = Math.floor(appliedKey / 10000), mo = Math.floor(appliedKey / 100) % 100;
-  return 'grade' + (base + Number(m[2])) + '-' + (mo >= 4 ? y : y - 1);
+  return 'grade' + (base + Number(m[2])) + '-' + fy;
 }
 
 function opsMcChangeText_(x) {

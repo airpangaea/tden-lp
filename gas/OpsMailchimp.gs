@@ -176,7 +176,8 @@ function opsMcPlan_(input) {
       if (g) add.push(g);
       else if (!badGrade.some(x => x.sid === s.id)) badGrade.push({ sid: s.id, name: s.name, grade: s.grade });
     }
-    if (add.length || remove.length || kind === OPS_MC_KINDS.linked) {
+    // Ex と書いた行は、Ex-TDEN になって TDEN が外れたら消える（もう「台帳に無い」にも出ないので覚えておく必要が無い）
+    if (add.length || remove.length || (kind === OPS_MC_KINDS.linked && s)) {
       rows.push({ kind: isNew ? kind : add.length || remove.length ? OPS_MC_KINDS.change : kind, sub: kind, isNew,
         sid: s ? s.id : (wantTags && wantTags[0] === T.ex ? 'Ex' : ''), name: s ? s.name : '', status: s ? s.status : '退会（Ex）',
         email: m.email, now, add, remove });

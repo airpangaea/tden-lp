@@ -9,7 +9,8 @@
  *  - 在籍＝TDEN（GAP のクラスがあれば＋TDEN-GAP）／休会＝TDEN-Recess／退会＝Ex-TDEN。ほかのステータスは触らない
  *  - 学年タグ：在籍で、受講の開始日が OPS_MC.GRADE_FROM 以降、学年タグがまだ無い人だけ。年は年度（4月始まり）。
  *    台帳の学年は申込の時のものなので、申込日時の年度を使う（例 2027年1月に中3 → grade9-2026）。大学1年＝grade13
- *  - 新しい生徒を Mailchimp に足すのはあなた。Mailchimp に無い在籍生は「未登録」として知らせるだけ
+ *  - Mailchimp に無い在籍生は、「合わせる」の時に連絡先を足して TDEN などを付ける（メールアドレスだけ。名前は入れない）。
+ *    Email が空の在籍生は「未登録」として知らせる
  *  - 1人が別のメアドでも Mailchimp に入っていることがある。「Mailchimp照合」タブの「台帳に無い」行に生徒IDを書くと、
  *    次から同じ人として合わせる（辞めた人なら Ex と書くと Ex-TDEN にする）
  *
@@ -32,7 +33,7 @@ const OPS_MC = {
   TEST_PROP: 'OPS_TEST_MC', // テスト用：ダミーの連絡先
 };
 const OPS_MC_HEAD = ['区分', '生徒ID', '名前', 'ステータス', 'Email', '今のタグ（TDEN関係）', '足す', '外す'];
-const OPS_MC_KINDS = { change: '合わせる', linked: '別のメアド', unknown: '台帳に無い', missing: '未登録', grade: '学年が読めない' };
+const OPS_MC_KINDS = { change: '合わせる', add: '足す（未登録）', linked: '別のメアド', unknown: '台帳に無い', missing: '未登録', grade: '学年が読めない' };
 
 
 /* ======================= メニュー ======================= */
@@ -95,7 +96,7 @@ function opsMcWatchItems_(data) {
     const add = (title, lines) => { if (lines.length) items.push({ title, lines }); };
     add('Mailchimp のタグが台帳と違う（メニュー「Mailchimp のタグを台帳に合わせる」で直す）',
       plan.rows.filter(x => x.add.length || x.remove.length).map(x => who(x) + '：' + opsMcChangeText_(x)));
-    add('Mailchimp に未登録の在籍生（Mailchimp に足してください）', plan.missing.map(x => who(x) + (x.why ? '・' + x.why : '')));
+    add('Email が空の在籍生（Mailchimp に足せない。生徒_JP の Email を埋める）', plan.missing.map(who));
     add('学年タグを付けられない（生徒_JP の学年を「中学3年生」の形に）', plan.badGrade.map(x => who(x) + '：' + (x.grade || '空')));
     if (plan.unknown.length) add('台帳に無いのに Mailchimp で TDEN・TDEN-GAP が付いている',
       [plan.unknown.length + '件（「' + OPS_MC.TAB + '」タブの「台帳に無い」行。同じ人の別のメアドなら生徒ID、辞めた人なら Ex を書く）']);
@@ -159,6 +160,7 @@ function opsMcPlan_(input) {
 
   const rows = [], missing = [], badGrade = [], used = {};
   const plan1 = (s, m, wantTags, kind) => {
+    const isNew = kind === OPS_MC_KINDS.add;
     used[low(m.email)] = true;
     const now = m.tags.filter(t => MANAGED.some(x => low(x) === low(t)));
     const has = t => m.tags.some(x => low(x) === low(t));
@@ -171,7 +173,7 @@ function opsMcPlan_(input) {
       else if (!badGrade.some(x => x.sid === s.id)) badGrade.push({ sid: s.id, name: s.name, grade: s.grade });
     }
     if (add.length || remove.length || kind === OPS_MC_KINDS.linked) {
-      rows.push({ kind: add.length || remove.length ? OPS_MC_KINDS.change : kind, sub: kind,
+      rows.push({ kind: isNew ? kind : add.length || remove.length ? OPS_MC_KINDS.change : kind, sub: kind, isNew,
         sid: s ? s.id : (wantTags && wantTags[0] === T.ex ? 'Ex' : ''), name: s ? s.name : '', status: s ? s.status : '退会（Ex）',
         email: m.email, now, add, remove });
     }
@@ -183,7 +185,11 @@ function opsMcPlan_(input) {
     const emails = String(s.email || '').split(/[\s,;、，／\/]+/).map(low).filter(e => e.indexOf('@') > 0);
     const found = emails.filter(e => members[e]);
     if (!w) { found.forEach(e => { used[e] = true; }); return; } // 新規・見送りなど：台帳にいるが触らない
-    if (s.status === '在籍' && !found.length) missing.push({ sid: s.id, name: s.name, why: emails.length ? '' : 'Email が空' });
+    // Mailchimp にまだ無い在籍生は、連絡先を足してタグを付ける（足すメアドは Email 欄の1つ目）
+    if (s.status === '在籍' && !found.length) {
+      if (emails.length) plan1(s, { email: emails[0], tags: [] }, w, OPS_MC_KINDS.add);
+      else missing.push({ sid: s.id, name: s.name, why: 'Email が空' });
+    }
     found.forEach(e => plan1(s, members[e], w, OPS_MC_KINDS.change));
   });
 
@@ -219,13 +225,15 @@ function opsMcGradeTag_(grade, appliedKey) {
 }
 
 function opsMcChangeText_(x) {
-  return [x.add.length ? x.add.join('・') + ' を付ける' : '', x.remove.length ? x.remove.join('・') + ' を外す' : ''].filter(Boolean).join('、');
+  const t = [x.add.length ? x.add.join('・') + ' を付ける' : '', x.remove.length ? x.remove.join('・') + ' を外す' : ''].filter(Boolean).join('、');
+  return x.isNew ? 'Mailchimp に足して ' + t : t;
 }
 
 /** 「TDEN を付ける：3人」のような件数のまとめ */
 function opsMcCountText_(rows) {
   const n = {};
   rows.forEach(x => {
+    if (x.isNew) n['Mailchimp に連絡先を足す'] = (n['Mailchimp に連絡先を足す'] || 0) + 1;
     x.add.forEach(t => { const k = (/^grade/i.test(t) ? '学年タグ' : t) + ' を付ける'; n[k] = (n[k] || 0) + 1; });
     x.remove.forEach(t => { const k = t + ' を外す'; n[k] = (n[k] || 0) + 1; });
   });
@@ -233,11 +241,12 @@ function opsMcCountText_(rows) {
 }
 
 function opsMcShowSummary_(title, plan, url, errors) {
-  const todo = plan.rows.filter(x => x.add.length || x.remove.length);
+  const todo = plan.rows.filter(x => !x.isNew && (x.add.length || x.remove.length));
   const line = (label, n) => '<p style="margin:6px 0">' + label + '：<b>' + n + '</b></p>';
   const html = '<div style="font-family:sans-serif;font-size:14px">' +
     line('台帳に合わせる（メアド）', todo.length) +
-    line('Mailchimp に未登録の在籍生', plan.missing.length) +
+    line('Mailchimp に足す在籍生（「合わせる」で足す）', plan.rows.filter(x => x.isNew).length) +
+    line('Email が空の在籍生', plan.missing.length) +
     line('台帳に無いのに TDEN・TDEN-GAP', plan.unknown.length) +
     line('学年が読めない', plan.badGrade.length) +
     (errors && errors.length ? '<p style="color:#b23a3a">' + errors.slice(0, 5).map(e => String(e).replace(/</g, '&lt;')).join('<br>') + '</p>' : '') +
@@ -263,7 +272,7 @@ function opsMcWriteTab_(ss, plan) {
   let sheet = ss.getSheetByName(OPS_MC.TAB);
   if (!sheet) sheet = ss.insertSheet(OPS_MC.TAB, ss.getSheets().length);
   const head = OPS_MC_HEAD.concat(['_sub']);
-  const order = [OPS_MC_KINDS.change, OPS_MC_KINDS.unknown, OPS_MC_KINDS.linked];
+  const order = [OPS_MC_KINDS.change, OPS_MC_KINDS.add, OPS_MC_KINDS.unknown, OPS_MC_KINDS.linked];
   const rows = plan.rows.concat(plan.unknown).sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
   const values = [head]
     .concat(rows.map(x => [x.kind, x.sid, x.name, x.status, x.email, x.now.join(', '), x.add.join(', '), x.remove.join(', '), x.sub || '']))
@@ -276,7 +285,7 @@ function opsMcWriteTab_(ss, plan) {
   sheet.hideColumns(head.length); // _sub は Ops が使う印
   sheet.getRange(1, 2).setNote('「台帳に無い」行：同じ人の別のメアドなら、その生徒の生徒ID（J0012 など）を書く。辞めた人なら Ex と書く。次に調べた時から台帳に合わせます');
   sheet.getRange(1, 1).setNote('このタブは「Mailchimp のずれを調べる」と毎週の見張りメールで作り直します（生徒ID欄に書いたものは残ります）。メールアドレスが入るので、ほかの人に見せない');
-  const color = { [OPS_MC_KINDS.change]: '#fde3c4', [OPS_MC_KINDS.unknown]: '#f8e3e3', [OPS_MC_KINDS.missing]: '#fff4c2', [OPS_MC_KINDS.grade]: '#fff4c2', [OPS_MC_KINDS.linked]: '#e6f4ea' };
+  const color = { [OPS_MC_KINDS.change]: '#fde3c4', [OPS_MC_KINDS.add]: '#fde3c4', [OPS_MC_KINDS.unknown]: '#f8e3e3', [OPS_MC_KINDS.missing]: '#fff4c2', [OPS_MC_KINDS.grade]: '#fff4c2', [OPS_MC_KINDS.linked]: '#e6f4ea' };
   if (values.length > 1) sheet.getRange(2, 1, values.length - 1, 1).setBackgrounds(values.slice(1).map(v => [color[v[0]] || '#ffffff']));
   if (values.length === 1) sheet.getRange(2, 1).setValue('ずれはありません（' + opsMd_(opsTodayKey_()) + '）');
   sheet.autoResizeColumns(1, OPS_MC_HEAD.length);
@@ -329,6 +338,19 @@ function opsMcClient_() {
     },
     setTags(rows) {
       const errors = [];
+      // Mailchimp にまだ無い人は、先に連絡先を足す（既にいれば何も変えない）
+      const news = rows.filter(x => x.isNew), failed = {};
+      for (let i = 0; i < news.length; i += 10) {
+        UrlFetchApp.fetchAll(news.slice(i, i + 10).map(x => ({
+          url: base + '/lists/' + listId + '/members/' + opsMcHash_(x.email),
+          method: 'put', contentType: 'application/json', headers: auth, muteHttpExceptions: true,
+          payload: JSON.stringify({ email_address: x.email, status_if_new: 'subscribed' }),
+        }))).forEach((res, j) => {
+          const x = news[i + j];
+          if (res.getResponseCode() >= 300) { failed[x.email] = true; errors.push((x.sid || x.name || '?') + '：足せませんでした ' + res.getResponseCode() + ' ' + res.getContentText().slice(0, 120)); }
+        });
+      }
+      rows = rows.filter(x => !failed[x.email]);
       const reqs = rows.map(x => ({
         url: base + '/lists/' + listId + '/members/' + opsMcHash_(x.email) + '/tags',
         method: 'post', contentType: 'application/json', headers: auth, muteHttpExceptions: true,
@@ -366,6 +388,7 @@ function opsMcTestClient_() {
     setTags(rows) {
       const m = load(), low = s => s.toLowerCase();
       rows.forEach(x => {
+        if (x.isNew && !m[low(x.email)]) m[low(x.email)] = { email: x.email, tags: [] };
         const c = m[low(x.email)];
         if (!c) return;
         c.tags = c.tags.filter(t => x.remove.every(r => low(r) !== low(t))).concat(x.add.filter(a => c.tags.every(t => low(t) !== low(a))));

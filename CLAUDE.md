@@ -22,7 +22,8 @@
   - リポジトリの Ops.gs は先頭の `BOARD_FILE_ID`／`STAFF_FILE_ID`／`OLD_FILE_ID` を空にしてある（空だとテスト用のファイルを作る）。**本番用に渡す時は3つのIDを入れてからクリップボードにコピーする**（コミットはしない）：Class Structure `1tK4hTrbKiqGTtL-2Efn6sqEOFxTpAKlB7cdhAOhqILU`／TD スタッフ用の名簿 `1OrnE2B-g5Fw_I0NNjkWQu7R87sGwMa33Hy32oHRXpAI`／旧名簿 `1AmV48Hi7OC-wZCY5_FpWjf1UEQt5mvEjDTyv6QqWNPk`（旧名簿・スタッフ用の名簿には個人情報が入るのでClaudeは開かない）
   - Class Structure は講師も見るので英語。講師の並びは `OPS.TEACHER_ORDER`（Marina・Nerissa・Jomer＝入社順）
 - `gas/Pdca.gs` — 隔週PDCAの数字集め。第1・第3土曜7時に GA4（ストリーム「TOMODACHI留学LP」）のチャネル別セッション・generate_lead と「生徒_JP」のLP経由の申込件数を、シート「PDCA集計」に「比較」「今回」の2行で書く。さらに「PDCAファネル」に、広告以外／広告に分けた25%・50%・75%まで読んだ割合と申込を1期間1行で書き、折れ線グラフを作り直す（施策メモは手書き）。どちらも個人情報なし・**Claudeが読んでよい**。GA4のプロパティIDはスクリプトプロパティ `GA4_PROPERTY_ID`、Analytics Data API サービスが要る。広告費だけは手入力。定期タスク「TDEN隔週チェック」がこのシートを読む
-- `gas/OpsTestData.gs` — テスト用スプシにだけ置くダミーデータ作り（本番には入れない）
+- `gas/OpsMailchimp.gs` — Mailchimp のタグを台帳に合わせる（手順は `gas/Mailchimpのタグ合わせ.md`）。生徒_JP だけを見て、在籍＝`TDEN`（GAPなら＋`TDEN-GAP`）・休会＝`TDEN-Recess`・退会＝`Ex-TDEN`、新しく入会した人に学年タグ `gradeN-年度`（4月始まり・大学1年＝13）を1つ。台帳にいない人と他のタグには触らない。書き込みはメニューで件数を見て「はい」の時だけ。週1の見張りメールにずれを出す。生徒管理の「Mailchimp照合」タブにはメールアドレスが入るので**Claudeは読まない**。Claude の Mailchimp MCP は分析（タグごとの人数）しかできず、連絡先・タグの読み書きは不可
+- `gas/OpsTestData.gs` — テスト用スプシにだけ置くダミーデータ作り（本番には入れない）。Mailchimp のダミーの連絡先（`opsTestMcMembers_`）も
 - `thanks.html` — 送信完了ページ
 - `en/index.html` — 海外生向けの英語LP（金額は載せない。フォームは `region=intl`＋国名を送り、GASが「生徒_海外」に入れる）。CSSは日本語LPと同じTailwindビルドをインライン化し、ビルドに無いクラスはページ内の `<style>` に足している
 - `en/thanks.html` — 英語の送信完了ページ。GA4のイベントは `generate_lead_intl`（`generate_lead` はGoogle広告の日本向けコンバージョンなので使わない。英語ページにはGoogle広告タグ・Metaピクセルも入れない）

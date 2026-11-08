@@ -20,6 +20,7 @@
  *  受講に生徒を足す時は、生徒_JP／生徒_海外で行を選んでメニュー「選んだ生徒を受講に追加」
  *  4. 見張りメール … 毎週月曜の朝、対応が要るものだけを送る
  *  5. 列の整理・旧名簿からの取り込み（最初に1回）
+ *  6. Mailchimp のタグ合わせ … 別ファイル OpsMailchimp.gs（貼った時だけメニューに出る）
  *
  * 初回（手順は gas/README.md）
  *  - メニュー「TD台帳」→「列を整理する」→「旧名簿から今の生徒を取り込む」→「一覧表を今すぐ作り直す」→ よければ「自動の更新を始める」
@@ -142,6 +143,11 @@ function onOpen() {
     .addItem('旧名簿から今の生徒を取り込む（最初に1回）', 'opsImportOld')
     .addItem('自動の更新を始める', 'opsInstallTriggers')
     .addItem('自動の更新を止める', 'opsRemoveTriggers');
+  // OpsMailchimp.gs を貼った時だけ出る
+  if (typeof opsMcCheck === 'function') menu.addSeparator()
+    .addItem('Mailchimp のずれを調べる', 'opsMcCheck')
+    .addItem('Mailchimp のタグを台帳に合わせる', 'opsMcApply')
+    .addItem('Mailchimp の API キーを入れる（最初に1回）', 'opsMcSetKey');
   // テスト用のスプシ（OpsTestData.gs を貼ったもの）だけに出る
   if (typeof opsTestFill === 'function') menu.addSeparator().addItem('テスト用のダミーを入れ直す', 'opsTestFill');
   menu.addToUi();
@@ -1368,6 +1374,8 @@ function opsWatchItems_(data) {
     (seen[k] = seen[k] || []).push(e);
   });
   add('同じ席番号の生徒が2人いる（受講の席番号を直す）', dup);
+  // Mailchimp のタグのずれ（OpsMailchimp.gs を貼って API キーを入れた時だけ）
+  if (typeof opsMcWatchItems_ === 'function') opsMcWatchItems_(data).forEach(it => items.push(it));
   return items;
 }
 

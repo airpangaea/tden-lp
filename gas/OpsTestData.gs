@@ -55,6 +55,7 @@ function opsTestFill_() {
     opsStatusColors_(sh);
   });
   opsTestWriteOld_(d.old);
+  PropertiesService.getScriptProperties().deleteProperty('OPS_TEST_MC'); // Mailchimp のダミーの連絡先も作り直す
   ss.setActiveSheet(ss.getSheetByName(OPS.SHEET_JP));
   ss.toast('次は「列を整理する」→「旧名簿から今の生徒を取り込む」→「一覧表を今すぐ作り直す」', 'ダミーを入れました', 15);
 }
@@ -359,3 +360,34 @@ function opsTestRandom_(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
+
+/**
+ * Mailchimp のダミーの連絡先（OpsMailchimp.gs がテスト用のスプシで使う）。生徒_JP から作り、わざとずれを入れる：
+ * 在籍なのに TDEN が無い・未登録・GAP の生徒に TDEN-GAP が無い（本番と同じ）・休会なのに TDEN・退会なのに TDEN が残っている・
+ * 台帳に無いメアドに TDEN（同じ人の別のメアドを想定）。ほかのタグ（Eiken2-over など）は触られないことを見るために付ける
+ */
+function opsTestMcMembers_(data) {
+  const out = {}, put = (email, tags) => { out[email.toLowerCase()] = { email, tags }; };
+  const jp = data.students.filter(s => s.region === 'jp' && s.email);
+  let i = 0;
+  jp.forEach(s => {
+    const n = i++;
+    const other = n % 4 === 0 ? ['Eiken2-over'] : n % 5 === 0 ? ['past ID participants'] : [];
+    const grade = n % 3 === 0 ? [] : ['grade' + (7 + n % 6) + '-2025'];
+    if (s.status === '在籍') {
+      if (n % 9 === 5) return; // まだ Mailchimp に入れていない
+      put(s.email, (n % 7 === 3 ? [] : ['TDEN']).concat(grade, other));
+    } else if (s.status === '休会') put(s.email, ['TDEN'].concat(grade));
+    else if (s.status === '退会') put(s.email, (n % 2 ? ['TDEN'] : ['Ex-TDEN']).concat(grade, other));
+    else if (s.status === '見送り') put(s.email, other);
+  });
+  const live = jp.filter(s => s.status === '在籍');
+  if (live[0]) put('family.' + live[0].email, ['TDEN']);          // 同じ人の別のメアド（生徒IDを書くと結び付く）
+  if (live[1]) put('school.' + live[1].email, ['TDEN', 'grade9-2025']);
+  put('old.student1@example.com', ['TDEN']);                        // 辞めた人（Ex と書く）
+  put('old.student2@example.com', ['Ex-TDEN', 'grade10-2024']);     // 過去の退会者：触らない
+  put('newsletter.only@example.com', ['Eiken2-over']);              // TDEN と関係ない人：触らない
+  return out;
+}
+

@@ -305,9 +305,11 @@ function findExisting_(sheet, cols, email, phone) {
   const tel = phoneKey_(phone);
   for (let i = all.length - 1; i >= 0; i--) {
     const r = all[i];
-    const rowMail = cols['Email'] !== undefined ? String(r[cols['Email']]).trim().toLowerCase() : '';
+    // Email と「別のメアド」（親と本人など。カンマ区切り）のどれかが同じなら既存
+    const rowMails = ['Email', '別のメアド'].filter(h => cols[h] !== undefined)
+      .map(h => String(r[cols[h]])).join(',').toLowerCase().split(/[\s,;、，／\/]+/).filter(Boolean);
     const rowTel = cols['電話'] !== undefined ? phoneKey_(r[cols['電話']]) : '';
-    if ((mail && rowMail === mail) || (tel && rowTel === tel)) return r[cols['生徒ID']] || '（ID無し）';
+    if ((mail && rowMails.indexOf(mail) !== -1) || (tel && rowTel === tel)) return r[cols['生徒ID']] || '（ID無し）';
   }
   return '';
 }

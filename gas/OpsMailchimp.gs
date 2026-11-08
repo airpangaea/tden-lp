@@ -12,8 +12,9 @@
  *    「高校2年生(25)」のように年が書いてあれば、その年度（2025年度）の学年として使う。大学1年＝grade13
  *  - Mailchimp に無い在籍生は、「合わせる」の時に連絡先を足して TDEN などを付ける（メールアドレスだけ。名前は入れない）。
  *    Email が空の在籍生は「未登録」として知らせる
- *  - 1人が別のメアドでも Mailchimp に入っていることがある。「Mailchimp照合」タブの「台帳に無い」行に生徒IDを書くと、
- *    次から同じ人として合わせる（辞めた人なら Ex と書くと Ex-TDEN にする）
+ *  - 1人に親と本人など複数のメアドがある。生徒_JP の「Email」（メイン）と「別のメアド」（カンマ区切り）の両方を合わせる。
+ *    「Mailchimp照合」タブの「台帳に無い」行に生徒IDを書くと、そのメアドを生徒_JP の「別のメアド」に自動で写す
+ *    （「別のメアド」の列が無ければ Email の右に足す）。辞めた人なら Ex と書くと Ex-TDEN にする（タブに残す）
  *
  * メニュー「TD台帳」
  *  - Mailchimp の API キーを入れる（最初に1回）
@@ -33,6 +34,7 @@ const OPS_MC = {
   GRADE_FROM: 20261101, // この日以降に受講を始めた在籍生にだけ学年タグを付ける（前からいる生徒のタグは合っている）
   TEST_PROP: 'OPS_TEST_MC', // テスト用：ダミーの連絡先
 };
+const OPS_MC_EMAIL2 = '別のメアド'; // 生徒_JP の列
 const OPS_MC_HEAD = ['区分', '生徒ID', '名前', 'ステータス', 'Email', '今のタグ（TDEN関係）', '足す', '外す'];
 const OPS_MC_KINDS = { change: '合わせる', add: '足す（未登録）', linked: '別のメアド', unknown: '台帳に無い', missing: '未登録', grade: '学年が読めない' };
 
@@ -115,6 +117,7 @@ function opsMcRun_(data) {
   data = data || opsData_();
   const tab = ss.getSheetByName(OPS_MC.TAB);
   const extras = tab ? opsMcReadExtras_(tab) : {};
+  opsMcMoveExtras_(ss, data, extras); // 生徒IDを書いてもらったメアドは、生徒_JP の「別のメアド」へ
   const gapClasses = {};
   data.classes.forEach(c => { if (/gap/i.test(c.type)) gapClasses[c.id] = true; });
   const client = opsMcClient_();
@@ -183,7 +186,7 @@ function opsMcPlan_(input) {
   // 1. 台帳の生徒（Email 欄に複数書いてあっても1つずつ見る）
   input.students.forEach(s => {
     const w = want(s);
-    const emails = String(s.email || '').split(/[\s,;、，／\/]+/).map(low).filter(e => e.indexOf('@') > 0);
+    const emails = (String(s.email || '') + ',' + String(s.email2 || '')).split(/[\s,;、，／\/]+/).map(low).filter(e => e.indexOf('@') > 0);
     const found = emails.filter(e => members[e]);
     if (!w) { found.forEach(e => { used[e] = true; }); return; } // 新規・見送りなど：台帳にいるが触らない
     // Mailchimp にまだ無い在籍生は、連絡先を足してタグを付ける（足すメアドは Email 欄の1つ目）
@@ -256,6 +259,44 @@ function opsMcShowSummary_(title, plan, url, errors) {
     (errors && errors.length ? '<p style="color:#b23a3a">' + errors.slice(0, 5).map(e => String(e).replace(/</g, '&lt;')).join('<br>') + '</p>' : '') +
     '<p style="margin:14px 0 0"><a href="' + url + '" target="_blank">「' + OPS_MC.TAB + '」タブを開く</a></p></div>';
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(420).setHeight(240 + (errors && errors.length ? 80 : 0)), title);
+}
+
+
+/**
+ * 「台帳に無い」行に生徒IDを書いてもらったメアドを、その生徒の「別のメアド」に足す（台帳に残す）。
+ * 足したものは extras から外す（以後は台帳のメアドとして合わせる）。Ex と書いたものはタブに残す
+ */
+function opsMcMoveExtras_(ss, data, extras) {
+  const byId = {};
+  data.students.forEach(s => { if (s.region === 'jp' && s.id) byId[s.id] = s; });
+  const todo = Object.keys(extras).filter(e => byId[String(extras[e]).trim()]);
+  if (!todo.length) return 0;
+  const sheet = ss.getSheetByName(OPS.SHEET_JP);
+  const col = opsMcEmail2Col_(sheet);
+  todo.forEach(e => {
+    const s = byId[String(extras[e]).trim()];
+    const have = (s.email + ',' + (s.email2 || '')).toLowerCase().split(/[\s,;、，／\/]+/);
+    if (have.indexOf(e) === -1) {
+      s.email2 = s.email2 ? s.email2 + ', ' + e : e;
+      sheet.getRange(s.row, col).setValue(s.email2);
+    }
+    delete extras[e];
+  });
+  return todo.length;
+}
+
+/** 生徒_JP の「別のメアド」の列番号（1始まり）。無ければ Email の右に足す */
+function opsMcEmail2Col_(sheet) {
+  const head = opsHead_(sheet);
+  if (head.indexOf(OPS_MC_EMAIL2) !== -1) return head.indexOf(OPS_MC_EMAIL2) + 1;
+  const email = head.indexOf('Email') + 1;
+  if (!email) throw new Error(OPS.SHEET_JP + ' に Email の列がありません');
+  sheet.insertColumnAfter(email);
+  sheet.getRange(1, email).copyFormatToRange(sheet, email + 1, email + 1, 1, 1);
+  sheet.getRange(1, email + 1).setValue(OPS_MC_EMAIL2).setBackground(null).setFontWeight('bold')
+    .setNote(OPS_HEAD_NOTES[OPS_MC_EMAIL2] || '親と本人など、Email 以外のメアド（カンマ区切り）');
+  sheet.getRange(2, email + 1, Math.max(sheet.getMaxRows() - 1, 1), 1).setNumberFormat('@');
+  return email + 1;
 }
 
 

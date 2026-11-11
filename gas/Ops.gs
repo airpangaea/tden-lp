@@ -340,6 +340,7 @@ function opsRefresh(force) {
   try {
     opsRetirePast_();
     opsFillDefaults_();
+    opsAdvanceTerms_();
     opsSortEnroll_();
     opsBuildBoards_(force === true);
   } finally {
@@ -629,20 +630,28 @@ function opsNextTermNo_(no) {
   return no >= 6 ? 1 : no + 1;
 }
 
-/** k の n か月後の同じ日（月末を超える日は月末に） */
-function opsAddMonths_(k, n) {
-  const mo = opsMonth_(k, n);
-  return Math.min(mo.start - 1 + (k % 100), mo.end);
+/**
+ * 次のタームの開始日。1ターム＝毎週1回×12回。月の第5週（29日以降）の曜日は授業が無いので数えない。
+ * 年末年始などの休みの週は、授業が無くても1回に数える（CSI でも列を使う）。
+ * 例 Wed2030JR：8/5 から数えて 9/30（第5週）を飛ばし、13回目の 11/4 が Term 3 の始まり
+ */
+function opsNextTermStart_(k) {
+  let d = k, n = 0;
+  for (;;) {
+    if (d % 100 < 29) n++;
+    if (n > OPS.TERM_WEEKS) return d;
+    d = opsAddDays_(d, 7);
+  }
 }
 
 /**
- * その月のターム（番号と開始日）。クラス一覧のターム開始日から3か月ごとに次のタームとして数える
- * （例 Aug-Oct Term 1 のクラスは、11月の表では Nov-Jan Term 2・New Term。Term 6 の次は Term 1）。実際の開始日が違う時はクラス一覧を直す
+ * その月のターム（番号と開始日）。クラス一覧のターム開始日から12回ごとに次のタームとして数える（Term 6 の次は Term 1）。
+ * クラス一覧の「ターム」「ターム開始日」は opsAdvanceTerms_ が新しいタームの初日に書き換える
  */
 function opsTermAt_(cls, month) {
   let d = opsTermStart_(cls, month), no = cls.termNo ? Number(cls.termNo) : 0;
   if (!d) return { start: 0, no };
-  for (let next = opsAddMonths_(d, 3); next <= month.end; next = opsAddMonths_(d, 3)) {
+  for (let next = opsNextTermStart_(d); next <= month.end; next = opsNextTermStart_(d)) {
     d = next;
     if (no) no = opsNextTermNo_(no);
   }
@@ -1144,6 +1153,32 @@ function opsRetirePast_() {
 }
 
 /**
+ * クラス一覧の「ターム」「ターム開始日」を、新しいタームの初日に自動で次へ進める（手で直さなくてよい）。
+ * 次のタームの開始日は opsNextTermStart_（12回・第5週は数えない）。Term 6 の次は Term 1。
+ * 何タームも遅れていても、今日のタームまでまとめて進める
+ */
+function opsAdvanceTerms_() {
+  const t = opsTable_(SpreadsheetApp.getActiveSpreadsheet().getSheetByName(OPS.SHEET_CLASSES));
+  const cNo = t.col['ターム'], cStart = t.col['ターム開始日'];
+  if (cNo === undefined || cStart === undefined) return;
+  const today = opsTodayKey_();
+  t.rows.forEach(r => {
+    let start = opsKey_(r['ターム開始日']), no = Number(opsStr_(r['ターム']).replace(/\D/g, '')) || 0;
+    if (!start || !no) return;
+    const before = start;
+    for (let next = opsNextTermStart_(start); next <= today; next = opsNextTermStart_(start)) {
+      start = next;
+      no = opsNextTermNo_(no);
+    }
+    if (start === before) return;
+    const s = String(start);
+    t.sheet.getRange(r._row, cNo + 1).setValue(no);
+    t.sheet.getRange(r._row, cStart + 1)
+      .setValue(Utilities.parseDate(s.slice(0, 4) + '/' + s.slice(4, 6) + '/' + s.slice(6), opsSheetTz_(), 'yyyy/MM/dd'));
+  });
+}
+
+/**
  * 受講：席番号はクラスごとに 01 から詰めて振る（opsAssignSeats_）、名前は生徒シートから。
  * 生徒シート：受講中のクラス、Wixパスワード が空なら作る（全員）、海外生の Display name が空なら名前から作る
  */
@@ -1345,12 +1380,12 @@ function opsWatchItems_(data) {
   add('この1週間に、クラスを去った（最終日を過ぎた）',
     E.filter(e => e.st && e.end && e.end < T && e.end >= opsAddDays_(T, -7)).map(e => who(Object.assign({}, e.st, { cls: e.cls })) + ' 最終日 ' + md(e.end)));
   add('LPの空き状況が人数と合っていない（来月の人数で比べています）', lp);
-  // 次のタームは、一覧表では今のタームの開始日から3か月後として出している。2週間前になったら、実際の開始日と合っているか確かめてもらう
-  add('2週間以内に次のターム（一覧表は3か月後として表示。違う時はクラス一覧の「ターム」「ターム開始日」を直す）',
+  // 次のタームは12回ごと（第5週は数えない）。クラス一覧はその日に自動で切り替わる。CSI の新しいタブ・ダッシュボードの準備のために出す
+  add('2週間以内に次のターム（クラス一覧はその日に自動で切り替わります。CSI・ダッシュボードの準備を）',
     data.classes.filter(c => c.active).map(c => {
       const at = opsTermAt_(c, m0);
       if (!at.start) return '';
-      const next = opsAddMonths_(at.start, 3);
+      const next = opsNextTermStart_(at.start);
       if (next < T || next > opsAddDays_(T, 14)) return '';
       return c.id + '：Term ' + (at.no ? opsNextTermNo_(at.no) : '?') + ' が ' + md(next) + ' から';
     }).filter(Boolean));

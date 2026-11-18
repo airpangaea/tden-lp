@@ -21,6 +21,8 @@
  *  4. 見張りメール … 毎週月曜の朝、対応が要るものだけを送る
  *  5. 列の整理・旧名簿からの取り込み（最初に1回）
  *  6. Mailchimp のタグ合わせ … 別ファイル OpsMailchimp.gs（貼った時だけメニューに出る）
+ *  7. ダッシュボードの共有（5分おき） … 受講の「ダッシュボード」列のファイルを、支払待ち・在籍・休会のあいだは「リンクを知っている全員・閲覧」に、
+ *               退会・見送りになったら「制限付き」に戻す（変える時だけ Drive を触る。毎晩、覚えを消して確かめ直す）
  *
  * 初回（手順は gas/README.md）
  *  - メニュー「TD台帳」→「列を整理する」→「旧名簿から今の生徒を取り込む」→「一覧表を今すぐ作り直す」→ よければ「自動の更新を始める」
@@ -343,7 +345,8 @@ function opsRefresh(force) {
     opsFillDefaults_();
     opsAdvanceTerms_();
     opsSortEnroll_();
-    opsBuildBoards_(force === true);
+    const data = opsBuildBoards_(force === true);
+    try { opsShareDashboards_(data); } catch (err) { console.error('ダッシュボードの共有: ' + (err && err.message || err)); }
   } finally {
     lock.releaseLock();
   }
@@ -351,6 +354,8 @@ function opsRefresh(force) {
 
 /** 毎晩23時台。月末の日だけ今月の一覧表を記録する（受講の並べ替えは5分おきの作り直しでする） */
 function opsDaily() {
+  // ダッシュボードの共有の覚えを毎晩消して、次の5分おきの回で全部を確かめ直す（手で変えられた共有も元に戻る）
+  PropertiesService.getScriptProperties().deleteProperty(OPS_DASH_PROP);
   if (opsAddDays_(opsTodayKey_(), 1) % 100 !== 1) return;
   const lock = LockService.getDocumentLock();
   if (!lock.tryLock(30000)) return;
@@ -446,7 +451,7 @@ function opsStudent_(r, region) {
 function opsEnroll_(r) {
   const s = opsStr_;
   return { row: r._row, sid: s(r['生徒ID']), name: s(r['Display name'] !== undefined ? r['Display name'] : r['名前']), cls: s(r['クラス']), seat: s(r['席番号']),
-    start: opsKey_(r['開始日']), end: opsKey_(r['最終日']), memo: s(r['メモ']) };
+    start: opsKey_(r['開始日']), end: opsKey_(r['最終日']), memo: s(r['メモ']), dash: s(r[OPS_DASH_HEAD]) };
 }
 
 function opsTeacher_(r) {
@@ -871,6 +876,7 @@ function opsBuildBoards_(force) {
   });
   opsDropBlankFirstSheet_(board);
   opsBuildRoster_(data, force);
+  return data;
 }
 
 /** 生徒管理スプシの一覧表のタブ名（例「一覧表_今月(10月)」） */
@@ -901,6 +907,65 @@ function opsStripLinks_(grid) {
   const copy = JSON.parse(JSON.stringify(grid));
   copy.cells.forEach(row => row.forEach(c => { delete c.link; }));
   return copy;
+}
+
+
+/* ======================= ダッシュボードの共有 ======================= */
+
+const OPS_DASH_HEAD = 'ダッシュボード';   // 受講の右端の列（リンク）
+const OPS_DASH_PROP = 'OPS_DASH_SHARE';   // {ファイルID: 'on'｜'off'｜'err:on:理由'}。前に合わせた状態（毎晩 opsDaily で消す）
+const OPS_DASH_STOP = ['退会', '見送り']; // このステータスになったら共有を止める
+const OPS_DASH_MAX = 25;                  // 1回に Drive を触る数（時間切れにならないように。残りは次の5分で）
+
+function opsDashId_(url) {
+  const m = String(url || '').match(/\/d\/([-\w]{25,})/) || String(url || '').match(/[?&]id=([-\w]{25,})/);
+  return m ? m[1] : '';
+}
+
+/**
+ * ステータスで共有を決める：支払待ち・在籍・休会＝リンクを知っている全員・閲覧（これから始まる人・休んでいる人も見られる）、退会・見送り＝制限付き。
+ * それ以外（新規・提案中・空き待ち）と、生徒IDが生徒シートに見つからない行は触らない（打ち間違いで共有を止めないように）。
+ * 同じファイルが2行にある時（クラス変更・コンボ）は、どちらかが「見せる」なら見せる
+ */
+function opsShareDashboards_(data) {
+  if (!data) return;
+  const want = {};
+  data.enrolls.forEach(e => {
+    const id = opsDashId_(e.dash);
+    if (!id || !e.st) return;
+    if (OPS.SEAT_STATUSES.indexOf(e.st.status) !== -1) want[id] = 'on';
+    else if (OPS_DASH_STOP.indexOf(e.st.status) !== -1 && want[id] !== 'on') want[id] = 'off';
+  });
+  const props = PropertiesService.getScriptProperties();
+  let done = {};
+  try { done = JSON.parse(props.getProperty(OPS_DASH_PROP) || '{}'); } catch (err) { done = {}; }
+  let touched = 0;
+  Object.keys(want).forEach(id => {
+    const w = want[id], was = String(done[id] || '');
+    if (was === w || was.indexOf('err:' + w + ':') === 0 || touched >= OPS_DASH_MAX) return; // 失敗したものは、毎晩消すまでやり直さない
+    touched++;
+    try {
+      const file = DriveApp.getFileById(id);
+      if (w === 'on') file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      else file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+      done[id] = w;
+    } catch (err) {
+      done[id] = 'err:' + w + ':' + String(err && err.message || err).slice(0, 80);
+    }
+  });
+  if (touched) props.setProperty(OPS_DASH_PROP, JSON.stringify(done));
+}
+
+/** 見張りメール用：共有を変えられなかったダッシュボード（生徒の Display name・クラス） */
+function opsDashErrors_(data) {
+  let done = {};
+  try { done = JSON.parse(PropertiesService.getScriptProperties().getProperty(OPS_DASH_PROP) || '{}'); } catch (err) { return []; }
+  const out = [];
+  data.enrolls.forEach(e => {
+    const v = String(done[opsDashId_(e.dash)] || '');
+    if (v.indexOf('err:') === 0) out.push((e.name || e.sid) + '（' + e.cls + '）' + (v.split(':')[1] === 'on' ? '見せる' : '止める') + '：' + v.split(':').slice(2).join(':'));
+  });
+  return out.filter((x, i, a) => a.indexOf(x) === i);
 }
 
 
@@ -1421,6 +1486,7 @@ function opsWatchItems_(data) {
     (seen[k] = seen[k] || []).push(e);
   });
   add('同じ席番号の生徒が2人いる（受講の席番号を直す）', dup);
+  add('ダッシュボードの共有を変えられなかった（そのファイルの編集者か、Drive の共有の設定を確かめる）', opsDashErrors_(data));
   // Mailchimp のタグのずれ（OpsMailchimp.gs を貼って API キーを入れた時だけ）
   if (typeof opsMcWatchItems_ === 'function') opsMcWatchItems_(data).forEach(it => items.push(it));
   return items;
@@ -1621,6 +1687,12 @@ function opsEnsureEnrollSheet_(ss) {
     SpreadsheetApp.newDataValidation().requireValueInRange(ids, true).setAllowInvalid(true).build());
   ['開始日', '最終日'].forEach(h => { if (col(h)) opsDateColumn_(sheet, col(h)); });
   if (col('席番号')) sheet.getRange(2, col('席番号'), rows, 1).setNumberFormat('@');
+  // ダッシュボードのリンク（右端）。日本生のダッシュボードを作ったら Claude が入れる。共有は opsShareDashboards_ が合わせる
+  if (head.indexOf(OPS_DASH_HEAD) === -1) {
+    sheet.getRange(1, head.length + 1).setValue(OPS_DASH_HEAD).setFontWeight('bold').setBackground(OPS_COLOR.head)
+      .setNote('生徒ダッシュボードのリンク。支払待ち・在籍・休会のあいだは「リンクを知っている全員・閲覧」、退会・見送りで「制限付き」に自動で切り替わる');
+    notes.push('「' + OPS_DASH_HEAD + '」の列を右端に足した');
+  }
   return notes.length ? notes : ['変更なし'];
 }
 

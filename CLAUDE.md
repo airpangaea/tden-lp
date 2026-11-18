@@ -58,6 +58,11 @@
 - 定期タスク `tden-class-day-check`（日〜木の19時）：明日のクラスの CSI・スライドを台帳と照らし、決まりどおりのずれは OK を待たずに直して、何をどう変えたかをクラスごとのカードで見せる（待つのは台帳がおかしい時と初めての形だけ）。前の回が動いていなければ最初に知らせる。新しい日本生のダッシュボードと1週間以内のタームの準備も同じ回で
 - 定期タスク `tden-biweekly-check`（第1・第3土曜の8時）：「PDCA集計」「PDCAファネル」を読み、前回と比べて記録する
 - 定期タスクはアプリで選んでいるモデルで動く。使えないモデル（クレジットが要るものなど）だと失敗し、次の回まで誰も気づかない
+
+## ターム末（Growth Report・プログレス認定証）（2026-11-18〜 準備中）
+- 流れ：①11回目のコメントがそろった晩（GAPは12回目）に CSI の Growth Report・日本語サマリを書く ②次の晩に日本生ごとの Gmail 下書き（宛先＝生徒_JP の Email＋別のメアド、本文＝レポート＋サマリ＋コースのアンケートURL＋締切）と海外の WhatsApp 用の文 ③締切（月末）のあと、ユーザーが答えた生徒の名前を渡したら認定証 ④認定証のメール下書き。**送るのはいつもユーザー**。PDFの添付もユーザー（コネクタでは重すぎる）
+- **Growth Report**：スキル `growth-report`（claude.ai のアカウントのスキル。ルールの正本は claude.ai 側なので SKILL.md・references/gap.md は書き換えない）。生徒個別の指示は `/Users/goakashi/Documents/Claude/Projects/TDEN-Student Growth Report/student-notes.md`（環境変数 `GROWTH_REPORT_NOTES`。新しい指示は claude.ai のプロジェクトメモリとこのファイルの両方に）。読み書きの方法（Sheets コネクタか sheets_io.py か）は決定待ち
+- **プログレス認定証**：正本は `/Users/goakashi/Documents/Claude/Projects/TDEN_certificate/.claude/skills/tden-certificate/SKILL.md` と `HANDOFF_for_Claude_Code.md`。ひな形・マスター・出力はそのフォルダの1か所だけ（コピーしない）。`generate_from_master.py` には毎回 `--workspace` と `--names`。マスターは控えてから編集、迷う生徒は止めて案を出す、誰に出すかはユーザーが決める。日本語では「プログレス認定証」（「修了証」と書かない）
 ---
 
 ## Airtable 接続情報（アーカイブ・予備経路）

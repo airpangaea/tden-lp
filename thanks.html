@@ -41,6 +41,21 @@
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=654712559538676&ev=PageView&noscript=1"/></noscript>
 
+    <!-- Dairin 最終CVタグ：本物の送信（apply.js が ?ok=1 を付けた時）に1回だけ。
+         complete は init が済むまで送られないので、init と dairin.js もここでだけ読む（view は呼ばない） -->
+    <script>
+        if (new URLSearchParams(window.location.search).get('ok') === '1' && !sessionStorage.getItem('dairin_cv_sent')) {
+            sessionStorage.setItem('dairin_cv_sent', '1');
+            (function(w,f){w[f]=w[f]||function(){w[f].q=w[f].q||[];w[f].q.push(arguments);};})(window,'dairin');
+            dairin("init");
+            dairin("complete", { campaign_code:'yuiAQOKxOi' });
+            var dairinJs = document.createElement('script');
+            dairinJs.src = 'https://static.dair.in/core/project/GWceCX98/dairin.js';
+            dairinJs.async = true;
+            document.head.appendChild(dairinJs);
+        }
+    </script>
+
     <link rel="stylesheet" href="/css/tailwind.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -33,6 +33,7 @@
 - `404.html` — 存在しないURL用（これが無いとPagesは全URLにトップページを200で返し、検索上は重複ページになる）
 - `sitemap.xml` — 公開ページの一覧。ページを追加・削除したら更新する（URLは `.html` なしの形。Pagesは `.html` を付けたURLを308で転送する）
 - `images/tden-og.jpg` — 日本語LPと体験記のSNS共有画像（1200×630）。英語LP `images/og-en.jpg`・インドネシア語LP `og-id.jpg`・GAP英語 `og-gap-en.jpg`・GAP日本語 `og-gap-ja.jpg`（いずれも1200×630。文言を変えたら作り直す）
+- **Dairin（アフィリエイト計測）**（2026-11-18〜）— プロジェクトタグ（`init`＋`view`＋`dairin.js`）は次の4ページの `</head>` の直前にだけ入れる：`index.html`・`success-stories.html`・`global-academic-pass/index.html`・`global-academic-pass/public-curriculum-term1.html`。英語・インドネシア語ページ、GAPの授業ページ（term1/・term2/・shared/・trial/）には入れない。ページを足す・外す時はこの一覧と各ページを直し、`grep -rl dairin --include='*.html' .` で確かめる。最終CV `complete`（campaign_code `yuiAQOKxOi`）は `thanks.html` で `?ok=1`（本物の送信）の時だけ1回呼ぶ（`complete` は `init` が済むまで送られないので、サンクスページでも `init` と `dairin.js` をその時だけ読む）。中間CV `signup`・customer_uid・sales_amount・event_id は使わない。報酬はStripeのサブスク登録を見てDairinの管理画面で手動承認
 - `_redirects` — 先頭で `CLAUDE.md`・`activo-update-guide.md`・`gas/*` をサイトから見えなくしている（Pagesはリポジトリ直下をそのまま配信するため）
 
 ---

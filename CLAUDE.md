@@ -17,7 +17,7 @@
 - `index.html` — LP本体（フォーム含む）
 - `functions/api/apply.js` — フォーム送信処理（GAS → 失敗時 Airtable）
 - `functions/api/slots.js` — 空き状況の取得（GAS経由でスプシ「クラス一覧」を読む）
-- `gas/Code.gs` — スプシにバインドするGAS（設置・更新手順は `gas/README.md`）
+- `gas/Code.gs` — スプシにバインドするGAS（設置・更新手順は `gas/README.md`）。海外の申込には `生徒_海外` に「WhatsApp」（定型文入りで開く）と「Gmail」（WhatsApp の無い生徒向け。宛先・件名・本文入りで Gmail の新規作成が開く。文面は `CONFIG.MAIL_BODY`・英語のみ・金額なし・無料お試しの1文はインドネシア以外の国だけ）のボタンを作る。前からいる行の「Gmail」は Ops.gs が5分おきに付ける
 - `gas/Ops.gs` — 台帳の自動化。台帳は 生徒_JP／生徒_海外（1人1行）・受講（1行＝1人×1クラス・席番号・開始日・最終日）・クラス一覧（Class ID・状態 active／non-active・種別・講師・アシスタント・ターム）・講師（名前・コード・カタカナ）。一覧表を3か所に作る：生徒管理の中のあなた用〔リンク付き〕／Class Structure〔スタッフ・講師用・リンク無し・生徒には見せない〕／スタッフ用の名簿〔クラス別シート・席番号順・(admin)・Instructor／Assistant〕。月の記録、週1の見張りメール、列の整理、旧名簿からの取り込み。席番号（JP-01・ID-01…）はスライドの交流テーブルのペアに使う。5分おきに席番号を詰め直し（最終日を過ぎた生徒が抜けたら次の日に繰り上げ）、受講の行を並べ替える（色・太字・メモも一緒に動く）。クラス一覧の「ターム」「ターム開始日」も新しいタームの初日に自動で進める（1ターム＝12回・第5週は数えない・休みの週は数える。Term 6 の次は 1）。**CSI・クラススライドの席はいつも台帳の席番号に合わせる**（台帳がおかしい時は先に台帳・Ops.gs を直す）。Code.gs と同じプロジェクトに別ファイルで置く（関数・定数は ops／OPS で始める）。**2026-10-25 から本番で稼働**（手順は `gas/本番に入れる手順.md`）。テスト用スプシ「TDEN 生徒管理（テスト）」(`1VRgvLnGfRyIBZPiP4qBAYJ2wIPGI72JmTbFy7rW9qxU`・ダミーのみ・読んでよい) でも動く
   - リポジトリの Ops.gs は先頭の `BOARD_FILE_ID`／`STAFF_FILE_ID`／`OLD_FILE_ID` を空にしてある（空だとテスト用のファイルを作る）。**本番用に渡す時は3つのIDを入れてからクリップボードにコピーする**（コミットはしない）：Class Structure `1tK4hTrbKiqGTtL-2Efn6sqEOFxTpAKlB7cdhAOhqILU`／TD スタッフ用の名簿 `1OrnE2B-g5Fw_I0NNjkWQu7R87sGwMa33Hy32oHRXpAI`／旧名簿 `1AmV48Hi7OC-wZCY5_FpWjf1UEQt5mvEjDTyv6QqWNPk`（旧名簿・スタッフ用の名簿には個人情報が入るのでClaudeは開かない）
   - Class Structure は講師も見るので英語。講師の並びは `OPS.TEACHER_ORDER`（Marina・Nerissa・Jomer＝入社順）

@@ -96,8 +96,8 @@ const OPS_LAYOUT = {
     drop: ['国', 'WhatsApp'], // 日本の申込では空か Japan だけ。中身がある時は消さない
   },
   '生徒_海外': {
-    // 電話（＝WhatsAppの番号）をいつも見る所に。右の「WhatsApp」は、定型文を入れてWhatsAppを開くボタン（Code.gs が作る）
-    order: ['生徒ID', '名前', 'ステータス', '受講中のクラス', '希望クラス', '希望開始日', '支払い済みの最終日', '電話', 'WhatsApp', 'メモ',
+    // 電話（＝WhatsAppの番号）をいつも見る所に。右の「WhatsApp」は、定型文を入れてWhatsAppを開くボタン、「Gmail」は WhatsApp の無い生徒へのメールを開くボタン（Code.gs が作る）
+    order: ['生徒ID', '名前', 'ステータス', '受講中のクラス', '希望クラス', '希望開始日', '支払い済みの最終日', '電話', 'WhatsApp', 'Gmail', 'メモ',
             'Display name', '性別', '学年', '英語レベル', '学校名', 'Email', '国', 'Wixパスワード',
             '申込日時', '経由', '希望コース', '第1希望', '第2希望', '第3希望', 'コメント', '既存照合'],
     drop: [],
@@ -113,7 +113,7 @@ const OPS_REQUIRED_HEAD = {
   '生徒_海外': ['名前', 'ステータス', '性別', '学年', '英語レベル', '学校名', 'Email', '電話', '国'],
 };
 // 自動で入る列（見出しを緑に）
-const OPS_AUTO_HEAD = { '生徒_JP': ['生徒ID', '受講中のクラス', 'Wixパスワード'], '生徒_海外': ['生徒ID', '受講中のクラス', 'Display name', 'WhatsApp', 'Wixパスワード'] };
+const OPS_AUTO_HEAD = { '生徒_JP': ['生徒ID', '受講中のクラス', 'Wixパスワード'], '生徒_海外': ['生徒ID', '受講中のクラス', 'Display name', 'WhatsApp', 'Gmail', 'Wixパスワード'] };
 const OPS_HEAD_COLOR = { required: '#a9bfd8', auto: '#cfe8d8' };
 // 1行目にカーソルを置くと出る説明
 const OPS_HEAD_NOTES = {
@@ -121,6 +121,7 @@ const OPS_HEAD_NOTES = {
   '受講中のクラス': '自動（受講シートから）。直す時は受講シートを直す',
   '支払い済みの最終日': '払ってもらった期間の最後の日（3か月払いなら3か月後の前日、月払いならその月末など）。ダブルクリックでカレンダーから選べる。空か過ぎていると一覧表でオレンジ',
   'WhatsApp': '押すと定型文入りでWhatsAppが開く（申込の時に自動で作る）。番号は左の「電話」',
+  'Gmail': '押すと宛先・件名・本文入りでGmailの新規作成が開く（WhatsAppの無い生徒向け。Email があれば自動で作る。文面は Code.gs の MAIL_BODY）',
   '別のメアド': '親と本人など、Email 以外のメアド（カンマ区切り）。Email は Wix・名簿に使うメインのまま。Mailchimp照合タブの「台帳に無い」行に生徒IDを書くと、ここに自動で入る',
 };
 const OPS_ENROLL_HEAD = ['生徒ID', 'Display name', 'クラス', '席番号', '開始日', '最終日', 'メモ']; // Display name は自動（前の列名「名前」も読む）
@@ -1251,6 +1252,15 @@ function opsFillDefaults_() {
     } finally {
       idLock.releaseLock();
     }
+  }
+  // 海外生の「Gmail」ボタン（申込の時に Code.gs が作る。手で足した行・前からいる行にもここで付ける）
+  const ti = sheets.intl, cg = ti.col['Gmail'];
+  if (cg !== undefined && typeof gmailLink_ === 'function') {
+    ti.rows.forEach(r => {
+      if (opsStr_(r['Gmail'])) return;
+      const link = gmailLink_(r['Email'], r['国'], r['名前']);
+      if (link) ti.sheet.getRange(r._row, cg + 1).setFormula('=HYPERLINK("' + link + '","Gmail")');
+    });
   }
   ['jp', 'intl'].forEach(region => {
     const t = sheets[region];

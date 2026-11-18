@@ -32,6 +32,30 @@ const CONFIG = {
 
   // 海外の申込者に送るWhatsAppの定型文（{name} に名前が入る）
   WA_MESSAGE: 'Hi {name}! This is Go Akashi from TOMODACHI English (AirPangaea). Thank you for your application.',
+
+  // 海外の申込者へのメール（WhatsApp が無い生徒向け）。「Gmail」列のボタンで、宛先・件名・本文入りの Gmail 新規作成画面が開く
+  // {name} に名前、{trial} に MAIL_TRIAL（インドネシア以外の国だけ。インドネシアの生徒は有料なので無料の話は出さない）が入る
+  MAIL_SUBJECT: 'Thank you for applying to TOMODACHI English',
+  MAIL_TRIAL: ' For students from other countries, we are considering free participation on a trial basis.',
+  MAIL_BODY: [
+    'Hi {name},',
+    '',
+    "Thank you so much for applying to TOMODACHI English! We're really happy to hear from you.",
+    '',
+    "A quick introduction: TOMODACHI English is an online program where students learn English while making friends and sharing their cultures. Our classes are mainly made up of students from Japan and Indonesia, and you'll mostly be talking with Japanese students.{trial}",
+    '',
+    "To keep our community safe and trustworthy, we'd like to get in touch with one of your teachers, such as your English teacher or the teacher in charge of international exchange. We'd like to confirm that you're enrolled at your school and hear a little about you. Could you introduce us? Their name and email address (or WhatsApp number) would be perfect.",
+    '',
+    "For now, email is fine for staying in touch, so just reply to this email. If you have WhatsApp, you can also message us at +81 80 2697 6964. It's often quicker. Please note that once you join the classes, you'll need WhatsApp, because we send class reminders through our WhatsApp group for international students.",
+    '',
+    'Looking forward to hearing from you!',
+    '',
+    'Best regards,',
+    'TOMODACHI English Team',
+    'Go Akashi',
+    'WhatsApp: +81 80 2697 6964',
+    'Email: admin@airpangaea.com',
+  ].join('\n'),
 };
 
 // 定期実行で読み取るメール（旧GASと同じ条件）
@@ -271,6 +295,10 @@ function addApplicant_(region, a) {
       const link = waLink_(a.phone, a.country, a.name);
       if (link) sheet.getRange(r, cols['WhatsApp'] + 1).setFormula('=HYPERLINK("' + link + '","WhatsApp")');
     }
+    if (region === 'intl' && cols['Gmail'] !== undefined) {
+      const mail = gmailLink_(a.email, a.country, a.name);
+      if (mail) sheet.getRange(r, cols['Gmail'] + 1).setFormula('=HYPERLINK("' + mail + '","Gmail")');
+    }
     SpreadsheetApp.flush();
     return { id, sheet, row: r, data: Object.assign({}, a, { id }) };
   } finally {
@@ -379,6 +407,18 @@ function waLink_(phone, country, name) {
 }
 
 
+/** 海外の申込者へのメールを Gmail の新規作成画面で開くURL（宛先・件名・本文入り）。Ops.gs も既存の行に使う */
+function gmailLink_(email, country, name) {
+  const to = String(email || '').trim();
+  if (!/^[^\s@"]+@[^\s@"]+\.[^\s@"]+$/.test(to)) return '';
+  const indonesia = /Indonesia|\+62/.test(String(country || ''));
+  const body = CONFIG.MAIL_BODY
+    .replace(/\{name\}/g, String(name || '').trim())
+    .replace('{trial}', indonesia ? '' : CONFIG.MAIL_TRIAL);
+  // HYPERLINK の数式に入れるので " は %22 になる encodeURIComponent に任せる
+  return 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) +
+    '&su=' + encodeURIComponent(CONFIG.MAIL_SUBJECT) + '&body=' + encodeURIComponent(body);
+}
 /* ======================= メール ======================= */
 
 /** 管理者への新規申込通知（LPからの申込のみ。activo・Airtableはそのメール自体が通知になる） */

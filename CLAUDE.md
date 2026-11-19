@@ -57,12 +57,18 @@
 - 資料（Artifact・ユーザーだけが開ける）：運用マップ https://claude.ai/artifact/KPADeVTDnCDZbYUVptuYXb ／台帳の設計 https://claude.ai/artifact/4JYN1nKjN1moqNVrbvWXYq 。直す時は `url` を渡して同じリンクに出す（新しく作らない）。生徒の名前は架空のものだけ。マップの「今」は残し、変えたい所は「整理後（案）」に差分で書く
 - 定期タスク `tden-class-day-check`（日〜木の19時）：明日のクラスの CSI・スライドを台帳と照らし、決まりどおりのずれは OK を待たずに直して、何をどう変えたかをクラスごとのカードで見せる（待つのは台帳がおかしい時と初めての形だけ）。前の回が動いていなければ最初に知らせる。新しい日本生のダッシュボードと1週間以内のタームの準備も同じ回で
 - 定期タスク `tden-biweekly-check`（第1・第3土曜の8時）：「PDCA集計」「PDCAファネル」を読み、前回と比べて記録する
+- 定期タスク `tden-term-end-growth-report`（月末の9日前の1時）・`tden-term-end-reminder`（同じ日の20時）・`tden-term-end-certificates`（毎月1日8時）：下の「ターム末」
 - 定期タスクはアプリで選んでいるモデルで動く。使えないモデル（クレジットが要るものなど）だと失敗し、次の回まで誰も気づかない
 
-## ターム末（Growth Report・プログレス認定証）（2026-11-18〜 準備中）
-- 流れ：①11回目のコメントがそろった晩（GAPは12回目）に CSI の Growth Report・日本語サマリを書く ②次の晩に日本生ごとの Gmail 下書き（宛先＝生徒_JP の Email＋別のメアド、本文＝レポート＋サマリ＋コースのアンケートURL＋締切）と海外の WhatsApp 用の文 ③締切（月末）のあと、ユーザーが答えた生徒の名前を渡したら認定証 ④認定証のメール下書き。**送るのはいつもユーザー**。PDFの添付もユーザー（コネクタでは重すぎる）
-- **Growth Report**：スキル `growth-report`（claude.ai のアカウントのスキル。ルールの正本は claude.ai 側なので SKILL.md・references/gap.md は書き換えない）。生徒個別の指示は `/Users/goakashi/Documents/Claude/Projects/TDEN-Student Growth Report/student-notes.md`（環境変数 `GROWTH_REPORT_NOTES`。新しい指示は claude.ai のプロジェクトメモリとこのファイルの両方に）。読み書きの方法（Sheets コネクタか sheets_io.py か）は決定待ち
-- **プログレス認定証**：正本は `/Users/goakashi/Documents/Claude/Projects/TDEN_certificate/.claude/skills/tden-certificate/SKILL.md` と `HANDOFF_for_Claude_Code.md`。ひな形・マスター・出力はそのフォルダの1か所だけ（コピーしない）。`generate_from_master.py` には毎回 `--workspace` と `--names`。マスターは控えてから編集、迷う生徒は止めて案を出す、誰に出すかはユーザーが決める。日本語では「プログレス認定証」（「修了証」と書かない）
+## ターム末（Growth Report・プログレス認定証）（2026-11-19〜 定期タスクで動かす）
+- 定期タスク3つ（`~/.claude/scheduled-tasks/` の各 SKILL.md が手順の正本。直す時はタスクとメモリ `tden-term-end-automation.md` を一緒に）
+  - `tden-term-end-growth-report`：**月末の9日前の1時**（11/21・12/22・1/22・2/19…）。今月でタームが終わるクラス（ターム開始日の月＋2＝今月。GAP も同じ）の CSI に Growth Report・日本語サマリを書き、カードを出して止まる。その時点で書いてある週を全部使う。ユーザーが朝〜夕方にカードと CSI を見て「下書きを作って」→ 日本生の Gmail 下書き（宛先＝生徒_JP の Email＋別のメアド。前回の Growth Summary メールに返信の形、初めての生徒は新規）と海外の WhatsApp 文。**この時に来月の分を予約し直す**（無人の回は予約を変えられない）
+  - `tden-term-end-reminder`：同じ日の20時。下書きがまだなら通知（ふだんは来月へ動かされていて動かない）
+  - `tden-term-end-certificates`：**毎月1日8時**。アンケート回答スプシ4つ（フォルダ `1wtn2mFtmq2_KEELDW4NQowCiwg6T591S`）の、A列に色の付いた一番下の行より下の新しい回答から認定証を作る。処理した行は `TDEN_certificate/回答の処理記録.csv` に残す（回答スプシには書かない・色も付けない）。迷う生徒だけ案を出して待つ。日本生は前回の認定証メールに返信の形の下書き、海外は WhatsApp の文とファイル一覧
+- **送るのはいつもユーザー**。認定証の PDF はユーザーが電子署名してから添付する（Claude は付けない）。毎日の未読を増やす定期タスクは作らない
+- 読み書きは Google Sheets コネクタ（sheets_io.py は使わない）。シンボリックリンク・`TDEN_WORKSPACE`・`GROWTH_REPORT_NOTES` は使わない（全部フルパス）
+- **Growth Report**：スキル `growth-report`（claude.ai のアカウントのスキル。ルールの正本は claude.ai 側なので SKILL.md・references/gap.md は書き換えない。違う所はタスク側で上書き）。生徒個別の指示は `/Users/goakashi/Documents/Claude/Projects/TDEN-Student Growth Report/student-notes.md`（新しい指示は claude.ai のプロジェクトメモリとこのファイルの両方に）
+- **プログレス認定証**：正本は `/Users/goakashi/Documents/Claude/Projects/TDEN_certificate/.claude/skills/tden-certificate/SKILL.md` と `HANDOFF_for_Claude_Code.md`。ひな形・マスター・出力はそのフォルダの1か所だけ（コピーしない）。`generate_from_master.py` には毎回 `--workspace` と `--names`。マスターは控えてから編集、迷う生徒は止めて案を出す。日本語では「プログレス認定証」（「修了証」と書かない）
 ---
 
 ## Airtable 接続情報（アーカイブ・予備経路）

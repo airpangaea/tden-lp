@@ -23,6 +23,7 @@
   - Class Structure は講師も見るので英語。講師の並びは `OPS.TEACHER_ORDER`（Marina・Nerissa・Jomer＝入社順）
 - `gas/Pdca.gs` — 隔週PDCAの数字集め。第1・第3土曜7時に GA4（ストリーム「TOMODACHI留学LP」）のチャネル別セッション・generate_lead と「生徒_JP」のLP経由の申込件数を、シート「PDCA集計」に「比較」「今回」の2行で書く。さらに「PDCAファネル」に、広告以外／広告に分けた25%・50%・75%まで読んだ割合と申込を1期間1行で書き、折れ線グラフを作り直す（施策メモは手書き）。どちらも個人情報なし・**Claudeが読んでよい**。GA4のプロパティIDはスクリプトプロパティ `GA4_PROPERTY_ID`、Analytics Data API サービスが要る。広告費だけは手入力。定期タスク「TDEN隔週チェック」がこのシートを読む
 - `gas/OpsMailchimp.gs` — Mailchimp のタグを台帳に合わせる（手順は `gas/Mailchimpのタグ合わせ.md`）。生徒_JP だけを見て（「Email」と「別のメアド」〔親と本人など・カンマ区切り。照合タブで生徒IDを書くと自動で入る〕の両方）、在籍＝`TDEN`（GAPなら＋`TDEN-GAP`）・休会＝`TDEN-Recess`・退会＝`Ex-TDEN`、新しく入会した人に学年タグ `gradeN-年度`（4月始まり・大学1年＝13）を1つ。Mailchimp に無い在籍生は連絡先（メールだけ）を足す。台帳にいない人と他のタグには触らない。書き込みはメニューで件数を見て「はい」の時だけ。週1の見張りメールにずれを出す。生徒管理の「Mailchimp照合」タブにはメールアドレスが入るので**Claudeは読まない**。Claude の Mailchimp MCP は分析（タグごとの人数）しかできず、連絡先・タグの読み書きは不可
+- `gas/OpsKpi.gs` — KPI ダッシュボード v3.1（`1O1e8XH-UdafZ04W_beuMOaXJVuWp-cCA2dy3N3A529o`・タブ v3.1・**Claudeが読み書きしてよい**）の実績を毎晩書く（手順・数え方は `gas/KPIの自動化.md`）。台帳から申込数・新規・復帰・退会（最終日の翌月の欄）・GAP・コンボ・海外の人数×600円、書いたセルのメモに数えた人の名前。2026/12 から（申込数・OS は 11月から）。MRR(JP)＝Stripe・広告費＝マネーフォワード（TD分だけ）は Claude が毎月入れる。スクリプトプロパティ `KPI_FILE_ID`・`STRIPE_KEY`（制限付きキー）。休会は最大1年で、Ops.gs は休会を退会に書き換えない
 - `gas/OpsTestData.gs` — テスト用スプシにだけ置くダミーデータ作り（本番には入れない）。Mailchimp のダミーの連絡先（`opsTestMcMembers_`）も
 - `thanks.html` — 送信完了ページ
 - `en/index.html` — 海外生向けの英語LP（金額は載せない。フォームは `region=intl`＋国名を送り、GASが「生徒_海外」に入れる）。CSSは日本語LPと同じTailwindビルドをインライン化し、ビルドに無いクラスはページ内の `<style>` に足している

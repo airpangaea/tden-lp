@@ -14,7 +14,7 @@
  *               スタッフ用の名簿（クラス別シート・席番号順・講師とアシスタント・(admin)・足りない情報は赤）を作る
  *  2. 5分おき（メニューの「一覧表を今すぐ作り直す」も同じ） … 一覧表を作り直す（中身が変わった時だけ）／
  *               受講の席番号をクラスごとに 01 から詰めて振る（最終日を過ぎた生徒が抜けたら繰り上げ。空の行には空いている番号）／
- *               受講を曜日・時刻・クラス・席番号の順に並べ替え、最終日を過ぎた行は下にまとめて灰色の文字に／すべてのクラスを去った生徒を「退会」にする／
+ *               受講を曜日・時刻・クラス・席番号の順に並べ替え、最終日を過ぎた行は下にまとめて灰色の文字に／すべてのクラスを去った生徒を「退会」にする（「休会」と選んだ人はそのまま）／
  *               「Wixパスワード」が空なら作る（ステータス・コースに関係なく全員。TDE＋数字4桁）／「Display name」が空でアルファベットの名前なら作る（Go A.）
  *  3. 月の記録 … 月末に、今月の一覧表を「26Nov」のようなタブに写し（Class Structure の自動のタブは「26Nov (live)」）、PDFをDriveの「TD 月の記録」に残す（メニューからいつでも）。
  *  受講に生徒を足す時は、生徒_JP／生徒_海外で行を選んでメニュー「選んだ生徒を受講に追加」
@@ -23,6 +23,7 @@
  *  6. Mailchimp のタグ合わせ … 別ファイル OpsMailchimp.gs（貼った時だけメニューに出る）
  *  7. ダッシュボードの共有（5分おき） … 受講の「ダッシュボード」列のファイルを、支払待ち・在籍・休会のあいだは「リンクを知っている全員・閲覧」に、
  *               退会・見送りになったら「制限付き」に戻す（変える時だけ Drive を触る。毎晩、覚えを消して確かめ直す）
+ *  8. KPI ダッシュボードの実績 … 別ファイル OpsKpi.gs（貼った時だけ。毎晩23時に台帳から書く。Stripe との照合を見張りメールに）
  *
  * 初回（手順は gas/README.md）
  *  - メニュー「TD台帳」→「列を整理する」→「旧名簿から今の生徒を取り込む」→「一覧表を今すぐ作り直す」→ よければ「自動の更新を始める」
@@ -152,6 +153,10 @@ function onOpen() {
     .addItem('Mailchimp のずれを調べる', 'opsMcCheck')
     .addItem('Mailchimp のタグを台帳に合わせる', 'opsMcApply')
     .addItem('Mailchimp の API キーを入れる（最初に1回）', 'opsMcSetKey');
+  // OpsKpi.gs を貼った時だけ出る
+  if (typeof opsKpiRunNow === 'function') menu.addSeparator()
+    .addItem('KPI を今すぐ書く', 'opsKpiRunNow')
+    .addItem('Stripe のキーを入れる（最初に1回）', 'opsKpiSetStripeKey');
   // テスト用のスプシ（OpsTestData.gs を貼ったもの）だけに出る
   if (typeof opsTestFill === 'function') menu.addSeparator().addItem('テスト用のダミーを入れ直す', 'opsTestFill');
   menu.addToUi();
@@ -354,6 +359,8 @@ function opsRefresh(force) {
 
 /** 毎晩23時台。月末の日だけ今月の一覧表を記録する（受講の並べ替えは5分おきの作り直しでする） */
 function opsDaily() {
+  // KPI の実績（OpsKpi.gs を貼った時だけ）
+  if (typeof opsKpiDaily_ === 'function') opsKpiDaily_();
   // ダッシュボードの共有の覚えを毎晩消して、次の5分おきの回で全部を確かめ直す（手で変えられた共有も元に戻る）
   PropertiesService.getScriptProperties().deleteProperty(OPS_DASH_PROP);
   if (opsAddDays_(opsTodayKey_(), 1) % 100 !== 1) return;
@@ -444,6 +451,7 @@ function opsStudent_(r, region) {
     school: s(r['学校名']),
     password: s(r['Wixパスワード']),
     memo: s(r['メモ']),
+    existing: s(r['既存照合']), // 前からいる生徒がまた申し込んだ行（KPI のフォーム申込数に数えない）
   };
 }
 
@@ -1195,7 +1203,10 @@ function opsSheetPdf_(ss, sheet, name) {
 
 /* ======================= 台帳の自動の書き込み ======================= */
 
-/** すべてのクラスを去った生徒（受講があり、どれも最終日を過ぎた）のステータスを「退会」にする */
+const OPS_RETIRE_FROM = ['支払待ち', '在籍']; // 最終日を過ぎたら自動で「退会」にするステータス（休会は手で選んだまま残す）
+
+/** すべてのクラスを去った生徒（受講があり、どれも最終日を過ぎた）のステータスを「退会」にする。
+ *  「休会」と選んだ人はそのまま（Mailchimp のタグが TDEN-Recess のまま残る。1年を過ぎたら見張りメールに出る） */
 function opsRetirePast_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const enrollSheet = ss.getSheetByName(OPS.SHEET_ENROLL);
@@ -1213,7 +1224,7 @@ function opsRetirePast_() {
     if (cs === undefined) return;
     t.rows.forEach(r => {
       const id = opsStr_(r['生徒ID']);
-      if (id && any[id] && !live[id] && OPS.SEAT_STATUSES.indexOf(opsStr_(r['ステータス'])) !== -1) t.sheet.getRange(r._row, cs + 1).setValue('退会');
+      if (id && any[id] && !live[id] && OPS_RETIRE_FROM.indexOf(opsStr_(r['ステータス'])) !== -1) t.sheet.getRange(r._row, cs + 1).setValue('退会');
     });
   });
 }
@@ -1489,6 +1500,8 @@ function opsWatchItems_(data) {
   add('ダッシュボードの共有を変えられなかった（そのファイルの編集者か、Drive の共有の設定を確かめる）', opsDashErrors_(data));
   // Mailchimp のタグのずれ（OpsMailchimp.gs を貼って API キーを入れた時だけ）
   if (typeof opsMcWatchItems_ === 'function') opsMcWatchItems_(data).forEach(it => items.push(it));
+  // Stripe との照合・1年を過ぎた休会（OpsKpi.gs を貼った時だけ）
+  if (typeof opsKpiWatchItems_ === 'function') opsKpiWatchItems_(data).forEach(it => items.push(it));
   return items;
 }
 

@@ -77,6 +77,7 @@ function opsKpiSetStripeKey() {
 
 /** 毎晩（opsDaily から）。失敗しても台帳のほかの処理は止めない */
 function opsKpiDaily_() {
+  if (new Date().getDate() !== 1) return; // 書くのは毎月1日だけ（途中で見たい時はメニュー「KPI を今すぐ書く」）
   try { opsKpiRun_(); } catch (err) { console.error('KPI: ' + (err && err.message || err)); }
 }
 

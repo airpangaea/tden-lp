@@ -31,6 +31,7 @@
 - `id/index.html`・`id/thanks.html` — `/en/` のインドネシア語版（フォームは `lang=id` も送り、送信完了ページ・エラー文がインドネシア語になる。授業時刻はWIB表示）。`/en/` を直したら `/id/` も合わせて直す
 - `en/global-academic-pass/` — GAPの英語ページ。申込ボタンは `/en/?course=gap#apply`
 - `js/local-time.js` — 授業時刻（日本時間）を閲覧者のタイムゾーンで表示する（`data-jst-range` 等。英語・インドネシア語LPとGAP英語ページで共用。表示言語は `<html lang>` で切り替え）
+- `js/src-track.js` — 流入元の記録（2026-11-25〜）。sitemap.xml の公開ページ8つに入れてある。utm_*・Dairin の `_by`・広告クリックの印（値は残さない）・参照元のドメイン・着いたページを localStorage に覚え（最初＝90日／最後に外から来た時）、申込フォームの見えない項目 `src` に入れる → apply.js → GAS が生徒シートの「流入元」列（無ければ1行目の右端に作る）と通知メールに書く。先頭の言葉が経路（Dairin・広告・メール・activo・AI・SNS・検索・自社サイト・他サイト・直接）。公開ページを足したらこのスクリプトも入れる。個人情報は扱わない・SEOには影響しない
 - `404.html` — 存在しないURL用（これが無いとPagesは全URLにトップページを200で返し、検索上は重複ページになる）
 - `sitemap.xml` — 公開ページの一覧。ページを追加・削除したら更新する（URLは `.html` なしの形。Pagesは `.html` を付けたURLを308で転送する）
 - `images/tden-og.jpg` — 日本語LPと体験記のSNS共有画像（1200×630）。英語LP `images/og-en.jpg`・インドネシア語LP `og-id.jpg`・GAP英語 `og-gap-en.jpg`・GAP日本語 `og-gap-ja.jpg`（いずれも1200×630。文言を変えたら作り直す）

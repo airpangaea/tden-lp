@@ -100,7 +100,7 @@ function doPost(e) {
       name: d.name, gender: d.gender, grade: d.grade, school: d.school,
       email: d.email, phone: d.phone, englishLevel: d.englishLevel, course: d.course,
       pref1: d.pref1, pref2: d.pref2, pref3: d.pref3, message: d.message,
-      referral: d.referral,
+      referral: d.referral, src: d.src,
     });
   } catch (err) {
     console.error('doPost addApplicant: ' + err);
@@ -258,6 +258,13 @@ function addApplicant_(region, a) {
   try {
     const sheet = sheet_(region === 'intl' ? CONFIG.SHEET_INTL : CONFIG.SHEET_JP);
     const cols = headerMap_(sheet);
+    // 「流入元」列（LP の申込だけが持つ。無ければ1行目の右端に列名だけ作る）
+    if (a.src && cols['流入元'] === undefined) {
+      const c = sheet.getLastColumn() + 1;
+      if (sheet.getMaxColumns() < c) sheet.insertColumnAfter(sheet.getMaxColumns());
+      sheet.getRange(1, c).setValue('流入元');
+      cols['流入元'] = c - 1;
+    }
     const id = nextStudentId_(sheet, cols, STUDENT_ID_PREFIX[region]);
     const existing = findExisting_(sheet, cols, a.email, a.phone);
 
@@ -280,6 +287,7 @@ function addApplicant_(region, a) {
       '第3希望': a.pref3,
       'コメント': a.message,
       '知ったきっかけ': a.referral, // 列が無いシートでは書かない
+      '流入元': a.src, // どのリンクから来たか（js/src-track.js）。先頭の言葉が経路（Dairin・検索・メール・SNS・広告・activo・直接 など）
       '既存照合': existing ? '既存: ' + existing : '',
     };
 
@@ -444,11 +452,12 @@ function notifyAdmin_(region, added) {
     '■ 第2希望: ' + (a.pref2 || ''),
     '■ 第3希望: ' + (a.pref3 || ''),
     '■ 知ったきっかけ: ' + (a.referral || ''),
+  ].concat(a.src ? ['■ 流入元: ' + a.src] : []).concat([
     '■ コメント:',
     a.message || '',
     '',
     'スプシで確認 → ' + url,
-  ];
+  ]);
   MailApp.sendEmail(CONFIG.NOTIFY_TO, subject, lines.join('\n'));
 }
 

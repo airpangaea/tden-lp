@@ -69,6 +69,8 @@ export async function onRequestPost(context) {
   const REFERRALS = ['Instagramの広告', 'Instagramの投稿（フォロー中など）', 'Google検索', '知人・紹介',
                      '学校・塾', 'AirPangaeaのプログラムに参加したことがある', 'その他'];
   const referral        = REFERRALS.includes(rawForm.referral) ? rawForm.referral : '';
+  // 流入元（js/src-track.js が入れる見えない項目。どのリンクから来たか。個人情報は入っていない）
+  const src             = String(rawForm.src || '').replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 300);
 
   // c. バリデーション: 名前の長さチェック
   if (!firstName || firstName.length > 100) {
@@ -119,6 +121,7 @@ export async function onRequestPost(context) {
     pref3: prefs[2],
     message,
     referral,
+    src,
   };
 
   // スプシの「経由」列：日本のLPは LP、海外は LP(EN)／LP(ID)

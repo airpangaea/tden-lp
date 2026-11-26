@@ -11,6 +11,11 @@
  *  - 広告費 … 自動では取らない。広告を再開したら、その行に手で入れる（空欄＝未入力）
  *  - ファネル … 広告以外／広告に分けて、LPを25%・50%・75%まで読んだ割合と申込を、シート「PDCAファネル」に1期間1行で書き、
  *               折れ線グラフ（横軸＝期間の終了日）を作り直す。施策を打ったら、その期間の「施策メモ」に手で書く
+ *  - 記事（Dairin）… Dairin で紹介された広告記事から来たセッション（参照元が PDCA_ARTICLE.SOURCES のサイト、
+ *               または着いたURLに Dairin の印 _by= がある）。広告以外の Referral の一部でもある（足し算はしない）。
+ *               PDCA集計の右端に「記事セッション」「記事の内訳」（記事のページごと）、PDCAファネルの右端に「記事」の5列とグラフ。
+ *               記事を書くサイトが増えたら PDCA_ARTICLE.SOURCES に足す
+ *  - 2026-11-26 に記事の列を足した時は、pdcaFunnelRefill を1回実行すると、直近4期間の記事の列が埋まる
  *
  * 初回（手順は gas/README.md）
  *  - 左の「サービス ＋」から「Google Analytics Data API」を追加（ID は AnalyticsData のまま）
@@ -29,8 +34,17 @@ const PDCA = {
   // まだ1行も無い時の「今回」の始まり（前回の手作業の確認 9/29〜10/24 の次の日）
   FIRST_START: 20261025,
   HEAD: ['集計日', '区分', '開始', '終了', '日数', 'セッション', '広告以外セッション', '1日あたり全体', '1日あたり広告以外',
-    'generate_lead', '申込_JP_LP', 'うち既存', '広告費', 'チャネル内訳'],
+    'generate_lead', '申込_JP_LP', 'うち既存', '広告費', 'チャネル内訳', '記事セッション', '記事の内訳'],
 };
+
+// Dairin の広告記事（2026-11〜。waruagaki-eigo.com に年内3本）。参照元のドメイン（一部一致）と、着いたURLの印
+const PDCA_ARTICLE = {
+  SOURCES: ['waruagaki-eigo.com'],
+  MARK: '_by=',
+};
+const pdcaIsArticle_ = dims =>
+  PDCA_ARTICLE.SOURCES.some(s => String(dims.sessionSource || '').indexOf(s) !== -1) ||
+  String(dims.landingPagePlusQueryString || '').indexOf(PDCA_ARTICLE.MARK) !== -1;
 
 // 広告のチャネル（GA4の「セッションのデフォルト チャネル グループ」）
 const PDCA_PAID = ['Paid Search', 'Paid Social', 'Paid Video', 'Paid Shopping', 'Paid Other', 'Display', 'Cross-network'];
@@ -42,7 +56,10 @@ const PDCA_FUNNEL = {
   HEAD: ['終了', '開始', '日数',
     '広告以外 セッション', '広告以外 25%', '広告以外 50%', '広告以外 75%', '広告以外 申込',
     '広告 セッション', '広告 25%', '広告 50%', '広告 75%', '広告 申込',
-    '施策メモ'],
+    '施策メモ',
+    // 2026-11-26 に右端へ足した（施策メモの位置は変えない）
+    '記事 セッション', '記事 25%', '記事 50%', '記事 75%', '記事 申込'],
+  MEMO: 13, // 施策メモの列（0始まり）
   BACKFILL: 12, // pdcaBackfill でさかのぼる期間の数（14日ずつ）
 };
 
@@ -82,6 +99,7 @@ function pdcaCollect_() {
   const sessions = pdcaSessions_(propertyId, ranges);
   const leads = pdcaLeads_(propertyId, ranges);
   const apps = pdcaApplications_(ranges);
+  const articles = pdcaArticleSessions_(propertyId, ranges);
 
   const today = Utilities.formatDate(new Date(), PDCA.TZ, 'yyyy/MM/dd');
   const rows = [['prev', '比較'], ['now', '今回']].map(([key, label]) => {
@@ -90,9 +108,12 @@ function pdcaCollect_() {
     const total = Object.keys(ch).reduce((s, c) => s + ch[c], 0);
     const organic = Object.keys(ch).filter(c => PDCA_PAID.indexOf(c) === -1).reduce((s, c) => s + ch[c], 0);
     const breakdown = Object.keys(ch).sort((a, b) => ch[b] - ch[a]).map(c => c + ' ' + ch[c]).join(' / ');
+    const art = articles[key] || { total: 0, by: {} };
+    const artBreakdown = Object.keys(art.by).sort((a, b) => art.by[b] - art.by[a]).map(p => p + ' ' + art.by[p]).join(' / ');
     return [today, label, pdcaText_(r.start), pdcaText_(r.end), days, total, organic,
       Math.round(total / days * 10) / 10, Math.round(organic / days * 10) / 10,
-      leads[key] || 0, (apps[key] || {}).all || 0, (apps[key] || {}).existing || 0, '', breakdown];
+      leads[key] || 0, (apps[key] || {}).all || 0, (apps[key] || {}).existing || 0, '', breakdown,
+      art.total, artBreakdown];
   });
 
   // 同じ期間をもう一度集計した時は、前の2行を書き直す（手で入れた広告費は残す）
@@ -122,6 +143,18 @@ function pdcaBackfill() {
     rows.push(pdcaFunnelRow_(propertyId, start, end));
     end = pdcaAddDays_(start, -1);
   }
+  pdcaFunnelPut_(rows);
+}
+
+/** エディタから：PDCAファネルの直近 n 期間を集計し直す（記事の列を足した時など。施策メモは残す） */
+function pdcaFunnelRefill(n) {
+  const propertyId = PropertiesService.getScriptProperties().getProperty('GA4_PROPERTY_ID');
+  if (!propertyId) throw new Error('スクリプト プロパティ GA4_PROPERTY_ID がありません');
+  const sheet = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID).getSheetByName(PDCA_FUNNEL.SHEET);
+  if (!sheet || sheet.getLastRow() < 2) return;
+  const count = Math.min(typeof n === 'number' ? n : 4, sheet.getLastRow() - 1);
+  const rows = sheet.getRange(sheet.getLastRow() - count + 1, 1, count, 2).getDisplayValues()
+    .map(([end, start]) => pdcaFunnelRow_(propertyId, pdcaKey_(start), pdcaKey_(end)));
   pdcaFunnelPut_(rows);
 }
 
@@ -188,6 +221,31 @@ function pdcaLeads_(propertyId, ranges) {
   return out;
 }
 
+/** 記事から来たセッション。{ now: { total: 12, by: { '/kids-online/tomodachi-ryugaku/reviews/': 10, '（印のみ）': 2 } }, prev: {...} }
+ *  セッションの始まり（session_start）の参照元のURLで、記事のページごとに分ける */
+function pdcaArticleSessions_(propertyId, ranges) {
+  const res = pdcaGa4_(propertyId, ranges, {
+    dimensions: [{ name: 'pageReferrer' }, { name: 'sessionSource' }, { name: 'landingPagePlusQueryString' }],
+    metrics: [{ name: 'eventCount' }],
+    dimensionFilter: { andGroup: { expressions: [
+      pdcaStreamFilter_(),
+      { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'session_start' } } },
+    ] } },
+    limit: 10000,
+  });
+  const out = {};
+  pdcaRows_(res).forEach(({ dims, range, value }) => {
+    if (!pdcaIsArticle_(dims)) return;
+    const o = out[range] = out[range] || { total: 0, by: {} };
+    const ref = String(dims.pageReferrer || '');
+    const isSite = PDCA_ARTICLE.SOURCES.some(s => ref.indexOf(s) !== -1);
+    const page = isSite ? ref.replace(/^https?:\/\/[^\/]+/, '').replace(/[?#].*$/, '') || '/' : '（印のみ）';
+    o.total += value;
+    o.by[page] = (o.by[page] || 0) + value;
+  });
+  return out;
+}
+
 /** 期間が2つの時、GA4は列 dateRange（now／prev）を足して返す */
 function pdcaRows_(res) {
   const heads = (res.dimensionHeaders || []).map(h => h.name);
@@ -205,31 +263,38 @@ function pdcaRows_(res) {
 function pdcaFunnelRow_(propertyId, start, end) {
   const range = [{ name: 'p', start, end }];
   const kind = c => (PDCA_PAID.indexOf(c) === -1 ? 'org' : 'paid');
-  const sum = { org: { s: 0, lead: 0 }, paid: { s: 0, lead: 0 } };
+  // 記事（art）は広告以外の一部でもある。org／paid と art の両方に足す
+  const sum = { org: { s: 0, lead: 0 }, paid: { s: 0, lead: 0 }, art: { s: 0, lead: 0 } };
+  const groups = dims => [sum[kind(dims.sessionDefaultChannelGroup)]].concat(pdcaIsArticle_(dims) ? [sum.art] : []);
+  const sessionDims = [{ name: 'sessionDefaultChannelGroup' }, { name: 'sessionSource' }, { name: 'landingPagePlusQueryString' }];
 
   pdcaRows_(pdcaGa4_(propertyId, range, {
-    dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+    dimensions: sessionDims,
     metrics: [{ name: 'sessions' }],
     dimensionFilter: pdcaStreamFilter_(),
-  })).forEach(({ dims, value }) => { sum[kind(dims.sessionDefaultChannelGroup)].s += value; });
+    limit: 10000,
+  })).forEach(({ dims, value }) => { groups(dims).forEach(g => { g.s += value; }); });
 
   pdcaRows_(pdcaGa4_(propertyId, range, {
-    dimensions: [{ name: 'sessionDefaultChannelGroup' }, { name: 'eventName' }, { name: 'customEvent:percent_scrolled' }],
+    dimensions: sessionDims.concat([{ name: 'eventName' }, { name: 'customEvent:percent_scrolled' }]),
     metrics: [{ name: 'eventCount' }],
     dimensionFilter: { andGroup: { expressions: [
       pdcaStreamFilter_(),
       { filter: { fieldName: 'eventName', inListFilter: { values: ['scroll_depth', 'generate_lead'] } } },
     ] } },
+    limit: 10000,
   })).forEach(({ dims, value }) => {
-    const g = sum[kind(dims.sessionDefaultChannelGroup)];
-    if (dims.eventName === 'generate_lead') g.lead += value;
-    else g[dims['customEvent:percent_scrolled']] = (g[dims['customEvent:percent_scrolled']] || 0) + value;
+    groups(dims).forEach(g => {
+      if (dims.eventName === 'generate_lead') g.lead += value;
+      else g[dims['customEvent:percent_scrolled']] = (g[dims['customEvent:percent_scrolled']] || 0) + value;
+    });
   });
 
   // 同じセッションで2回表示すると数が増えるので、率は100%で止める
   const rate = (g, step) => (g.s ? Math.min(1, (g[step] || 0) / g.s) : '');
   const part = g => [g.s].concat(PDCA_FUNNEL.STEPS.map(step => rate(g, step)), [g.lead]);
-  return [pdcaText_(end), pdcaText_(start), pdcaDiff_(start, end) + 1].concat(part(sum.org), part(sum.paid), ['']);
+  return [pdcaText_(end), pdcaText_(start), pdcaDiff_(start, end) + 1]
+    .concat(part(sum.org), part(sum.paid), [''], part(sum.art));
 }
 
 /** 終了日が同じ行は書き直し（施策メモは残す）、無ければ足す。古い順に並べ、グラフを作り直す */
@@ -239,22 +304,24 @@ function pdcaFunnelPut_(rows) {
   if (!sheet) {
     sheet = ss.insertSheet(PDCA_FUNNEL.SHEET);
     sheet.getRange('A:B').setNumberFormat('@');
-    sheet.getRange(1, 1, 1, PDCA_FUNNEL.HEAD.length).setValues([PDCA_FUNNEL.HEAD]).setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
+  // 列を右に足した時も見出しをそろえる
+  sheet.getRange(1, 1, 1, PDCA_FUNNEL.HEAD.length).setValues([PDCA_FUNNEL.HEAD]).setFontWeight('bold');
   const width = PDCA_FUNNEL.HEAD.length;
+  const memo = PDCA_FUNNEL.MEMO;
   const n = sheet.getLastRow() - 1;
   const old = n > 0 ? sheet.getRange(2, 1, n, width).getValues() : [];
   const byEnd = {};
   old.forEach(r => { byEnd[String(r[0])] = r; });
   rows.forEach(r => {
     const prev = byEnd[r[0]];
-    if (prev) r[width - 1] = prev[width - 1];
+    if (prev) r[memo] = prev[memo];
     byEnd[r[0]] = r;
   });
   const all = Object.keys(byEnd).sort().map(k => byEnd[k]);
   sheet.getRange(2, 1, all.length, width).setValues(all);
-  [5, 6, 7, 10, 11, 12].forEach(c => sheet.getRange(2, c, all.length, 1).setNumberFormat('0%'));
+  [5, 6, 7, 10, 11, 12, 16, 17, 18].forEach(c => sheet.getRange(2, c, all.length, 1).setNumberFormat('0%'));
   pdcaFunnelCharts_(sheet, all.length);
 }
 
@@ -262,7 +329,8 @@ function pdcaFunnelPut_(rows) {
 function pdcaFunnelCharts_(sheet, count) {
   sheet.getCharts().forEach(c => sheet.removeChart(c));
   const last = count + 1;
-  [['広告以外：どこまで読んだか（セッションに対する割合）', 5], ['広告：どこまで読んだか（セッションに対する割合）', 10]].forEach(([title, col], i) => {
+  [['広告以外：どこまで読んだか（セッションに対する割合）', 5], ['広告：どこまで読んだか（セッションに対する割合）', 10],
+    ['記事（Dairin）から来た人：どこまで読んだか（セッションに対する割合）', 16]].forEach(([title, col], i) => {
     const chart = sheet.newChart().asLineChart()
       .addRange(sheet.getRange(1, 1, last, 1))
       .addRange(sheet.getRange(1, col, last, 3))
